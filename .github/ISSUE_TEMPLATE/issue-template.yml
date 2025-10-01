@@ -18,6 +18,6 @@ body:
       label: "Developer tasks"
       description: "List the tasks that need to be completed to finish this issue."
       value: |
-        - [] Task 1
-        - [] Task 2
-        - [] Task 3
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
