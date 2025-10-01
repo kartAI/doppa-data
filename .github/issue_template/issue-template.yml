@@ -1,4 +1,4 @@
-﻿name: "Issue"
+name: "Issue"
 description: "Create a new issue to break down a user story into smaller, manageable tasks."
 labels: [ "enhancement" ]
 projects: [ "kartAI/15" ]
