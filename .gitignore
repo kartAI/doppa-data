@@ -178,7 +178,7 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
- .vscode/
+ .vscodeG/
 
 # Ruff stuff:
 .ruff_cache/
@@ -197,3 +197,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Ignore all datasets
+datasets/*.osm.pdf
+datasets/*.geojson
