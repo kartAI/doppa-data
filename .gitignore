@@ -199,5 +199,5 @@ marimo/_lsp/
 __marimo__/
 
 # Ignore all datasets
-datasets/*.osm.pbf
-datasets/*.geojson
+datasets/**/*.pbf
+datasets/**/*.geojson
