@@ -33,15 +33,44 @@ class OpenStreetMapService:
     def yield_building_chunks(self, batch_size: int = 5000) -> Iterator[list[geojson.Feature]]:
         """
         Stream buildings in chunks of features.
+        - If a cached GeoJSON exists, stream from it.
+        - Otherwise, extract from OSM and yield while writing to disk.
         """
+        if Config.OSM_BUILDINGS_GEOJSON_PATH.is_file():
+            logger.info(f"GeoJSON already exists. Streaming '{Config.OSM_BUILDINGS_GEOJSON_PATH.name}' in chunks.")
+            with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "r", encoding="utf-8") as f:
+                data = geojson.load(f)
+                batch = []
+                for feature in data["features"]:
+                    batch.append(feature)
+                    if len(batch) >= batch_size:
+                        yield batch
+                        batch = []
+                if batch:
+                    yield batch
+            return
+
+        logger.info(f"Extracting features from OSM-dataset. This may take some time...")
         self.building_handler.apply_file(str(Config.OSM_FILE_PATH), locations=True)
+        logger.info(f"Extracted {len(self.building_handler.buildings)} buildings.")
 
         batch = []
-        for feature in self.building_handler.buildings:
-            batch.append(feature)
-            if len(batch) >= batch_size:
-                yield batch
-                batch = []
+        with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "w", encoding="utf-8") as f:
+            # stream into file incrementally
+            f.write('{"type": "FeatureCollection", "features": [\n')
+
+            for idx, feature in enumerate(self.building_handler.buildings):
+                if idx > 0:
+                    f.write(",\n")
+                geojson.dump(feature, f)
+
+                batch.append(feature)
+                if len(batch) >= batch_size:
+                    yield batch
+                    batch = []
+
+            f.write("\n]}")
+
         if batch:
             yield batch
 
