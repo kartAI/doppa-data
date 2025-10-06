@@ -20,5 +20,7 @@ class Config:
     # OPEN STREET MAP
     OSM_FILE_PATH: Path = DATASETS_PATH / "osm" / "norway-latest.osm.pbf"
     OSM_BUILDINGS_GEOJSON_PATH: Path = DATASETS_PATH / "osm" / "buildings.geojson"
+    OSM_BUILDINGS_PARQUET_PATH: Path = DATASETS_PATH / "osm" / "buildings.parquet"
+    OSM_BUILDINGS_CLEANED_PARQUET_PATH: Path = DATASETS_PATH / "osm" / "cleaned_buildings.parquet"
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
