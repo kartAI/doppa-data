@@ -9,7 +9,7 @@ from src.application.common import logger
 
 
 class BuildingHandler(SimpleHandler):
-    __geom_factory: GeoJSONFactory()
+    __geom_factory: GeoJSONFactory
     __buildings: list[Feature]
 
     def __init__(self):
