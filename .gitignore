@@ -202,3 +202,4 @@ __marimo__/
 datasets/**/*.pbf
 datasets/**/*.geojson
 datasets/**/*.parquet
+datasets/**/*.fgb
