@@ -88,4 +88,4 @@ class OpenStreetMapService:
         with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "w", encoding="utf-8") as f:
             geojson.dump(feature_collection, f, indent=2)
 
-        return geojson.dumps(feature_collection, indent=2)
+        return feature_collection
