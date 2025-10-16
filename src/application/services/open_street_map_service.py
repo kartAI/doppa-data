@@ -59,10 +59,13 @@ class OpenStreetMapService:
             f"Features extracted from the OSM-dataset. This resulted in {len(self.building_handler.batches)} batches.")
         logger.info(f"Extracting features from OSM-dataset in batches of {Config.OSM_FEATURE_BATCH_SIZE} geometries.")
 
-        for i, building_batch in enumerate(self.building_handler.batches):
-            logger.info(f"Processing batch {i + 1}/{len(self.building_handler.batches)}")
-            OpenStreetMapService.__stream_batch_to_parquet(index=i, batch=building_batch)
-            # self.building_handler.pop_batch_by_index(index=i)
+        total_batches = len(self.building_handler.batches)
+        batch_index = 0
+        while self.building_handler.batches:
+            building_batch = self.building_handler.batches.pop(0)
+            logger.info(f"Processing batch {batch_index + 1}/{total_batches}")
+            OpenStreetMapService.__stream_batch_to_parquet(index=batch_index, batch=building_batch)
+            batch_index += 1
 
         self.__merge_temp_parquet_files()
         logger.info(f"Extraction completed")
