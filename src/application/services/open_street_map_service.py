@@ -114,7 +114,7 @@ class OpenStreetMapService:
         gdf = gpd.GeoDataFrame(
             dataframe.drop(columns=["geom_wkb"]),
             geometry=geometries,
-            crs="EPSG:4236"
+            crs="EPSG:4326"
         )
 
         return gdf
