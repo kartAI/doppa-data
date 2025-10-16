@@ -1,6 +1,8 @@
 ﻿name: Build and Push to Azure Container Registry
 
 on:
+  push:
+    - feature/8-deploy-image-to-acr
   pull_request:
     branches:
       - main
