@@ -1,7 +1,7 @@
-﻿from typing import Iterator
-
-import geojson
+﻿import pandas as pd
 import requests
+from duckdb import DuckDBPyConnection
+import geopandas as gpd
 
 from src import Config
 from src.application.common import BuildingHandler, logger
@@ -9,9 +9,15 @@ from src.application.common import BuildingHandler, logger
 
 class OpenStreetMapService:
     __building_handler: BuildingHandler
+    __db_context: DuckDBPyConnection
 
-    def __init__(self, building_handler: BuildingHandler):
+    def __init__(self, db_context: DuckDBPyConnection, building_handler: BuildingHandler):
+        self.__db_context = db_context
         self.__building_handler = building_handler
+
+    @property
+    def db_context(self) -> DuckDBPyConnection:
+        return self.__db_context
 
     @property
     def building_handler(self) -> BuildingHandler:
@@ -19,6 +25,10 @@ class OpenStreetMapService:
 
     @staticmethod
     def download_pbf() -> None:
+        if Config.OSM_FILE_PATH.is_file():
+            logger.info("OSM-data have already been downloaded. Skipping download...")
+            return
+
         logger.info(f"Downloading OSM-data from '{Config.OSM_PBF_URL}'")
         response = requests.get(Config.OSM_PBF_URL, stream=True)
         response.raise_for_status()
@@ -30,62 +40,81 @@ class OpenStreetMapService:
 
         logger.info("Download completed")
 
-    def yield_building_chunks(self, batch_size: int = 5000) -> Iterator[list[geojson.Feature]]:
-        """
-        Stream buildings in chunks of features.
-        - If a cached GeoJSON exists, stream from it.
-        - Otherwise, extract from OSM and yield while writing to disk.
-        """
-        if Config.OSM_BUILDINGS_GEOJSON_PATH.is_file():
-            logger.info(f"GeoJSON already exists. Streaming '{Config.OSM_BUILDINGS_GEOJSON_PATH.name}' in chunks.")
-            with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "r", encoding="utf-8") as f:
-                data = geojson.load(f)
-                batch = []
-                for feature in data["features"]:
-                    batch.append(feature)
-                    if len(batch) >= batch_size:
-                        yield batch
-                        batch = []
-                if batch:
-                    yield batch
+    def create_osm_parquet_file(self) -> None:
+        if not Config.OSM_FILE_PATH.is_file():
+            raise FileNotFoundError(
+                "Failed to find OSM-dataset. Ensure that it has been installed to the correct location"
+            )
+
+        if Config.OSM_BUILDINGS_PARQUET_PATH.is_file():
+            logger.info(f"'{Config.OSM_BUILDINGS_PARQUET_PATH.name}' already exists. Skipped creation step...")
             return
 
-        logger.info(f"Extracting features from OSM-dataset. This may take some time...")
+        logger.info(f"Extracting features from OSM-dataset in batches of {Config.OSM_FEATURE_BATCH_SIZE} geometries.")
+
         self.building_handler.apply_file(str(Config.OSM_FILE_PATH), locations=True)
-        logger.info(f"Extracted {len(self.building_handler.buildings)} buildings.")
+        self.building_handler.post_apply_file_cleanup()
 
-        batch = []
-        with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "w", encoding="utf-8") as f:
-            # stream into file incrementally
-            f.write('{"type": "FeatureCollection", "features": [\n')
+        logger.info(
+            f"Features extracted from the OSM-dataset. This resulted in {len(self.building_handler.batches)} batches.")
+        logger.info(f"Extracting features from OSM-dataset in batches of {Config.OSM_FEATURE_BATCH_SIZE} geometries.")
 
-            for idx, feature in enumerate(self.building_handler.buildings):
-                if idx > 0:
-                    f.write(",\n")
-                geojson.dump(feature, f)
+        for i, building_batch in enumerate(self.building_handler.batches):
+            logger.info(f"Processing batch {i + 1}/{len(self.building_handler.batches)}")
+            OpenStreetMapService.__stream_batch_to_parquet(index=i, batch=building_batch)
+            # self.building_handler.pop_batch_by_index(index=i)
 
-                batch.append(feature)
-                if len(batch) >= batch_size:
-                    yield batch
-                    batch = []
+        self.__merge_temp_parquet_files()
+        logger.info(f"Extraction completed")
 
-            f.write("\n]}")
+    @staticmethod
+    def __stream_batch_to_parquet(index: int, batch: list[dict]) -> None:
+        """
+        Writes a batch to a temporary Parquet file using DuckDB.
+        Each batch becomes its own file to avoid overwriting.
+        """
+        file_path = Config.OSM_TEMP_PARQUET_DIR / f"part_{index:05d}.parquet"
+        batch_df = OpenStreetMapService.__create_dataframe_from_batch(batch)
+        batch_df.to_parquet(
+            file_path,
+            index=False,
+            compression="zstd",
+            schema_version="1.1.0",
+            geometry_encoding="WKB",
+            write_covering_bbox=True
+        )
 
-        if batch:
-            yield batch
+    def __merge_temp_parquet_files(self) -> None:
+        """
+        Merges all batch parquet files into a single Parquet dataset.
+        """
+        logger.info("Merging temp-parquet files")
 
-    def get_geojson(self) -> geojson.base.GeoJSON:
-        if Config.OSM_BUILDINGS_GEOJSON_PATH.is_file():
-            logger.info(f"GeoJSON already exists. Loading '{str(Config.OSM_BUILDINGS_GEOJSON_PATH.name)}' from disk.")
-            with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "r") as f:
-                return geojson.load(f)
+        self.__db_context.execute(f"""
+        COPY (
+            SELECT *
+            FROM read_parquet('{Config.OSM_TEMP_PARQUET_DIR}/*.parquet', union_by_name=true)
+            WHERE geometry IS NOT NULL
+        )
+        TO '{Config.OSM_BUILDINGS_PARQUET_PATH}' (FORMAT PARQUET, COMPRESSION ZSTD)
+        """)
 
-        logger.info(f"Extracting features from OSM-dataset. This may take some time...")
-        self.building_handler.apply_file(str(Config.OSM_FILE_PATH), locations=True)
-        logger.info(f"Extracted {len(self.building_handler.buildings)} buildings.")
-        feature_collection = geojson.FeatureCollection(self.building_handler.buildings)
+    @staticmethod
+    def __create_dataframe_from_batch(batch: list[dict]) -> gpd.GeoDataFrame:
+        dataframe = pd.DataFrame(batch)
 
-        with open(Config.OSM_BUILDINGS_GEOJSON_PATH, "w", encoding="utf-8") as f:
-            geojson.dump(feature_collection, f, indent=2)
+        if "geometry" in dataframe.columns:
+            dataframe = dataframe.rename(columns={"geometry": "geom_wkb"})
 
-        return feature_collection
+            dataframe["geom_wkb"] = dataframe["geom_wkb"].apply(
+                lambda x: bytes.fromhex(x) if isinstance(x, str) and x[:4] == "0106" else x
+            )
+
+        geometries = gpd.GeoSeries.from_wkb(dataframe["geom_wkb"])
+        gdf = gpd.GeoDataFrame(
+            dataframe.drop(columns=["geom_wkb"]),
+            geometry=geometries,
+            crs="EPSG:4236"
+        )
+
+        return gdf
