@@ -1,0 +1,10 @@
+.gitignore
+.git/
+.gitmodules
+.gitattributes
+logs/*.log
+.github/
+datasets/*
+!datasets/**/.gitkeep
+venv
+LICENSE

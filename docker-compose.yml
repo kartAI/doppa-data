@@ -1,0 +1,7 @@
+﻿services:
+  osm-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python main.py
+    working_dir: /app
