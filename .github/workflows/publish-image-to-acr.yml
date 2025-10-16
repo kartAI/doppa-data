@@ -2,7 +2,8 @@
 
 on:
   push:
-    - feature/8-deploy-image-to-acr
+    branches:
+      - feature/8-deploy-image-to-acr
   pull_request:
     branches:
       - main
