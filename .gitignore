@@ -198,6 +198,9 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# DuckDB
+/.tmp
+
 # Ignore all datasets
 datasets/**/*.pbf
 datasets/**/*.geojson
