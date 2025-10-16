@@ -79,9 +79,7 @@ class OpenStreetMapService:
             file_path,
             index=False,
             compression="zstd",
-            schema_version="1.1.0",
-            geometry_encoding="WKB",
-            write_covering_bbox=True
+            schema_version="1.1.0"
         )
 
     def __merge_temp_parquet_files(self) -> None:
