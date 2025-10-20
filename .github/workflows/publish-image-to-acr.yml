@@ -28,8 +28,14 @@ jobs:
       - name: Build image from docker-compose
         run: docker compose build osm-pipeline
 
-      - name: Tag image
+      - name: Tag image as latest
         run: docker tag osm-pipeline:latest ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:latest
 
-      - name: Push image to ACR
+      - name: Tag image with commit SHA
+        run: docker tag osm-pipeline:latest ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:${{ github.sha }}
+
+      - name: Push image to ACR (latest)
         run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:latest
+
+      - name: Push image to ACR (commit SHA)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:${{ github.sha }}

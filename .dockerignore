@@ -8,3 +8,15 @@ datasets/*
 !datasets/**/.gitkeep
 venv
 LICENSE
+
+# Ignore common Python build artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.tox/
+.ruff_cache/
+.venv
+build/
+dist/
+.DS_Store

@@ -5,4 +5,3 @@ services:
       dockerfile: Dockerfile
     image: osm-pipeline:latest
     command: python main.py
-    working_dir: /app
