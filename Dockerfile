@@ -4,3 +4,5 @@ COPY requirements.txt /app/
 RUN apt-get update && apt-get install -y libexpat1 && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
+
+CMD ["python", "main.py"]
