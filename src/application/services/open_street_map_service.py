@@ -67,7 +67,7 @@ class OpenStreetMapService:
             OpenStreetMapService.__stream_batch_to_parquet(index=batch_index, batch=building_batch)
             batch_index += 1
 
-        self.__merge_temp_parquet_files()
+        # self.__merge_temp_parquet_files()
         logger.info(f"Extraction completed")
 
     @staticmethod
