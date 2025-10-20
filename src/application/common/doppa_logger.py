@@ -1,5 +1,6 @@
 ﻿import logging
 import sys
+
 from src import Config
 
 Config.LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
