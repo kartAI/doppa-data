@@ -29,7 +29,7 @@ class Config:
     OSM_BUILDINGS_CLEANED_PARQUET_PATH: Path = DATASETS_PATH / "osm" / "cleaned_buildings.parquet"
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
-    OSM_FEATURE_BATCH_SIZE: int = 250_000
+    OSM_FEATURE_BATCH_SIZE: int = 1_400_000
 
     # FKB
     FKB_DIR: Path = DATASETS_PATH / "fkb"
