@@ -5,18 +5,17 @@ from src import Config
 
 Config.LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 logger.setLevel(Config.LOGGING_LEVEL)
 
-file_handler = logging.FileHandler(Config.LOG_FILE, encoding="utf-8")
-file_handler.setLevel(Config.LOGGING_LEVEL)
+if logger.hasHandlers():
+    logger.handlers.clear()
 
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(Config.LOGGING_LEVEL)
+console_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
+file_handler = logging.FileHandler(Config.LOG_FILE, encoding="utf-8")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 
-logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+logger.addHandler(file_handler)

@@ -1,0 +1,7 @@
+services:
+  osm-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: osm-pipeline:latest
+    command: python main.py
