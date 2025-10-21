@@ -1,5 +1,8 @@
 ﻿import duckdb
 
-duckdb_context: duckdb.DuckDBPyConnection = duckdb.connect()
-duckdb_context.install_extension("spatial")
-duckdb_context.load_extension("spatial")
+def create_duckdb_context() -> duckdb.DuckDBPyConnection:
+    db_context: duckdb.DuckDBPyConnection = duckdb.connect()
+    db_context.install_extension("spatial")
+    db_context.load_extension("spatial")
+
+    return db_context

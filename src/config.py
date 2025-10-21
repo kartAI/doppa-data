@@ -1,5 +1,5 @@
 ﻿import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
@@ -30,6 +30,7 @@ class Config:
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
     OSM_FEATURE_BATCH_SIZE: int = 250_000
+    OSM_COLUMNS_TO_KEEP: list[str] = field(default_factory=lambda: ["id", "geometry"])
 
     # FKB
     FKB_DIR: Path = DATASETS_PATH / "fkb"

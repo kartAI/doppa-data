@@ -1,12 +1,13 @@
-﻿from osmium import SimpleHandler
+﻿import requests
 from osmium.geom import WKBFactory
 from osmium.osm import Area
 
 from src import Config
 from src.application.common import logger
+from src.application.contracts import IOpenStreetMapFileService
 
 
-class BuildingHandler(SimpleHandler):
+class OpenStreetMapFileService(IOpenStreetMapFileService):
     __geom_factory: WKBFactory
     __buildings: list[dict]
     __batches: list[list[dict]]
@@ -16,6 +17,23 @@ class BuildingHandler(SimpleHandler):
         self.__geom_factory = WKBFactory()
         self.__buildings = []
         self.__batches = []
+
+    @staticmethod
+    def download_pbf() -> None:
+        if Config.OSM_FILE_PATH.is_file():
+            logger.info("OSM-data have already been downloaded. Skipping download...")
+            return
+
+        logger.info(f"Downloading OSM-data from '{Config.OSM_PBF_URL}'")
+        response = requests.get(Config.OSM_PBF_URL, stream=True)
+        response.raise_for_status()
+
+        with open(Config.OSM_FILE_PATH, "wb") as f:
+            chunks = response.iter_content(chunk_size=Config.OSM_STREAMING_CHUNK_SIZE)
+            for chunk in chunks:
+                f.write(chunk)
+
+        logger.info("Download completed")
 
     @property
     def geom_factory(self) -> WKBFactory:

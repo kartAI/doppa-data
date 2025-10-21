@@ -1,44 +1,29 @@
-﻿import pandas as pd
-import requests
+﻿import geopandas as gpd
+import pandas as pd
 from duckdb import DuckDBPyConnection
-import geopandas as gpd
 
 from src import Config
-from src.application.common import BuildingHandler, logger
+from src.application.common import logger
+from src.application.contracts import IOpenStreetMapService, IOpenStreetMapFileService
 
 
-class OpenStreetMapService:
-    __building_handler: BuildingHandler
+class OpenStreetMapService(IOpenStreetMapService):
+    __osm_file_service: IOpenStreetMapFileService
     __db_context: DuckDBPyConnection
 
-    def __init__(self, db_context: DuckDBPyConnection, building_handler: BuildingHandler):
+    def __init__(self, db_context: DuckDBPyConnection, osm_file_service: IOpenStreetMapFileService):
         self.__db_context = db_context
-        self.__building_handler = building_handler
+        self.__osm_file_service = osm_file_service
 
     @property
     def db_context(self) -> DuckDBPyConnection:
         return self.__db_context
 
     @property
-    def building_handler(self) -> BuildingHandler:
-        return self.__building_handler
+    def building_handler(self) -> IOpenStreetMapFileService:
+        return self.__osm_file_service
 
-    @staticmethod
-    def download_pbf() -> None:
-        if Config.OSM_FILE_PATH.is_file():
-            logger.info("OSM-data have already been downloaded. Skipping download...")
-            return
 
-        logger.info(f"Downloading OSM-data from '{Config.OSM_PBF_URL}'")
-        response = requests.get(Config.OSM_PBF_URL, stream=True)
-        response.raise_for_status()
-
-        with open(Config.OSM_FILE_PATH, "wb") as f:
-            chunks = response.iter_content(chunk_size=Config.OSM_STREAMING_CHUNK_SIZE)
-            for chunk in chunks:
-                f.write(chunk)
-
-        logger.info("Download completed")
 
     def create_osm_parquet_file(self) -> None:
         if not Config.OSM_FILE_PATH.is_file():

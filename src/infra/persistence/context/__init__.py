@@ -1,1 +1,1 @@
-﻿from .duckdb import duckdb_context
+﻿from .duckdb import create_duckdb_context
