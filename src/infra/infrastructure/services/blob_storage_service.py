@@ -26,7 +26,7 @@ class BlobStorageService(IBlobStorageService):
         self.ensure_container(container_name)
         return self.__blob_storage_context.get_container_client(container_name.value)
 
-    def upload_file(self, container_name: StorageContainer, blob_name: str, data: BytesIO) -> str:
+    def upload_file(self, container_name: StorageContainer, blob_name: str, data: bytes) -> str:
         logger.info(f"Uploading blob '{blob_name}' to container '{container_name.value}'...")
 
         container = self.get_container(container_name)

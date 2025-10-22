@@ -1,5 +1,4 @@
 ﻿from abc import ABC, abstractmethod
-from io import BytesIO
 
 import geopandas as gpd
 
@@ -29,7 +28,7 @@ class IBlobStorageService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def upload_file(self, container_name: StorageContainer, blob_name: str, data: BytesIO) -> str:
+    def upload_file(self, container_name: StorageContainer, blob_name: str, data: bytes) -> str:
         """
         Upload binary data to a blob and return its URL.
 
