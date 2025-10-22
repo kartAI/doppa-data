@@ -1,12 +1,20 @@
 ﻿import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 @dataclass(frozen=True)
 class Config:
     IS_NOTEBOOK: bool = False
+
+    # AZURE
+    BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
 
     # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent.parent
