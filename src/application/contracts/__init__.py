@@ -1,3 +1,3 @@
-﻿from .blob_storage_interface import IBlobStorageService
+﻿from .blob_storage_service_interface import IBlobStorageService
 from .open_street_map_file_service_interface import IOpenStreetMapFileService
 from .open_street_map_service_interface import IOpenStreetMapService
