@@ -15,7 +15,7 @@ class FilePathService(IFilePathService):
             prefix: str = None
     ) -> str:
         FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        return f"release/{release}/theme={theme.value}/region={region}/{file_name}" if prefix is not None else f"{prefix}/release/{release}/theme={theme.value}/region={region}/{file_name}"
+        return f"release/{release}/theme={theme.value}/region={region}/{file_name}" if prefix is None else f"{prefix}/release/{release}/theme={theme.value}/region={region}/{file_name}"
 
     @staticmethod
     def validate_file_path(release: str, region: str, file_name: str) -> None:
