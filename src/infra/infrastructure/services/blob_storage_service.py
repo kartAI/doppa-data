@@ -3,6 +3,7 @@ from azure.storage.blob import BlobServiceClient
 from duckdb import DuckDBPyConnection
 
 from src.application.contracts import IBlobStorageService
+from src.domain.enums import StorageContainer
 
 
 class BlobStorageService(IBlobStorageService):
@@ -13,7 +14,7 @@ class BlobStorageService(IBlobStorageService):
         self.__db_context = db_context
         self.__blob_storage_context = blob_storage_context
 
-    def upload_file(self) -> bool:
+    def upload_file(self, container_name: StorageContainer) -> bool:
         pass
 
     def delete_file(self) -> bool:
