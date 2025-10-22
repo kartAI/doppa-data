@@ -17,7 +17,6 @@ class Containers(containers.DeclarativeContainer):
 
     blob_storage_service = providers.Singleton(
         BlobStorageService,
-        db_context=db_context,
         blob_storage_context=blob_storage_context
     )
 

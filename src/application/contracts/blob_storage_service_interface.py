@@ -7,6 +7,15 @@ from src.domain.enums import StorageContainer
 
 class IBlobStorageService(ABC):
     @abstractmethod
+    def ensure_container(self, container_name: StorageContainer) -> None:
+        """
+        Ensure that the specified storage container exists; create it if it does not.
+        :param container_name: Container enum to ensure existence for.
+        :return:
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def get_container(self, container_name: StorageContainer) -> any:
         """
         Return an Azure Blob ContainerClient for the given storage container enum.

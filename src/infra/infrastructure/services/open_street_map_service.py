@@ -4,16 +4,23 @@ from duckdb import DuckDBPyConnection
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IOpenStreetMapService, IOpenStreetMapFileService
+from src.application.contracts import IOpenStreetMapService, IOpenStreetMapFileService, IFilePathService
 
 
 class OpenStreetMapService(IOpenStreetMapService):
-    __osm_file_service: IOpenStreetMapFileService
     __db_context: DuckDBPyConnection
+    __osm_file_service: IOpenStreetMapFileService
+    __file_path_service: IFilePathService
 
-    def __init__(self, db_context: DuckDBPyConnection, osm_file_service: IOpenStreetMapFileService):
+    def __init__(
+            self,
+            db_context: DuckDBPyConnection,
+            osm_file_service: IOpenStreetMapFileService,
+            file_path_service: IFilePathService
+    ):
         self.__db_context = db_context
         self.__osm_file_service = osm_file_service
+        self.__file_path_service = file_path_service
 
     @property
     def db_context(self) -> DuckDBPyConnection:
@@ -50,7 +57,7 @@ class OpenStreetMapService(IOpenStreetMapService):
             OpenStreetMapService.__stream_batch_to_parquet(index=batch_index, batch=building_batch)
             batch_index += 1
 
-        # self.__merge_temp_parquet_files()
+        # self.__merge_temp_parquet_files() TODO: Remove this
         logger.info(f"Extraction completed")
 
     @staticmethod
