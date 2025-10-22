@@ -5,7 +5,14 @@ from src.domain.enums import Theme
 
 class IFilePathService(ABC):
     @abstractmethod
-    def create_storage_account_file_path(self, release: str, theme: Theme, region: str, file_name: str) -> str:
+    def create_storage_account_file_path(
+            self,
+            release: str,
+            theme: Theme,
+            region: str,
+            file_name: str,
+            *prefix: str
+    ) -> str:
         """
         Creates a storage account file path based on the provided parameters.
 
