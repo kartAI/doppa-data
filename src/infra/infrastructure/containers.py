@@ -1,16 +1,18 @@
 ﻿from dependency_injector import containers, providers
 
 from src.infra.infrastructure.services import BlobStorageService, OpenStreetMapService, OpenStreetMapFileService
-from src.infra.persistence.context import create_duckdb_context
+from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context
 
 
 class Containers(containers.DeclarativeContainer):
     config = providers.Configuration()
     db_context = providers.Singleton(create_duckdb_context)
+    blob_storage_context = providers.Singleton(create_blob_storage_context)
 
     blob_storage_service = providers.Singleton(
         BlobStorageService,
-        db_context=db_context
+        db_context=db_context,
+        blob_storage_context=blob_storage_context
     )
 
     osm_file_service = providers.Singleton(
