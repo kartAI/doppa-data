@@ -5,6 +5,7 @@ from src import Config
 
 Config.LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
+logging.getLogger("azure").setLevel(logging.WARNING)
 logger = logging.getLogger()
 logger.setLevel(Config.LOGGING_LEVEL)
 
