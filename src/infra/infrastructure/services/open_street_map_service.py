@@ -23,8 +23,6 @@ class OpenStreetMapService(IOpenStreetMapService):
     def building_handler(self) -> IOpenStreetMapFileService:
         return self.__osm_file_service
 
-
-
     def create_osm_parquet_file(self) -> None:
         if not Config.OSM_FILE_PATH.is_file():
             raise FileNotFoundError(
