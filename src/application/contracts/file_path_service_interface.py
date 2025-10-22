@@ -11,7 +11,7 @@ class IFilePathService(ABC):
             theme: Theme,
             region: str,
             file_name: str,
-            *prefix: str
+            prefix: str = None
     ) -> str:
         """
         Creates a storage account file path based on the provided parameters.
@@ -21,6 +21,7 @@ class IFilePathService(ABC):
         :param region: A region in Norway is defined as county. For example '03' for Oslo
         :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet'
         :return: Storage path
+        :param prefix: Prefix to add at the start of the path
         :rtype: str
         """
         raise NotImplementedError

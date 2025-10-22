@@ -12,17 +12,10 @@ class FilePathService(IFilePathService):
             theme: Theme,
             region: str,
             file_name: str,
-            *prefix: str
+            prefix: str = None
     ) -> str:
         FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-
-        path: str
-        if len(prefix) > 0:
-            path = f"{'/'.join(prefix)}/release/{release}/theme={theme.value}/region={region}/{file_name}"
-        else:
-            path = f"release/{release}/theme={theme.value}/region={region}/{file_name}"
-
-        return path
+        return f"release/{release}/theme={theme.value}/region={region}/{file_name}" if prefix is not None else f"{prefix}/release/{release}/theme={theme.value}/region={region}/{file_name}"
 
     @staticmethod
     def validate_file_path(release: str, region: str, file_name: str) -> None:
