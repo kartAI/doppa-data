@@ -1,6 +1,7 @@
-﻿from dataclasses import dataclass
+﻿from enum import Enum
 
 
-@dataclass(frozen=True)
-class StorageContainer:
-    pass
+class StorageContainer(Enum):
+    SCHEMA = "schema"
+    OPEN_STREET_MAP = "open_street_map"
+    FKB = "fkb"
