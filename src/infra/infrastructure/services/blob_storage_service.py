@@ -1,5 +1,5 @@
 ﻿import geopandas as gpd
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContainerClient
 from duckdb import DuckDBPyConnection
 
 from src.application.contracts import IBlobStorageService
@@ -14,8 +14,13 @@ class BlobStorageService(IBlobStorageService):
         self.__db_context = db_context
         self.__blob_storage_context = blob_storage_context
 
-    def upload_file(self, container_name: StorageContainer) -> bool:
-        pass
+    def get_container(self, container_name: StorageContainer) -> ContainerClient:
+        return self.__blob_storage_context.get_container_client(container_name.value)
+
+    def upload_file(self, container_name: StorageContainer, blob_name: str, data: bytes) -> str:
+        container = self.get_container(container_name)
+        blob_client = container.upload_blob(name=blob_name, data=data)
+        return blob_client.url
 
     def delete_file(self) -> bool:
         pass
