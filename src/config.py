@@ -46,5 +46,8 @@ class Config:
     FKB_BUILDINGS_PARQUET_PATH: Path = FKB_DIR / "fkb_buildings.parquet"
     FKB_WGS84_BUILDINGS_PARQUET_PATH: Path = FKB_DIR / "fkb_wgs84_buildings.parquet"
 
+    # GEONORGE
+    GEONORGE_BASE_URL: str = "https://api.test.kartverket.no/kommuneinfo/v1/"
+
     # METADATA
     RELEASE_FILE_NAME = "releases.parquet"

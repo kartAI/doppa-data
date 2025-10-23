@@ -7,9 +7,9 @@ from duckdb import DuckDBPyConnection
 from src import Config
 from src.application.common import logger
 from src.application.contracts import (
-    IOpenStreetMapService, IOpenStreetMapFileService, IFilePathService, IBlobStorageService
+    IOpenStreetMapService, IOpenStreetMapFileService, IFilePathService, IBlobStorageService, ICountyService
 )
-from src.domain.enums import Theme, StorageContainer
+from src.domain.enums import Theme, StorageContainer, EPSGCode
 
 
 class OpenStreetMapService(IOpenStreetMapService):
@@ -17,18 +17,21 @@ class OpenStreetMapService(IOpenStreetMapService):
     __osm_file_service: IOpenStreetMapFileService
     __file_path_service: IFilePathService
     __blob_storage_service: IBlobStorageService
+    __county_service: ICountyService
 
     def __init__(
             self,
             db_context: DuckDBPyConnection,
             osm_file_service: IOpenStreetMapFileService,
             file_path_service: IFilePathService,
-            blob_storage_service: IBlobStorageService
+            blob_storage_service: IBlobStorageService,
+            county_service: ICountyService,
     ):
         self.__db_context = db_context
         self.__osm_file_service = osm_file_service
         self.__file_path_service = file_path_service
         self.__blob_storage_service = blob_storage_service
+        self.__county_service = county_service
 
     def create_osm_parquet_file(self, release: str) -> None:
         if not Config.OSM_FILE_PATH.is_file():
@@ -53,7 +56,6 @@ class OpenStreetMapService(IOpenStreetMapService):
             self.__stream_batch_to_storage_account(release=release, index=batch_index, batch=building_batch)
             batch_index += 1
 
-        # self.__merge_temp_parquet_files() TODO: Remove this
         logger.info(f"Extraction completed")
 
     def __stream_batch_to_storage_account(self, release: str, index: int, batch: list[dict]) -> None:
