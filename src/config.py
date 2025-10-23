@@ -1,14 +1,23 @@
 ﻿import logging
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 @dataclass(frozen=True)
 class Config:
     IS_NOTEBOOK: bool = False
 
-    # DIRECTORIES
+    # AZURE
+    BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
+    BLOB_STORAGE_MAX_CONCURRENCY: int = 1
+
+    # DIRECTORIES14:20:42,140
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent.parent
     DATASETS_PATH: Path = ROOT_DIR / "datasets"
     LOG_DIR: Path = ROOT_DIR / f"logs"
@@ -30,6 +39,7 @@ class Config:
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
     OSM_FEATURE_BATCH_SIZE: int = 250_000
+    OSM_COLUMNS_TO_KEEP: list[str] = field(default_factory=lambda: ["id", "geometry"])
 
     # FKB
     FKB_DIR: Path = DATASETS_PATH / "fkb"

@@ -1,11 +1,13 @@
-﻿from src.application.common import BuildingHandler
-from src.application.services import OpenStreetMapService
-from src.infra.persistence.context import duckdb_context
+﻿from dependency_injector.wiring import inject, Provide
 
-building_handler = BuildingHandler()
-osm_service = OpenStreetMapService(db_context=duckdb_context, building_handler=building_handler)
+from src.application.contracts import IOpenStreetMapService, IOpenStreetMapFileService
+from src.infra.infrastructure import Containers
 
 
-def extract_osm_buildings() -> None:
-    OpenStreetMapService.download_pbf()
+@inject
+def extract_osm_buildings(
+        osm_service: IOpenStreetMapService = Provide[Containers.open_street_map_service],
+        osm_file_service: IOpenStreetMapFileService = Provide[Containers.osm_file_service]
+) -> None:
+    osm_file_service.download_pbf()
     osm_service.create_osm_parquet_file()
