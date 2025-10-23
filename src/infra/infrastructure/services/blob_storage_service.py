@@ -1,7 +1,7 @@
 ﻿from io import BytesIO
 
-import geopandas as gpd
 from azure.storage.blob import BlobServiceClient, ContainerClient, PublicAccess
+from azure.core.exceptions import ResourceNotFoundError
 
 from src import Config
 from src.application.common import logger
@@ -43,5 +43,13 @@ class BlobStorageService(IBlobStorageService):
     def delete_file(self) -> bool:
         pass
 
-    def download_file(self) -> gpd.GeoDataFrame:
-        pass
+    def download_file(self, container_name: StorageContainer, blob_name: str) -> bytes | None:
+        try:
+            logger.info(f"Downloading bytes from blob '{blob_name}' from container '{container_name.value}'.")
+            container = self.get_container(container_name)
+            blob_client = container.get_blob_client(blob_name)
+            data = blob_client.download_blob().readall()
+            return data
+        except ResourceNotFoundError:
+            logger.warning(f"No blob found with name '{blob_name}' in container '{container_name.value}'.")
+            return None

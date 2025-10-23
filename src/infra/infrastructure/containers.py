@@ -1,7 +1,7 @@
 ﻿from dependency_injector import containers, providers
 
 from src.infra.infrastructure.services import (
-    BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService
+    BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService
 )
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context
 
@@ -13,6 +13,10 @@ class Containers(containers.DeclarativeContainer):
 
     file_path_service = providers.Singleton(
         FilePathService
+    )
+
+    bytes_service = providers.Singleton(
+        BytesService
     )
 
     blob_storage_service = providers.Singleton(
@@ -30,4 +34,10 @@ class Containers(containers.DeclarativeContainer):
         osm_file_service=osm_file_service,
         file_path_service=file_path_service,
         blob_storage_service=blob_storage_service
+    )
+
+    release_service = providers.Singleton(
+        ReleaseService,
+        blob_storage_service=blob_storage_service,
+        bytes_service=bytes_service
     )

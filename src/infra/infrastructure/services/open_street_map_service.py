@@ -30,7 +30,7 @@ class OpenStreetMapService(IOpenStreetMapService):
         self.__file_path_service = file_path_service
         self.__blob_storage_service = blob_storage_service
 
-    def create_osm_parquet_file(self) -> None:
+    def create_osm_parquet_file(self, release: str) -> None:
         if not Config.OSM_FILE_PATH.is_file():
             raise FileNotFoundError(
                 "Failed to find OSM-dataset. Ensure that it has been installed to the correct location"
@@ -50,13 +50,13 @@ class OpenStreetMapService(IOpenStreetMapService):
         while self.__osm_file_service.batches:
             building_batch = self.__osm_file_service.batches.pop(0)
             logger.info(f"Processing batch {batch_index + 1}/{total_batches}")
-            self.__stream_batch_to_storage_account(index=batch_index, batch=building_batch)
+            self.__stream_batch_to_storage_account(release=release, index=batch_index, batch=building_batch)
             batch_index += 1
 
         # self.__merge_temp_parquet_files() TODO: Remove this
         logger.info(f"Extraction completed")
 
-    def __stream_batch_to_storage_account(self, index: int, batch: list[dict]) -> None:
+    def __stream_batch_to_storage_account(self, release: str, index: int, batch: list[dict]) -> None:
         """
         Writes a batch to a temporary Parquet file using DuckDB.
         Each batch becomes its own file to avoid overwriting.
@@ -65,7 +65,7 @@ class OpenStreetMapService(IOpenStreetMapService):
         gdf = OpenStreetMapService.__create_geodataframe_from_batch(batch)
 
         storage_path = self.__file_path_service.create_storage_account_file_path(
-            release="2025-10-22.0",
+            release=release,
             theme=Theme.BUILDINGS,
             region="03",
             file_name=f"part_{index:05d}.parquet",
