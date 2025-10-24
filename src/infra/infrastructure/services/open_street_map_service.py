@@ -107,6 +107,17 @@ class OpenStreetMapService(IOpenStreetMapService):
     def __create_geodataframe_from_batch(batch: list[dict]) -> gpd.GeoDataFrame:
         dataframe = pd.DataFrame(batch)
 
+        existing_columns = Config.OSM_COLUMNS_TO_KEEP.intersection(dataframe.columns)
+        dataframe = dataframe[list(existing_columns)]
+
+        if "building" in dataframe.columns:
+            dataframe["building"] = dataframe["building"].where(
+                ~dataframe["building"].astype(str).str.lower().eq("yes"),
+                "unspecified"
+            )
+
+            dataframe = dataframe.rename(columns={"building": "type"})
+
         if "geometry" in dataframe.columns:
             dataframe = dataframe.rename(columns={"geometry": "geom_wkb"})
 

@@ -39,7 +39,7 @@ class Config:
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
     OSM_FEATURE_BATCH_SIZE: int = 250_000
-    OSM_COLUMNS_TO_KEEP: list[str] = field(default_factory=lambda: ["id", "geometry"])
+    OSM_COLUMNS_TO_KEEP: set[str] = field(default_factory=lambda: {"id", "geometry", "building", "ref:bygningsnr"})
 
     # FKB
     FKB_DIR: Path = DATASETS_PATH / "fkb"
