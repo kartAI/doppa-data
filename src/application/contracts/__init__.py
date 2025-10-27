@@ -6,3 +6,4 @@ from .release_service_interface import IReleaseService
 from .bytes_service_interface import IBytesService
 from .county_service_interface import ICountyService
 from .vector_service_interface import IVectorService
+from .stac_service_interface import IStacService
