@@ -15,8 +15,7 @@ class FilePathService(IFilePathService):
             **kwargs
     ) -> str:
         FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        kwarg_parts = "/".join([f"{key}={value}" for key, value in kwargs.items()]) if kwargs else ""
-        middle = f"{kwarg_parts}/" if kwarg_parts else ""
+        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) + '/' if kwargs else ''
         return f"release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"
 
     @staticmethod
