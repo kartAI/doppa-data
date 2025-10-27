@@ -78,12 +78,12 @@ class OpenStreetMapService(IOpenStreetMapService):
         Each partition becomes its own file to avoid overwriting.
         """
         for index, partition in enumerate(partitions):
-            storage_path = self.__file_path_service.create_storage_account_file_path(
+            storage_path = self.__file_path_service.create_dataset_blob_path(
                 release=release,
                 theme=Theme.BUILDINGS,
                 region=region,
                 file_name=f"part_{index:05d}.parquet",
-                prefix="osm",
+                dataset="osm"
             )
 
             with BytesIO() as buffer:

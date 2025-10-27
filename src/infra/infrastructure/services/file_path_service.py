@@ -6,16 +6,18 @@ from src.domain.enums import Theme
 
 
 class FilePathService(IFilePathService):
-    def create_storage_account_file_path(
+    def create_dataset_blob_path(
             self,
             release: str,
             theme: Theme,
             region: str,
             file_name: str,
-            prefix: str = None
+            **kwargs
     ) -> str:
         FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        return f"release/{release}/theme={theme.value}/region={region}/{file_name}" if prefix is None else f"{prefix}/release/{release}/theme={theme.value}/region={region}/{file_name}"
+        kwarg_parts = "/".join([f"{key}={value}" for key, value in kwargs.items()]) if kwargs else ""
+        middle = f"{kwarg_parts}/" if kwarg_parts else ""
+        return f"release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"
 
     @staticmethod
     def validate_file_path(release: str, region: str, file_name: str) -> None:
