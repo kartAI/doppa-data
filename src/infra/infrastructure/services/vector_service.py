@@ -1,6 +1,4 @@
-﻿import warnings
-
-import geopandas as gpd
+﻿import geopandas as gpd
 import pandas as pd
 from duckdb import DuckDBPyConnection
 
