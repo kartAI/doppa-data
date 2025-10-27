@@ -30,9 +30,14 @@ class ReleaseService(IReleaseService):
         if releases.empty:
             return None
 
-        latest_row = releases.loc[releases["date_created"].idxmax()]
+        releases_no_nan = releases.dropna(subset=["date_created"])
+        if releases_no_nan.empty:
+            return None
+
+        latest_row = releases_no_nan.loc[releases_no_nan["date_created"].idxmax()]
         release_str = latest_row.get("release", "")
         date_part, _, version_part = release_str.rpartition(".")
+
         if not date_part or not version_part:
             return None
 
