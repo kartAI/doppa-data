@@ -2,3 +2,7 @@
 from .open_street_map_service import OpenStreetMapService
 from .open_street_map_file_service import OpenStreetMapFileService
 from .file_path_service import FilePathService
+from .release_service import ReleaseService
+from .bytes_service import BytesService
+from .county_service import CountyService
+from .vector_service import VectorService

@@ -1,6 +1,6 @@
 ﻿import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -39,9 +39,15 @@ class Config:
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
     OSM_FEATURE_BATCH_SIZE: int = 250_000
-    OSM_COLUMNS_TO_KEEP: list[str] = field(default_factory=lambda: ["id", "geometry"])
+    OSM_COLUMNS_TO_KEEP: tuple[str, ...] = "id", "geometry", "building", "ref:bygningsnr"
 
     # FKB
     FKB_DIR: Path = DATASETS_PATH / "fkb"
     FKB_BUILDINGS_PARQUET_PATH: Path = FKB_DIR / "fkb_buildings.parquet"
     FKB_WGS84_BUILDINGS_PARQUET_PATH: Path = FKB_DIR / "fkb_wgs84_buildings.parquet"
+
+    # GEONORGE
+    GEONORGE_BASE_URL: str = "https://api.test.kartverket.no/kommuneinfo/v1/"
+
+    # METADATA
+    RELEASE_FILE_NAME = "releases.parquet"

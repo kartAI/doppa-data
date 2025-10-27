@@ -1,6 +1,6 @@
 ﻿from abc import ABC, abstractmethod
 
-import geopandas as gpd
+from azure.storage.blob import ContainerClient
 
 from src.domain.enums import StorageContainer
 
@@ -16,7 +16,7 @@ class IBlobStorageService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_container(self, container_name: StorageContainer) -> any:
+    def get_container(self, container_name: StorageContainer) -> ContainerClient:
         """
         Return an Azure Blob ContainerClient for the given storage container enum.
 
@@ -48,5 +48,12 @@ class IBlobStorageService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def download_file(self) -> gpd.GeoDataFrame:
+    def download_file(self, container_name: StorageContainer, blob_name: str) -> bytes | None:
+        """
+        Download bytes of file from Azure Blob Storage
+        :param container_name: Container enum to download from.
+        :param blob_name: Blob name to download.
+        :return: Bytes of the downloaded file.
+        :rtype: bytes
+        """
         raise NotImplementedError
