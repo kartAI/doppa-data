@@ -13,7 +13,6 @@ from src.domain.enums import EPSGCode
 class OpenStreetMapFileService(IOpenStreetMapFileService):
     __geom_factory: WKBFactory
     __buildings: list[dict]
-    # __batches: list[list[dict]]
     __batches: list[gpd.GeoDataFrame]
 
     def __init__(self):
@@ -55,8 +54,6 @@ class OpenStreetMapFileService(IOpenStreetMapFileService):
                 self.__buildings.append(feature)
 
                 if len(self.__buildings) >= Config.OSM_FEATURE_BATCH_SIZE:
-                    # self.batches.append(self.__buildings)
-
                     self.create_gdf_from_batch(self.__buildings)
                     self.__buildings = []
                     logger.info(f"Created batch #{len(self.batches)}")
@@ -78,8 +75,6 @@ class OpenStreetMapFileService(IOpenStreetMapFileService):
 
     def post_apply_file_cleanup(self):
         if self.__buildings:
-            # self.batches.append(self.__buildings)
-
             self.create_gdf_from_batch(self.__buildings)
             self.__buildings = []
             logger.info(f"Created batch #{len(self.batches)} in cleanup step")
