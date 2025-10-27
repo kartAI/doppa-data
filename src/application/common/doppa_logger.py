@@ -6,9 +6,8 @@ from src import Config
 
 warnings.filterwarnings(
     "ignore",
-    message="Geometry column does not contain geometry",
-    category=UserWarning,
-    module="geopandas"
+    message="Geometry column does not contain geometry\\.",
+    category=UserWarning
 )
 
 Config.LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
