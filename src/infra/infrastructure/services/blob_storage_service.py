@@ -1,7 +1,5 @@
-﻿from io import BytesIO
-
+﻿from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient, PublicAccess
-from azure.core.exceptions import ResourceNotFoundError
 
 from src import Config
 from src.application.common import logger
@@ -39,7 +37,7 @@ class BlobStorageService(IBlobStorageService):
         return blob_client.url
 
     def delete_file(self) -> bool:
-        pass
+        raise NotImplementedError
 
     def download_file(self, container_name: StorageContainer, blob_name: str) -> bytes | None:
         try:

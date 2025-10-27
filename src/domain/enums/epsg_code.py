@@ -1,7 +1,6 @@
-﻿from dataclasses import dataclass
+﻿from enum import Enum
 
 
-@dataclass(frozen=True)
-class EPSGCode:
-    WGS84: int = 4326
-    UTM32N: int = 25832
+class EPSGCode(Enum):
+    WGS84 = 4326
+    UTM32N = 25832

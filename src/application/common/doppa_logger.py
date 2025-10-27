@@ -1,7 +1,15 @@
 ﻿import logging
 import sys
+import warnings
 
 from src import Config
+
+warnings.filterwarnings(
+    "ignore",
+    message="Geometry column does not contain geometry",
+    category=UserWarning,
+    module="geopandas"
+)
 
 Config.LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
 

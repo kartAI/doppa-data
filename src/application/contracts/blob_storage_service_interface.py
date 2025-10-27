@@ -1,6 +1,5 @@
 ﻿from abc import ABC, abstractmethod
 
-import geopandas as gpd
 from azure.storage.blob import ContainerClient
 
 from src.domain.enums import StorageContainer

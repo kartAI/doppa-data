@@ -1,8 +1,9 @@
 ﻿from abc import ABC, abstractmethod
 
 from osmium import SimpleHandler
-from osmium.geom import WKBFactory
 from osmium.osm import Area
+
+import geopandas as gpd
 
 
 class IOpenStreetMapFileService(ABC, SimpleHandler):
@@ -14,27 +15,12 @@ class IOpenStreetMapFileService(ABC, SimpleHandler):
 
     @property
     @abstractmethod
-    def geom_factory(self) -> WKBFactory:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def buildings(self) -> list[dict]:
-        raise NotImplementedError
-
-    @buildings.setter
-    @abstractmethod
-    def buildings(self, buildings: list[dict]) -> None:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def batches(self) -> list[list[dict]]:
+    def batches(self) -> list[gpd.GeoDataFrame]:
         raise NotImplementedError
 
     @batches.setter
     @abstractmethod
-    def batches(self, batches: list[list[dict]]) -> None:
+    def batches(self, batches: list[gpd.GeoDataFrame]) -> None:
         raise NotImplementedError
 
     @abstractmethod

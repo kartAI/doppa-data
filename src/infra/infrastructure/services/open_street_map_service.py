@@ -1,13 +1,13 @@
 ﻿from io import BytesIO
 
 import geopandas as gpd
-import pandas as pd
 from duckdb import DuckDBPyConnection
 
 from src import Config
 from src.application.common import logger
 from src.application.contracts import (
-    IOpenStreetMapService, IOpenStreetMapFileService, IFilePathService, IBlobStorageService, ICountyService
+    IOpenStreetMapService, IOpenStreetMapFileService, IFilePathService, IBlobStorageService, ICountyService,
+    IVectorService
 )
 from src.domain.enums import Theme, StorageContainer, EPSGCode
 
@@ -18,6 +18,7 @@ class OpenStreetMapService(IOpenStreetMapService):
     __file_path_service: IFilePathService
     __blob_storage_service: IBlobStorageService
     __county_service: ICountyService
+    __vector_service: IVectorService
 
     def __init__(
             self,
@@ -26,12 +27,14 @@ class OpenStreetMapService(IOpenStreetMapService):
             file_path_service: IFilePathService,
             blob_storage_service: IBlobStorageService,
             county_service: ICountyService,
+            vector_service: IVectorService
     ):
         self.__db_context = db_context
         self.__osm_file_service = osm_file_service
         self.__file_path_service = file_path_service
         self.__blob_storage_service = blob_storage_service
         self.__county_service = county_service
+        self.__vector_service = vector_service
 
     def create_osm_parquet_file(self, release: str) -> None:
         if not Config.OSM_FILE_PATH.is_file():
@@ -48,88 +51,54 @@ class OpenStreetMapService(IOpenStreetMapService):
             f"Features extracted from the OSM-dataset. This resulted in {len(self.__osm_file_service.batches)} batches.")
         logger.info(f"Extracting features from OSM-dataset in batches of {Config.OSM_FEATURE_BATCH_SIZE} geometries.")
 
-        total_batches = len(self.__osm_file_service.batches)
-        batch_index = 0
-        while self.__osm_file_service.batches:
-            building_batch = self.__osm_file_service.batches.pop(0)
-            logger.info(f"Processing batch {batch_index + 1}/{total_batches}")
-            self.__stream_batch_to_storage_account(release=release, index=batch_index, batch=building_batch)
-            batch_index += 1
+        county_ids = self.__county_service.get_county_ids()
+        for county_id in county_ids:
+            logger.info(f"Processing county '{county_id}'")
+            county_wkb = self.__county_service.get_county_wkb_by_id(county_id=county_id, epsg_code=EPSGCode.WGS84)
+            county_gdf = self.__vector_service.clip_dataframes_to_wkb(
+                self.__osm_file_service.batches,
+                county_wkb,
+                epsg_code=EPSGCode.WGS84
+            )
+
+            logger.info(f"County '{county_id}' has {len(county_gdf)} features after clipping.")
+
+            county_partitions = self.__vector_service.partition_dataframe(
+                dataframe=county_gdf,
+                batch_size=Config.OSM_FEATURE_BATCH_SIZE
+            )
+
+            self.upload(release=release, region=county_id, partitions=county_partitions)
 
         logger.info(f"Extraction completed")
 
-    def __stream_batch_to_storage_account(self, release: str, index: int, batch: list[dict]) -> None:
+    def upload(self, release: str, region: str, partitions: list[gpd.GeoDataFrame]) -> None:
         """
-        Writes a batch to a temporary Parquet file using DuckDB.
-        Each batch becomes its own file to avoid overwriting.
+        Writes a partition to a temporary Parquet file using DuckDB.
+        Each partition becomes its own file to avoid overwriting.
         """
-        buffer = BytesIO()
-        gdf = OpenStreetMapService.__create_geodataframe_from_batch(batch)
-
-        storage_path = self.__file_path_service.create_storage_account_file_path(
-            release=release,
-            theme=Theme.BUILDINGS,
-            region="03",
-            file_name=f"part_{index:05d}.parquet",
-            prefix="osm",
-        )
-
-        gdf.to_parquet(
-            buffer,
-            index=False,
-            compression="zstd",
-            schema_version="1.1.0"
-        )
-
-        buffer.seek(0)
-        self.__blob_storage_service.upload_file(
-            container_name=StorageContainer.RAW,
-            blob_name=storage_path,
-            data=buffer.getvalue()
-        )
-
-    def __merge_temp_parquet_files(self) -> None:
-        """
-        Merges all batch parquet files into a single Parquet dataset.
-        """
-        logger.info("Merging temp-parquet files")
-
-        self.__db_context.execute(f"""
-        COPY (
-            SELECT *
-            FROM read_parquet('{Config.OSM_TEMP_PARQUET_DIR}/*.parquet', union_by_name=true)
-            WHERE geometry IS NOT NULL
-        )
-        TO '{Config.OSM_BUILDINGS_PARQUET_PATH}' (FORMAT PARQUET, COMPRESSION ZSTD)
-        """)
-
-    @staticmethod
-    def __create_geodataframe_from_batch(batch: list[dict]) -> gpd.GeoDataFrame:
-        dataframe = pd.DataFrame(batch)
-
-        existing_columns = Config.OSM_COLUMNS_TO_KEEP.intersection(dataframe.columns)
-        dataframe = dataframe[list(existing_columns)]
-
-        if "building" in dataframe.columns:
-            dataframe["building"] = dataframe["building"].where(
-                ~dataframe["building"].astype(str).str.lower().eq("yes"),
-                "unspecified"
+        for index, partition in enumerate(partitions):
+            storage_path = self.__file_path_service.create_storage_account_file_path(
+                release=release,
+                theme=Theme.BUILDINGS,
+                region=region,
+                file_name=f"part_{index:05d}.parquet",
+                prefix="osm",
             )
 
-            dataframe = dataframe.rename(columns={"building": "type"})
+            with BytesIO() as buffer:
+                partition.to_parquet(
+                    buffer,
+                    index=False,
+                    compression="snappy",
+                    geometry_encoding="WKB",
+                    schema_version="1.1.0",
+                    write_covering_bbox=True
+                )
 
-        if "geometry" in dataframe.columns:
-            dataframe = dataframe.rename(columns={"geometry": "geom_wkb"})
-
-            dataframe["geom_wkb"] = dataframe["geom_wkb"].apply(
-                lambda x: bytes.fromhex(x) if isinstance(x, str) and x[:4] == "0106" else x
-            )
-
-        geometries = gpd.GeoSeries.from_wkb(dataframe["geom_wkb"])
-        gdf = gpd.GeoDataFrame(
-            dataframe.drop(columns=["geom_wkb"]),
-            geometry=geometries,
-            crs="EPSG:4326"
-        )
-
-        return gdf
+                buffer.seek(0)
+                self.__blob_storage_service.upload_file(
+                    container_name=StorageContainer.RAW,
+                    blob_name=storage_path,
+                    data=buffer.getvalue()
+                )

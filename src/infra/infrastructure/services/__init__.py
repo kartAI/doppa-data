@@ -5,3 +5,4 @@ from .file_path_service import FilePathService
 from .release_service import ReleaseService
 from .bytes_service import BytesService
 from .county_service import CountyService
+from .vector_service import VectorService
