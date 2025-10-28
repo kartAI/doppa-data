@@ -48,4 +48,4 @@ class FilePathService(IFilePathService):
 
     @staticmethod
     def create_blob_path(self, *args) -> str:
-        pass
+        return "/".join(args)

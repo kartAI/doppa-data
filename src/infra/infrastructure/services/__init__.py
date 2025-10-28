@@ -7,3 +7,4 @@ from .bytes_service import BytesService
 from .county_service import CountyService
 from .vector_service import VectorService
 from .stac_service import StacService
+from .stac_io_service import StacIOService

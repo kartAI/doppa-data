@@ -2,14 +2,13 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-import pystac
 from pystac import Catalog, Collection, Item, Asset, MediaType
 
 from src import Config
 from src.domain.enums import DataSource, Theme, BoundingBox
 
 
-class IStacService(pystac.StacIO, ABC):
+class IStacService(ABC):
     @abstractmethod
     def get_catalog(self, path: str) -> Catalog | None:
         """
@@ -114,12 +113,21 @@ class IStacService(pystac.StacIO, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def create_release_stac_catalog(self, root_catalog: Catalog, release: str) -> Catalog:
+    def create_release_catalog(self, root_catalog: Catalog, release: str) -> Catalog:
         """
         Create a STAC catalog for a specific release and assigns it to the root catalog. If a catalog already exists for the release, it is returned instead.
         :param root_catalog: Root STAC catalog to which the release catalog will be added.
         :param release: Release identifier on the format "YYYY-MM-DD.x"
         :return: The release catalog associated with the root catalog.
         :rtype: Catalog
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_catalog(self, catalog: Catalog) -> None:
+        """
+        Saves catalog to its self href location
+        :param catalog:
+        :return:
         """
         raise NotImplementedError

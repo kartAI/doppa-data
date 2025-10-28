@@ -54,3 +54,4 @@ class Config:
 
     # STAC
     STAC_LICENSE = "CC-BY-4.0"
+    STAC_STORAGE_CONTAINER = "https://doppablobstorage.blob.core.windows.net/stac"

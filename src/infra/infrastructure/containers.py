@@ -1,8 +1,9 @@
 ﻿from dependency_injector import containers, providers
+from pystac import StacIO
 
 from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
-    CountyService, VectorService, StacService
+    CountyService, VectorService, StacService, StacIOService
 )
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context
 
@@ -39,6 +40,11 @@ class Containers(containers.DeclarativeContainer):
         OpenStreetMapFileService
     )
 
+    stac_io_service = providers.Singleton(
+        StacIOService,
+        blob_storage_service=blob_storage_service
+    )
+
     stac_service = providers.Singleton(
         StacService,
         blob_storage_service=blob_storage_service,
@@ -61,3 +67,5 @@ class Containers(containers.DeclarativeContainer):
         vector_service=vector_service,
         stac_service=stac_service
     )
+
+    StacIO.set_default(stac_io_service)
