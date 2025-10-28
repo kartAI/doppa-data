@@ -1,0 +1,121 @@
+{
+  "type": "Collection",
+  "id": "buildings",
+  "stac_version": "1.1.0",
+  "description": "Collection of buildings data for doppa's open map data release 2025-10-28.6.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/catalog.json",
+      "type": "application/json",
+      "title": "doppa STAC Root Catalog for Norwegian Open Map Data"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-15-osm/region-15-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-46-osm/region-46-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-11-osm/region-11-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-39-osm/region-39-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-18-osm/region-18-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-55-osm/region-55-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-56-osm/region-56-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-03-osm/region-03-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-34-osm/region-34-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-50-osm/region-50-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-33-osm/region-33-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-40-osm/region-40-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-42-osm/region-42-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-31-osm/region-31-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "item",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/region-32-osm/region-32-osm.json",
+      "type": "application/geo+json"
+    },
+    {
+      "rel": "parent",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/catalog.json",
+      "type": "application/json",
+      "title": "doppa STAC Catalog for Release 2025-10-28.6"
+    },
+    {
+      "rel": "self",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/collection.json",
+      "type": "application/json"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          4.0,
+          57.9,
+          31.3,
+          71.2
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "license": "CC-BY-4.0"
+}

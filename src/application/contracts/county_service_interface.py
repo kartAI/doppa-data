@@ -1,4 +1,5 @@
 ﻿from abc import ABC, abstractmethod
+from typing import Any
 
 from src.domain.enums import EPSGCode
 
@@ -9,5 +10,5 @@ class ICountyService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_county_wkb_by_id(self, county_id: str, epsg_code: EPSGCode) -> bytes:
+    def get_county_wkb_by_id(self, county_id: str, epsg_code: EPSGCode) -> tuple[bytes, dict[str, Any]]:
         raise NotImplementedError

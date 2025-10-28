@@ -51,3 +51,6 @@ class Config:
 
     # METADATA
     RELEASE_FILE_NAME = "releases.parquet"
+
+    # STAC
+    STAC_LICENSE = "CC-BY-4.0"

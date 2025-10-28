@@ -1,0 +1,31 @@
+{
+  "type": "Catalog",
+  "id": "2025-10-28.6",
+  "stac_version": "1.1.0",
+  "description": "The STAC catalog for doppa's open map data release 2025-10-28.6.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/catalog.json",
+      "type": "application/json",
+      "title": "doppa STAC Root Catalog for Norwegian Open Map Data"
+    },
+    {
+      "rel": "child",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/buildings/collection.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "parent",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/catalog.json",
+      "type": "application/json",
+      "title": "doppa STAC Root Catalog for Norwegian Open Map Data"
+    },
+    {
+      "rel": "self",
+      "href": "C:/Users/Jathavaan Shankarr/Code/NTNU/master-thesis/doppa-data/datasets/2025-10-28.6/catalog.json",
+      "type": "application/json"
+    }
+  ],
+  "title": "doppa STAC Catalog for Release 2025-10-28.6"
+}

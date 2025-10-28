@@ -1,4 +1,6 @@
-﻿import requests
+﻿from typing import Any
+
+import requests
 import shapely
 from duckdb import DuckDBPyConnection
 from shapely.geometry import shape
@@ -20,12 +22,20 @@ class CountyService(ICountyService):
         data = response.json()
         return [item["fylkesnummer"] for item in data]
 
-    def get_county_wkb_by_id(self, county_id: str, epsg_code: EPSGCode) -> bytes:
+    def get_county_wkb_by_id(self, county_id: str, epsg_code: EPSGCode) -> tuple[bytes, dict[str, Any]]:
         response = requests.get(
             f"{Config.GEONORGE_BASE_URL}/fylker/{county_id}/omrade?utkoordsys={epsg_code.value}"
         )
         response.raise_for_status()
+
         data = response.json()
         geom_data = data["omrade"]
         geom = shape(geom_data)
-        return shapely.to_wkb(geom)
+        wkb_data = shapely.to_wkb(geom)
+
+        geo_json = {
+            "type": geom_data["type"],
+            "coordinates": geom_data["coordinates"]
+        }
+
+        return wkb_data, geo_json

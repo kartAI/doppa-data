@@ -13,7 +13,7 @@ from src.domain.enums import EPSGCode
 class OpenStreetMapFileService(IOpenStreetMapFileService):
     __geom_factory: WKBFactory
     __buildings: list[dict]
-    __batches: list[gpd.GeoDataFrame]
+    __batches: list[gpd.GeoDataFrame]  # TODO: Rename this to `building_batches`
 
     def __init__(self):
         super().__init__()

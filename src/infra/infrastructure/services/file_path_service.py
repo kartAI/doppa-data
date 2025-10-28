@@ -6,6 +6,7 @@ from src.domain.enums import Theme
 
 
 class FilePathService(IFilePathService):
+
     def create_dataset_blob_path(
             self,
             release: str,
@@ -39,3 +40,12 @@ class FilePathService(IFilePathService):
 
         if not re.fullmatch(r"part_\d{5,}\.parquet", file_name):
             raise AssertionError(f"invalid file_name '{file_name}': expected format 'part_00000.parquet'")
+
+    @staticmethod
+    def get_blob_file_name(file_path: str) -> str:
+        file_name = file_path.split("/")[-1]
+        return file_name.split(".")[0]
+
+    @staticmethod
+    def create_blob_path(self, *args) -> str:
+        pass

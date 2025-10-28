@@ -40,7 +40,9 @@ class Containers(containers.DeclarativeContainer):
     )
 
     stac_service = providers.Singleton(
-        StacService
+        StacService,
+        blob_storage_service=blob_storage_service,
+        file_path_service=file_path_service
     )
 
     release_service = providers.Singleton(
@@ -56,5 +58,6 @@ class Containers(containers.DeclarativeContainer):
         file_path_service=file_path_service,
         blob_storage_service=blob_storage_service,
         county_service=county_service,
-        vector_service=vector_service
+        vector_service=vector_service,
+        stac_service=stac_service
     )
