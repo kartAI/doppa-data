@@ -16,6 +16,13 @@ class StacIOService(IStacIOService):
     def write_text(self, dest: HREF, txt: str, *args: Any, **kwargs: Any) -> None:
         data = txt.encode(encoding="utf-8")
         path = self.strip_path_stem(dest)
+
+        if path != "catalog.json" and self.__blob_storage_service.is_blob_in_storage_container(
+                container_name=StorageContainer.STAC,
+                blob_name=path
+        ):
+            return
+
         self.__blob_storage_service.upload_file(container_name=StorageContainer.STAC, blob_name=path, data=data)
 
     def read_text(self, source: HREF, *args: Any, **kwargs: Any) -> str:
@@ -27,7 +34,6 @@ class StacIOService(IStacIOService):
             raise FileNotFoundError(f"File not found in blob storage: {path}")
 
         return data.decode(encoding="utf-8")
-        # return super().read_text(source=source, *args, **kwargs)
 
     def strip_path_stem(self, path: str) -> str:
         return path.split("stac/", 1)[1]

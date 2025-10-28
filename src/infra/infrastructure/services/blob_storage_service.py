@@ -49,3 +49,8 @@ class BlobStorageService(IBlobStorageService):
         except ResourceNotFoundError:
             logger.warning(f"No blob found with name '{blob_name}' in container '{container_name.value}'.")
             return None
+
+    def is_blob_in_storage_container(self, container_name: StorageContainer, blob_name: str) -> bool:
+        container = self.get_container(container_name)
+        blob_client = container.get_blob_client(blob_name)
+        return blob_client.exists()

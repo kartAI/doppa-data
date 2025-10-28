@@ -57,3 +57,14 @@ class IBlobStorageService(ABC):
         :rtype: bytes
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def is_blob_in_storage_container(self, container_name: StorageContainer, blob_name: str) -> bool:
+        """
+        Check if a file exists in the specified container.
+        :param container_name: Container enum to check in.
+        :param blob_name: Blob name to check for.
+        :return: True if the file exists, False otherwise.
+        :rtype: bool
+        """
+        raise NotImplementedError

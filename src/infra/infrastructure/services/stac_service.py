@@ -125,7 +125,7 @@ class StacService(IStacService):
 
         if release_catalog is None:
             release_catalog = self.create_catalog(
-                catalog_id=f"{release}",
+                catalog_id=f"release/{release}",
                 title=f"doppa STAC Catalog for release {release}",
                 description=f"The STAC catalog for doppa's open map data release {release}.",
             )
