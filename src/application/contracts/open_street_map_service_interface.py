@@ -27,6 +27,7 @@ class IOpenStreetMapService(ABC):
         """
         Clips building batches to county polygon and partition the clipped polygon. Uploads each partition to blob storage.
         :param release_catalog: STAC catalog for the current release
+        :param theme_collection: STAC collection for the building theme
         :param region: Two digit county identifier (e.g. "03" for Oslo)
         :param release: Release identifier on the format "YYYY-MM-DD.x"
         :param buildings: List of building GeoDataFrames to process
