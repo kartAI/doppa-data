@@ -28,16 +28,6 @@ class StacService(IStacService):
             return catalog
         except FileNotFoundError:
             return None
-        # json_bytes = self.__blob_storage_service.download_file(
-        #     container_name=StorageContainer.STAC,
-        #     blob_name="catalog.json"
-        # )
-        #
-        # if json_bytes is None:
-        #     return None
-        #
-        # json_dict = json.loads(json_bytes)
-        return Catalog.from_dict(d=json_dict)
 
     def get_catalog_root(self) -> Catalog:
         catalog = self.get_catalog("catalog.json")
