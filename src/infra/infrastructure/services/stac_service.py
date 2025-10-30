@@ -87,9 +87,11 @@ class StacService(IStacService):
     def create_asset(
             self,
             asset_path: str,
-            roles: list[str] | None = ["data"],
+            roles: list[str] | None = None,
             media_type: str | None = MediaType.PARQUET
     ) -> Asset:
+        if roles is None:
+            roles = ["data"]
         return Asset(href=asset_path, media_type=media_type, roles=roles)
 
     def add_asset_to_item(self, item: Item, key: str, asset: Asset) -> Item:
