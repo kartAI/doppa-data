@@ -47,5 +47,5 @@ class FilePathService(IFilePathService):
         return file_name.split(".")[0]
 
     @staticmethod
-    def create_blob_path(self, *args) -> str:
+    def create_blob_path(*args) -> str:
         return "/".join(args)
