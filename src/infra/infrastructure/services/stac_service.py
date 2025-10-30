@@ -1,13 +1,11 @@
 ﻿import datetime
-import json
 from typing import Any
 
-from pystac import Catalog, Collection, Item, Asset, MediaType, SpatialExtent, TemporalExtent, Extent, CatalogType, \
-    StacIO
+from pystac import Catalog, Collection, Item, Asset, MediaType, SpatialExtent, TemporalExtent, Extent, CatalogType
 
 from src import Config
-from src.application.contracts import IStacService, IBlobStorageService, IFilePathService, IStacIOService
-from src.domain.enums import StorageContainer, DataSource, Theme, BoundingBox
+from src.application.contracts import IStacService, IBlobStorageService, IFilePathService
+from src.domain.enums import DataSource, Theme, BoundingBox
 
 
 class StacService(IStacService):
