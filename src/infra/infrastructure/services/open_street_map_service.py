@@ -111,7 +111,14 @@ class OpenStreetMapService(IOpenStreetMapService):
             },
         )
 
-        assets_paths = self.upload(release=release, region=region, partitions=county_partitions)
+        # assets_paths = self.upload(release=release, region=region, partitions=county_partitions)
+        assets_paths = self.__blob_storage_service.upload_blobs_as_parquet(
+            release=release,
+            theme=Theme.BUILDINGS,
+            region=region,
+            partitions=county_partitions,
+            dataset="osm"
+        )
 
         for asset_path in assets_paths:
             asset = self.__stac_service.create_asset(asset_path=asset_path)
@@ -131,7 +138,7 @@ class OpenStreetMapService(IOpenStreetMapService):
                 theme=Theme.BUILDINGS,
                 region=region,
                 file_name=f"part_{index:05d}.parquet",
-                dataset="osm"
+                dataset=DataSource.FKB.value
             )
 
             with BytesIO() as buffer:

@@ -2,16 +2,35 @@
 import pandas as pd
 import geopandas as gpd
 
+from src.domain.enums import EPSGCode
+
 
 class IBytesService(ABC):
     @staticmethod
     @abstractmethod
-    def convert_bytes_to_df(data: bytes) -> pd.DataFrame:
+    def convert_parquet_bytes_to_df(data: bytes) -> pd.DataFrame:
         """
         Converts a byte array to a pandas DataFrame. This assumes that the files a parquet file
         :param data: Byte array of the parquet file. Often downloaded from blob storage.
         :return: Dataframe representation of the byte array.
         :rtype: pd.DataFrame
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def convert_fgb_bytes_to_gdf(
+            layers: list[bytes],
+            crs_in: EPSGCode = EPSGCode.WGS84,
+            crs_out: EPSGCode = EPSGCode.WGS84
+    ) -> gpd.GeoDataFrame:
+        """
+        Converts a byte array to a GeoPandas GeoDataFrame. This assumes that the files are in FlatGeobuf format.
+        :param layers: Layers in the FGB file as byte arrays.
+        :param crs_out: Coordinate reference system to convert the GeoDataFrame to. Default is WGS84.
+        :param crs_in: Coordinate reference system of the input GeoDataFrame.
+        :return: GeoDataFrame representation of the byte array.
+        :rtype: gpd.GeoDataFrame
         """
         raise NotImplementedError
 
