@@ -129,36 +129,3 @@ class OpenStreetMapService(IOpenStreetMapService):
             )
 
         self.__stac_service.add_item_to_collection(theme_collection, region_item)
-
-    def upload(self, release: str, region: str, partitions: list[gpd.GeoDataFrame]) -> list[str]:
-        asset_paths = []
-        for index, partition in enumerate(partitions):
-            storage_path = self.__file_path_service.create_dataset_blob_path(
-                release=release,
-                theme=Theme.BUILDINGS,
-                region=region,
-                file_name=f"part_{index:05d}.parquet",
-                dataset=DataSource.FKB.value
-            )
-
-            with BytesIO() as buffer:
-                partition.to_parquet(
-                    buffer,
-                    index=False,
-                    compression="snappy",
-                    geometry_encoding="WKB",
-                    schema_version="1.1.0",
-                    write_covering_bbox=True
-                )
-
-                buffer.seek(0)
-
-                asset_file_path = self.__blob_storage_service.upload_file(
-                    container_name=StorageContainer.RAW,
-                    blob_name=storage_path,
-                    data=buffer.getvalue()
-                )
-
-                asset_paths.append(asset_file_path)
-
-        return asset_paths

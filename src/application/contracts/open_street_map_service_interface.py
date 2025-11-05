@@ -34,15 +34,3 @@ class IOpenStreetMapService(ABC):
         :return: None
         """
         raise NotImplementedError
-
-    @abstractmethod
-    def upload(self, release: str, region: str, partitions: list[gpd.GeoDataFrame]) -> list[str]:
-        """
-        Uploads each partitioned GeoDataFrame to blob storage as Parquet files.
-        :param release: Release identifier on the format "YYYY-MM-DD.x"
-        :param region: Two digit county identifier (e.g. "03" for Oslo)
-        :param partitions: List of partitioned GeoDataFrames to upload
-        :return: Paths where the partitions were uploaded
-        :rtype: list[str]
-        """
-        raise NotImplementedError
