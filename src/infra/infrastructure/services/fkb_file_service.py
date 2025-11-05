@@ -12,7 +12,7 @@ class FKBFileService(IFKBFileService):
         response.raise_for_status()
         return response.content
 
-    def create_dataframe_from_zip_bytes(self, zip_bytes: list[bytes]) -> gdf.GeoDataFrame:
+    def create_dataframe_from_zip_bytes(self, zip_bytes: bytes) -> gdf.GeoDataFrame:
         raise NotImplementedError
 
     def open_fgb_file(self, path: str, *layers: str) -> gdf.GeoDataFrame:

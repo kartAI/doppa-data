@@ -14,7 +14,7 @@ class ZipService(IZipService):
                 for layer_path in layer_paths:
                     with zip_file.open(layer_path) as f:
                         current_layer_bytes = f.read()
-                        layer_bytes.append(BytesIO(current_layer_bytes).getvalue())
+                        layer_bytes.append(current_layer_bytes)
             else:
                 for layer in layers:
                     layer_name = f"fgb/{layer}.fgb"
@@ -25,6 +25,6 @@ class ZipService(IZipService):
                     layer_path = layer_path_matches[0]
                     with zip_file.open(layer_path) as f:
                         current_layer_bytes = f.read()
-                        layer_bytes.append(BytesIO(current_layer_bytes).getvalue())
+                        layer_bytes.append(current_layer_bytes)
 
         return layer_bytes
