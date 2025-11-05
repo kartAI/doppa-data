@@ -26,7 +26,7 @@ class ReleaseService(IReleaseService):
         if release_file_bytes is None:
             return None
 
-        releases = self.__bytes_service.convert_bytes_to_df(release_file_bytes)
+        releases = self.__bytes_service.convert_parquet_bytes_to_df(release_file_bytes)
         if releases.empty:
             return None
 

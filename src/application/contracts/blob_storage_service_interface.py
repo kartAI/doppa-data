@@ -1,8 +1,9 @@
 ﻿from abc import ABC, abstractmethod
 
+import geopandas as gpd
 from azure.storage.blob import ContainerClient
 
-from src.domain.enums import StorageContainer
+from src.domain.enums import StorageContainer, Theme
 
 
 class IBlobStorageService(ABC):
@@ -28,9 +29,9 @@ class IBlobStorageService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def upload_file(self, container_name: StorageContainer, blob_name: str, data: bytes) -> str:
+    def upload_file(self, container_name: StorageContainer, blob_name: str, data: bytes) -> str | None:
         """
-        Upload binary data to a blob and return its URL.
+        Upload binary data to a blob and return its URL. Does not upload empty file
 
         :param container_name: Enum identifying the target container.
         :type container_name: StorageContainer
@@ -38,7 +39,7 @@ class IBlobStorageService(ABC):
         :type blob_name: str
         :param data: Binary content to upload.
         :type data: bytes
-        :return: URL of the uploaded blob.
+        :return: URL of the uploaded blob or None if the file was empty
         :rtype: str
         """
         raise NotImplementedError
@@ -66,5 +67,23 @@ class IBlobStorageService(ABC):
         :param blob_name: Blob name to check for.
         :return: True if the file exists, False otherwise.
         :rtype: bool
+        """
+        raise NotImplementedError
+
+    def upload_blobs_as_parquet(
+            self,
+            release: str,
+            theme: Theme,
+            region: str,
+            partitions: list[gpd.GeoDataFrame],
+            **kwargs: str
+    ) -> list[str]:
+        """
+        Upload multiple GeoDataFrame partitions as blobs to storage as Parquet files
+        :param release: Release version on the format 'yyyy-mm-dd.x'
+        :param theme: Theme enum representing the data theme.
+        :param region: County ID, e.g. '03' for Oslo.
+        :param partitions: List of GeoDataFrame partitions to upload.
+        :return: List of URLs of the uploaded blobs.
         """
         raise NotImplementedError

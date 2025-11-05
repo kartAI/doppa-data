@@ -8,3 +8,6 @@ from .county_service import CountyService
 from .vector_service import VectorService
 from .stac_service import StacService
 from .stac_io_service import StacIOService
+from .zip_service import ZipService
+from .fkb_file_service import FKBFileService
+from .fkb_service import FKBService

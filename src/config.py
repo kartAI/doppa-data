@@ -55,3 +55,19 @@ class Config:
     # STAC
     STAC_LICENSE = "CC-BY-4.0"
     STAC_STORAGE_CONTAINER = "https://doppablobstorage.blob.core.windows.net/stac"
+
+    # FKB
+    HUGGING_FACE_API_TOKEN: str = os.getenv("HUGGING_FACE_API_TOKEN")
+    HUGGING_FACE_UTM32N_PATHS: tuple[str, ...] = (
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Bergen.zip",
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Kristiansand.zip",
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Sandvika.zip",
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Verdal.zip"
+    )
+    HUGGING_FACE_UTM33N_PATHS: tuple[str, ...] = (
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Mo_i_Rana.zip",
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Tromsdalen.zip"
+    )
+    FKB_LAYERS: tuple[str, ...] = (
+        "Bygning", "AnnenBygning", "Takkant", "Bygningsdelelinje", "FiktivBygningsavgrensning"
+    )
