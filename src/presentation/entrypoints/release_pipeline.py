@@ -58,7 +58,7 @@ def run_pipeline() -> None:
         )
 
         add_assets_to_item(osm_region_item, osm_blob_paths)
-        add_assets_to_item(fkb_region_item, osm_blob_paths)
+        add_assets_to_item(fkb_region_item, fkb_blob_paths)
 
     save_catalog(catalog=root_catalog)
 
