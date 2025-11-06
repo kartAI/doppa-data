@@ -91,7 +91,7 @@ class IStacService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def add_asset_to_item(self, item: Item, key: str, asset: Asset) -> Item:
+    def add_asset_to_item(self, item: Item, key: str, asset: Asset) -> None:
         """
         Adds an asset to an item
         :param key: Asset key to use when adding the asset to the item

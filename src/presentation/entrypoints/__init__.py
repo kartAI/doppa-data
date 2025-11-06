@@ -1,1 +1,1 @@
-﻿from .open_street_map_pipeline import extract_osm_buildings
+﻿from .release_pipeline import run_pipeline

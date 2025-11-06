@@ -2,14 +2,14 @@
 import pandas as pd
 import pyarrow as pa
 from duckdb import DuckDBPyConnection
-from pystac import Catalog
 from shapely import from_wkb
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IFKBService, IFKBFileService, IZipService, IBytesService, ICountyService, \
-    IVectorService, IBlobStorageService
-from src.domain.enums import EPSGCode, Theme, DataSource
+from src.application.contracts import (
+    IFKBService, IFKBFileService, IZipService, IBytesService
+)
+from src.domain.enums import EPSGCode
 
 
 class FKBService(IFKBService):
@@ -17,9 +17,6 @@ class FKBService(IFKBService):
     __zip_service: IZipService
     __fkb_file_service: IFKBFileService
     __bytes_service: IBytesService
-    __county_service: ICountyService
-    __vector_service: IVectorService
-    __blob_storage_service: IBlobStorageService
 
     def __init__(
             self,
@@ -27,53 +24,11 @@ class FKBService(IFKBService):
             zip_service: IZipService,
             fkb_file_service: IFKBFileService,
             bytes_service: IBytesService,
-            county_service: ICountyService,
-            vector_service: IVectorService,
-            blob_storage_service: IBlobStorageService
     ) -> None:
         self.__db_context = db_context
         self.__zip_service = zip_service
         self.__fkb_file_service = fkb_file_service
         self.__bytes_service = bytes_service
-        self.__county_service = county_service
-        self.__vector_service = vector_service
-        self.__blob_storage_service = blob_storage_service
-
-    def process_fkb_dataset(self, catalog: Catalog, release: str) -> None:
-        fkb_dataset = self.extract_fkb_data()
-        building_polygons = self.create_building_polygons(gdf=fkb_dataset, crs=EPSGCode.WGS84)
-
-        county_ids = self.__county_service.get_county_ids()
-        for region in county_ids:
-            county_wkb, county_geojson = self.__county_service.get_county_wkb_by_id(
-                county_id=region,
-                epsg_code=EPSGCode.WGS84
-            )
-
-            county_gdf = self.__vector_service.clip_dataframes_to_wkb(
-                dataframes=[building_polygons],
-                wkb=county_wkb,
-                epsg_code=EPSGCode.WGS84
-            )
-
-            if county_gdf.empty:
-                logger.info(f"County '{region}' has no features after clipping. Skipping upload.")
-                continue
-
-            logger.info(f"County '{region}' has {len(county_gdf)} features after clipping.")
-
-            county_partitions = self.__vector_service.partition_dataframe(
-                dataframe=county_gdf,
-                batch_size=Config.OSM_FEATURE_BATCH_SIZE
-            )
-
-            assets_paths = self.__blob_storage_service.upload_blobs_as_parquet(
-                release=release,
-                theme=Theme.BUILDINGS,
-                region=region,
-                partitions=county_partitions,
-                dataset=DataSource.FKB.value
-            )
 
     def extract_fkb_data(self) -> gpd.GeoDataFrame:
         logger.info(f"Starting extraction of FKB data from Hugging Face.")

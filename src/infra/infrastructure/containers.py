@@ -60,13 +60,7 @@ class Containers(containers.DeclarativeContainer):
 
     open_street_map_service = providers.Singleton(
         OpenStreetMapService,
-        db_context=db_context,
         osm_file_service=osm_file_service,
-        file_path_service=file_path_service,
-        blob_storage_service=blob_storage_service,
-        county_service=county_service,
-        vector_service=vector_service,
-        stac_service=stac_service
     )
 
     zip_service = providers.Singleton(
@@ -83,9 +77,6 @@ class Containers(containers.DeclarativeContainer):
         zip_service=zip_service,
         fkb_file_service=fkb_file_service,
         bytes_service=bytes_service,
-        county_service=county_service,
-        vector_service=vector_service,
-        blob_storage_service=blob_storage_service
     )
 
     StacIO.set_default(stac_io_service)
