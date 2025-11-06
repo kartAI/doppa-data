@@ -209,5 +209,5 @@ def add_assets_to_item(
 
 
 @inject
-def save_catalog(catalog: Catalog, stac_service: IStacService = Provide[Containers.stac_service]):
+def save_catalog(catalog: Catalog, stac_service: IStacService = Provide[Containers.stac_service]) -> None:
     stac_service.save_catalog(catalog)
