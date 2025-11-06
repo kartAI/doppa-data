@@ -92,9 +92,8 @@ class StacService(IStacService):
             roles = ["data"]
         return Asset(href=asset_path, media_type=media_type, roles=roles)
 
-    def add_asset_to_item(self, item: Item, key: str, asset: Asset) -> Item:
+    def add_asset_to_item(self, item: Item, key: str, asset: Asset) -> None:
         item.add_asset(key=key, asset=asset)
-        return item
 
     def add_collections_to_catalog(self, catalog: Catalog, *collections: Collection) -> Catalog:
         raise NotImplementedError
