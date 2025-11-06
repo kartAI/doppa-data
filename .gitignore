@@ -200,6 +200,7 @@ __marimo__/
 
 # DuckDB
 /.tmp
+identifier.db
 
 # Ignore all datasets
 datasets/**/*.pbf
