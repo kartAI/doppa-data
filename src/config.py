@@ -38,7 +38,6 @@ class Config:
     OSM_BUILDINGS_CLEANED_PARQUET_PATH: Path = DATASETS_PATH / "osm" / "cleaned_buildings.parquet"
     OSM_PBF_URL: str = "https://download.geofabrik.de/europe/norway-latest.osm.pbf"
     OSM_STREAMING_CHUNK_SIZE: int = 8192
-    OSM_FEATURE_BATCH_SIZE: int = 250_000
     OSM_COLUMNS_TO_KEEP: tuple[str, ...] = "id", "geometry", "building", "ref:bygningsnr"
 
     # FKB
@@ -71,3 +70,7 @@ class Config:
     FKB_LAYERS: tuple[str, ...] = (
         "Bygning", "AnnenBygning", "Takkant", "Bygningsdelelinje", "FiktivBygningsavgrensning"
     )
+
+    # PARTITIONING
+    PARTITION_RESOLUTION: int = 3
+    OSM_FEATURE_BATCH_SIZE: int = 250_000  # TODO: Rename this to FEATURE_BATCH_SIZE
