@@ -1,7 +1,9 @@
 ﻿import geopandas as gpd
 import pandas as pd
+import pygeohash as phg
 from duckdb import DuckDBPyConnection
 
+from src import Config
 from src.application.contracts import IVectorService
 from src.domain.enums import EPSGCode
 
@@ -13,10 +15,18 @@ class VectorService(IVectorService):
         self.__db_context = db_context
 
     def partition_dataframe(self, dataframe: gpd.GeoDataFrame, batch_size: int) -> list[gpd.GeoDataFrame]:
-        if len(dataframe) <= batch_size:
-            return [dataframe]
-        view_slices = range(0, len(dataframe), batch_size)
-        return [dataframe.iloc[i:i + batch_size] for i in view_slices]
+        centroids = dataframe.geometry.centroid
+        dataframe["partition_key"] = [
+            phg.encode(lat, lon, precision=Config.PARTITION_RESOLUTION)
+            for lat, lon in zip(centroids.y.values, centroids.x.values)
+        ]
+
+        partitions = [
+            gpd.GeoDataFrame(partition) for _, partition in
+            dataframe.groupby(by="partition_key", sort=False)
+        ]
+
+        return partitions
 
     def clip_dataframes_to_wkb(
             self,
