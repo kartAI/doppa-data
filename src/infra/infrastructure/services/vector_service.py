@@ -15,6 +15,7 @@ class VectorService(IVectorService):
         self.__db_context = db_context
 
     def partition_dataframe(self, dataframe: gpd.GeoDataFrame) -> list[gpd.GeoDataFrame]:
+        dataframe = dataframe.copy()
         centroids = dataframe.geometry.centroid
         dataframe["partition_key"] = [
             phg.encode(lat, lon, precision=Config.PARTITION_RESOLUTION)
