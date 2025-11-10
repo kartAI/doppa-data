@@ -6,7 +6,7 @@ from src.domain.enums import EPSGCode
 
 class IVectorService(ABC):
     @abstractmethod
-    def partition_dataframe(self, dataframe: gpd.GeoDataFrame, batch_size: int) -> list[gpd.GeoDataFrame]:
+    def partition_dataframe(self, dataframe: gpd.GeoDataFrame ) -> list[gpd.GeoDataFrame]:
         raise NotImplementedError
 
     @abstractmethod
