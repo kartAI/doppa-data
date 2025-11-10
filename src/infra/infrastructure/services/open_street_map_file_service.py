@@ -36,7 +36,7 @@ class OpenStreetMapFileService(IOpenStreetMapFileService):
             return
 
         logger.info(f"Downloading OSM-data from '{Config.OSM_PBF_URL}'")
-        response = requests.get(Config.OSM_PBF_URL, stream=True)
+        response = requests.get(Config.OSM_PBF_URL, stream=True, timeout=(10, 300))
         response.raise_for_status()
 
         with open(Config.OSM_FILE_PATH, "wb") as f:

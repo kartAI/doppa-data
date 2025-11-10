@@ -8,7 +8,7 @@ from src.application.contracts import IFKBFileService
 class FKBFileService(IFKBFileService):
     def download_fgb_zip_file(self, path: str) -> bytes:
         headers = {"Authorization": f"Bearer {Config.HUGGING_FACE_API_TOKEN}"}
-        response = requests.get(path, headers=headers, stream=True)
+        response = requests.get(path, headers=headers, stream=True, timeout=(10, 60))
         response.raise_for_status()
         return response.content
 

@@ -17,14 +17,15 @@ class CountyService(ICountyService):
         self.__db_context = db_context
 
     def get_county_ids(self) -> list[str]:
-        response = requests.get(f"{Config.GEONORGE_BASE_URL}/fylker")
+        response = requests.get(f"{Config.GEONORGE_BASE_URL}/fylker", timeout=(10, 30))
         response.raise_for_status()
         data = response.json()
         return [item["fylkesnummer"] for item in data]
 
     def get_county_wkb_by_id(self, county_id: str, epsg_code: EPSGCode) -> tuple[bytes, dict[str, Any]]:
         response = requests.get(
-            f"{Config.GEONORGE_BASE_URL}/fylker/{county_id}/omrade?utkoordsys={epsg_code.value}"
+            f"{Config.GEONORGE_BASE_URL}/fylker/{county_id}/omrade?utkoordsys={epsg_code.value}",
+            timeout=(10, 30)
         )
         response.raise_for_status()
 
