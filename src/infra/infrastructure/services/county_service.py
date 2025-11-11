@@ -17,7 +17,7 @@ class CountyService(ICountyService):
         self.__db_context = db_context
 
     def get_county_ids(self) -> list[str]:
-        response = requests.get(f"{Config.GEONORGE_BASE_URL}/fylker")
+        response = requests.get(f"{Config.GEONORGE_BASE_URL}/fylker?sorter=fylkesnummer")
         response.raise_for_status()
         data = response.json()
         return [item["fylkesnummer"] for item in data]
