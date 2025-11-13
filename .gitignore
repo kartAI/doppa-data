@@ -207,3 +207,4 @@ datasets/**/*.pbf
 datasets/**/*.geojson
 datasets/**/*.parquet
 datasets/**/*.fgb
+*.parquet
