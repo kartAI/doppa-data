@@ -133,8 +133,8 @@ def clip_and_partition_dataset_to_region(
         f"Region '{region}' has {len(osm_county_dataset)} and {len(fkb_county_dataset)} features from the OSM- and FKB-datasets"
     )
 
-    osm_partitions = vector_service.partition_dataframe(osm_county_dataset, batch_size=Config.OSM_FEATURE_BATCH_SIZE)
-    fkb_partitions = vector_service.partition_dataframe(fkb_county_dataset, batch_size=Config.OSM_FEATURE_BATCH_SIZE)
+    osm_partitions = vector_service.partition_dataframe(osm_county_dataset)
+    fkb_partitions = vector_service.partition_dataframe(fkb_county_dataset)
 
     return osm_partitions, fkb_partitions, polygon_geojson
 
