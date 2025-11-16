@@ -11,7 +11,7 @@ load_dotenv()
 
 @dataclass(frozen=True)
 class Config:
-    IS_NOTEBOOK: bool = True
+    IS_NOTEBOOK: bool = False
     IOU_ROUNDING_DECIMALS: int = 9
 
     # AZURE
