@@ -4,12 +4,10 @@ import geopandas as gpd
 from dependency_injector.wiring import inject, Provide
 from pystac import Catalog, Collection, Item
 
-from src import Config
 from src.application.common import logger
-
 from src.application.contracts import (
     IReleaseService, IStacService, IOpenStreetMapFileService, ICountyService, IOpenStreetMapService, IFKBService,
-    IVectorService, IBlobStorageService, IFilePathService
+    IVectorService, IBlobStorageService, IFilePathService, IConflationService
 )
 from src.domain.enums import EPSGCode, Theme, DataSource
 from src.infra.infrastructure import Containers
@@ -60,6 +58,7 @@ def run_pipeline() -> None:
         add_assets_to_item(osm_region_item, osm_blob_paths)
         add_assets_to_item(fkb_region_item, fkb_blob_paths)
 
+    conflate_fkb_and_osm_dataset(release=latest_release)
     save_catalog(catalog=root_catalog)
 
 
@@ -69,9 +68,9 @@ def create_release(
         stac_service: IStacService = Provide[Containers.stac_service],
 ) -> tuple[str, Catalog, Catalog]:
     root_catalog = stac_service.get_catalog_root()
-    release_id = release_service.create_release()
-    release_catalog = stac_service.create_release_catalog(root_catalog=root_catalog, release=release_id)
-    return release_id, root_catalog, release_catalog
+    current_release = release_service.create_release()
+    release_catalog = stac_service.create_release_catalog(root_catalog=root_catalog, release=current_release)
+    return current_release, root_catalog, release_catalog
 
 
 @inject
@@ -137,6 +136,14 @@ def clip_and_partition_dataset_to_region(
     fkb_partitions = vector_service.partition_dataframe(fkb_county_dataset)
 
     return osm_partitions, fkb_partitions, polygon_geojson
+
+
+@inject
+def conflate_fkb_and_osm_dataset(
+        release: str,
+        conflation_service: IConflationService = Provide[Containers.conflation_service]
+) -> None:
+    conflation_service.find_fkb_osm_diff(release=release, theme=Theme.BUILDINGS)
 
 
 @inject
