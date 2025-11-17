@@ -1,6 +1,7 @@
 ﻿from abc import ABC, abstractmethod
+from typing import Literal
 
-from src.domain.enums import Theme
+from src.domain.enums import Theme, StorageContainer
 
 
 class IFilePathService(ABC):
@@ -21,8 +22,8 @@ class IFilePathService(ABC):
         :param theme: Theme enum value
         :param region: A region in Norway is defined as county. For example '03' for Oslo
         :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet'
-        :return: Storage path
         :param kwargs: Additional keyword arguments that will be added between release and theme
+        :return: Storage path
         :rtype: str
         """
         raise NotImplementedError
@@ -48,5 +49,29 @@ class IFilePathService(ABC):
         :param args: Parts of the path to be joined
         :return: Storage path
         :rtype: str
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def create_virtual_filesystem_path(
+            storage_scheme: Literal["az"],
+            container: StorageContainer,
+            release: str,
+            theme: Theme,
+            region: str,
+            file_name: str,
+            **kwargs: str
+    ) -> str:
+        """
+        Creates a virtual filesystem path for accessing files in a storage account.
+        :param storage_scheme: Storage scheme, e.g., "az" for Azure Blob Storage
+        :param container: Name of storage container
+        :param release: Release on the format 'yyyy-mm-dd.x'
+        :param theme: Theme enum value
+        :param region: Region code, i.e '03' for Oslo
+        :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet', or '*.parquet' for all files
+        :param kwargs: Additional keyword arguments that will be added between release and theme
+        :return: Virtual filesystem path
         """
         raise NotImplementedError

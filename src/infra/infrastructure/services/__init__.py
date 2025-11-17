@@ -11,3 +11,4 @@ from .stac_io_service import StacIOService
 from .zip_service import ZipService
 from .fkb_file_service import FKBFileService
 from .fkb_service import FKBService
+from .conflation_service import ConflationService

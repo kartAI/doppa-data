@@ -72,6 +72,7 @@ class IBlobStorageService(ABC):
 
     def upload_blobs_as_parquet(
             self,
+            container: StorageContainer,
             release: str,
             theme: Theme,
             region: str,
@@ -80,6 +81,7 @@ class IBlobStorageService(ABC):
     ) -> list[str]:
         """
         Upload multiple GeoDataFrame partitions as blobs to storage as Parquet files
+        :param container: Storage container enum to upload to.
         :param release: Release version on the format 'yyyy-mm-dd.x'
         :param theme: Theme enum representing the data theme.
         :param region: County ID, e.g. '03' for Oslo.

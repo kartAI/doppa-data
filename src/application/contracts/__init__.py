@@ -11,3 +11,4 @@ from .stac_io_service_interface import IStacIOService
 from .fkb_file_service_interface import IFKBFileService
 from .fkb_service_interface import IFKBService
 from .zip_service_interface import IZipService
+from .conflation_service_interface import IConflationService
