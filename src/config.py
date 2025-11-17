@@ -50,7 +50,8 @@ class Config:
     GEONORGE_BASE_URL: str = "https://api.kartverket.no/kommuneinfo/v1/"
 
     # METADATA
-    RELEASE_FILE_NAME = "releases.parquet"
+    RELEASE_FILE_NAME: str = "releases.parquet"
+    COUNTY_FILE_NAME: str = "counties.parquet"
 
     # STAC
     STAC_LICENSE = "CC-BY-4.0"
