@@ -69,7 +69,7 @@ class ConflationService(IConflationService):
                     o.osm_id AS osm_id,
                     CAST(MAX (
                         ST_Area(ST_Intersection(f.geom, o.geom)) / NULLIF(ST_Area(ST_Union(f.geom, o.geom)), 0)
-                    ) AS DECIMAl) AS max_iou
+                    ) AS DECIMAL) AS max_iou
                 FROM fkb f
                 LEFT JOIN osm o
                     ON f.grid_x = o.grid_x
@@ -84,7 +84,7 @@ class ConflationService(IConflationService):
                     o.osm_id AS osm_id,
                     CAST(MAX (
                         ST_Area(ST_Intersection(f.geom, o.geom)) / NULLIF(ST_Area(ST_Union(f.geom, o.geom)), 0)
-                    ) AS DECIMAl) AS max_iou
+                    ) AS DECIMAL) AS max_iou
                 FROM osm o
                 LEFT JOIN fkb f
                     ON f.grid_x = o.grid_x
