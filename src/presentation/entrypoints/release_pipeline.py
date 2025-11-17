@@ -157,7 +157,7 @@ def clip_and_partition_dataset_to_region(
         county_service: ICountyService = Provide[Containers.county_service],
         vector_service: IVectorService = Provide[Containers.vector_service],
 ) -> tuple[list[gpd.GeoDataFrame], list[gpd.GeoDataFrame], dict[str, Any]]:
-    polygon_wkb, polygon_geojson = county_service.get_county_wkb_by_id(county_id=region, epsg_code=EPSGCode.WGS84)
+    polygon_wkb, polygon_geojson = county_service.get_county_polygons_by_id(county_id=region, epsg_code=EPSGCode.WGS84)
 
     osm_county_dataset = vector_service.clip_dataframes_to_wkb(osm_batches, polygon_wkb, epsg_code=EPSGCode.WGS84)
     fkb_county_dataset = vector_service.clip_dataframes_to_wkb(fkb_batches, polygon_wkb, epsg_code=EPSGCode.WGS84)
