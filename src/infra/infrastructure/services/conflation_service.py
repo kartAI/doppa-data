@@ -178,17 +178,11 @@ class ConflationService(IConflationService):
         ids_fkb = ids[ids["fkb_id"].notna()]["fkb_id"].to_list()
         ids_osm = ids[ids["fkb_id"].isna() & ids["osm_id"].notna()]["osm_id"].to_list()
 
-        fkb_filter = (
-            "FALSE"
-            if not ids_fkb
-            else f'external_id IN ({", ".join(f"'{v}'" for v in ids_fkb)})'
-        )
+        ids_fkb_str = ", ".join(f"'{v}'" for v in ids_fkb)
+        ids_osm_str = ", ".join(f"'{v}'" for v in ids_osm)
 
-        osm_filter = (
-            "FALSE"
-            if not ids_osm
-            else f'external_id IN ({", ".join(f"'{v}'" for v in ids_osm)})'
-        )
+        fkb_filter = "FALSE" if not ids_fkb else f"external_id IN ({ids_fkb_str})"
+        osm_filter = "FALSE" if not ids_osm else f"external_id IN ({ids_osm_str})"
 
         df = self.__db_context.execute(
             f'''
