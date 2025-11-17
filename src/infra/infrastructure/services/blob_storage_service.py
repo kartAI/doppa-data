@@ -65,6 +65,7 @@ class BlobStorageService(IBlobStorageService):
 
     def upload_blobs_as_parquet(
             self,
+            container: StorageContainer,
             release: str,
             theme: Theme,
             region: str,
@@ -93,13 +94,13 @@ class BlobStorageService(IBlobStorageService):
                     compression="snappy",
                     geometry_encoding="WKB",
                     schema_version="1.1.0",
-                    write_covering_bbox=True
+                    write_covering_bbox="bbox" not in partition.columns
                 )
 
                 buffer.seek(0)
 
                 asset_file_path = self.upload_file(
-                    container_name=StorageContainer.RAW,
+                    container_name=container,
                     blob_name=storage_path,
                     data=buffer.getvalue()
                 )

@@ -1,4 +1,4 @@
-﻿from typing import Any
+﻿from typing import Any, Dict
 
 import geopandas as gpd
 from dependency_injector.wiring import inject, Provide
@@ -9,7 +9,7 @@ from src.application.contracts import (
     IReleaseService, IStacService, IOpenStreetMapFileService, ICountyService, IOpenStreetMapService, IFKBService,
     IVectorService, IBlobStorageService, IFilePathService, IConflationService
 )
-from src.domain.enums import EPSGCode, Theme, DataSource
+from src.domain.enums import EPSGCode, Theme, DataSource, StorageContainer
 from src.infra.infrastructure import Containers
 
 
@@ -21,6 +21,7 @@ def run_pipeline() -> None:
     fkb_buildings = download_and_format_fkb_dataset()
 
     building_collection = create_theme_collection(release_catalog, latest_release, Theme.BUILDINGS)
+    region_polygons: dict[str, Any] = {}
 
     for region in regions:
         osm_partitions, fkb_partitions, region_geojson = clip_and_partition_dataset_to_region(
@@ -28,6 +29,8 @@ def run_pipeline() -> None:
             fkb_buildings,
             region
         )
+
+        region_polygons[region] = region_geojson
 
         osm_region_item = create_region_items(
             theme_collection=building_collection,
@@ -47,18 +50,49 @@ def run_pipeline() -> None:
             epsg_code=EPSGCode.WGS84
         )
 
-        osm_blob_paths, fkb_blob_paths = upload_assets_to_blob_storage(
+        osm_blob_paths = upload_assets_to_blob_storage(
+            container=StorageContainer.RAW,
             release=latest_release,
             theme=Theme.BUILDINGS,
             region=region,
-            osm_partitions=osm_partitions,
-            fkb_partitions=fkb_partitions
+            partitions=osm_partitions,
+            dataset=DataSource.OSM
+        )
+
+        fkb_blob_paths = upload_assets_to_blob_storage(
+            container=StorageContainer.RAW,
+            release=latest_release,
+            theme=Theme.BUILDINGS,
+            region=region,
+            partitions=fkb_partitions,
+            dataset=DataSource.FKB
         )
 
         add_assets_to_item(osm_region_item, osm_blob_paths)
         add_assets_to_item(fkb_region_item, fkb_blob_paths)
 
-    conflate_fkb_and_osm_dataset(release=latest_release)
+    conflated_partitions = conflate_fkb_and_osm_dataset(release=latest_release)
+
+    for region, partitions in conflated_partitions.items():
+        conflated_blob_paths = upload_assets_to_blob_storage(
+            container=StorageContainer.DATA,
+            release=latest_release,
+            theme=Theme.BUILDINGS,
+            region=region,
+            partitions=partitions
+        )
+
+        conflated_region_item = create_region_items(
+            theme_collection=building_collection,
+            data_source=DataSource.CONFLATED,
+            region=region,
+            geometry=region_polygons[region],
+            bbox=None,
+            epsg_code=EPSGCode.WGS84
+        )
+
+        add_assets_to_item(conflated_region_item, conflated_blob_paths)
+
     save_catalog(catalog=root_catalog)
 
 
@@ -142,8 +176,10 @@ def clip_and_partition_dataset_to_region(
 def conflate_fkb_and_osm_dataset(
         release: str,
         conflation_service: IConflationService = Provide[Containers.conflation_service]
-) -> None:
-    conflation_service.find_fkb_osm_diff(release=release, theme=Theme.BUILDINGS)
+) -> Dict[str, list[gpd.GeoDataFrame]]:
+    relation_ids = conflation_service.get_fkb_osm_id_relations(release=release, theme=Theme.BUILDINGS)
+    conflated_partitions = conflation_service.merge_fkb_osm(release=release, theme=Theme.BUILDINGS, ids=relation_ids)
+    return conflated_partitions
 
 
 @inject
@@ -173,30 +209,33 @@ def create_region_items(
 
 @inject
 def upload_assets_to_blob_storage(
+        container: StorageContainer,
         release: str,
         theme: Theme,
         region: str,
-        osm_partitions: list[gpd.GeoDataFrame],
-        fkb_partitions: list[gpd.GeoDataFrame],
+        partitions: list[gpd.GeoDataFrame],
+        dataset: DataSource = None,
         blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service]
-) -> tuple[list[str], list[str]]:
-    osm_assets = blob_storage_service.upload_blobs_as_parquet(
-        release=release,
-        theme=theme,
-        region=region,
-        partitions=osm_partitions,
-        dataset=DataSource.OSM.value
-    )
+) -> list[str]:
+    if dataset:
+        assets = blob_storage_service.upload_blobs_as_parquet(
+            container=container,
+            release=release,
+            theme=theme,
+            region=region,
+            partitions=partitions,
+            dataset=dataset.value if dataset else None
+        )
+    else:
+        assets = blob_storage_service.upload_blobs_as_parquet(
+            container=container,
+            release=release,
+            theme=theme,
+            region=region,
+            partitions=partitions,
+        )
 
-    fkb_assets = blob_storage_service.upload_blobs_as_parquet(
-        release=release,
-        theme=theme,
-        region=region,
-        partitions=fkb_partitions,
-        dataset=DataSource.FKB.value
-    )
-
-    return osm_assets, fkb_assets
+    return assets
 
 
 @inject

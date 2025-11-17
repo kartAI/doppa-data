@@ -16,8 +16,8 @@ class FilePathService(IFilePathService):
             **kwargs
     ) -> str:
         FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) if kwargs else ''
-        return f"release/{release}/{middle}/theme={theme.value}/region={region}/{file_name}"
+        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) + '/' if kwargs else ''
+        return f"release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"
 
     @staticmethod
     def validate_file_path(release: str, region: str, file_name: str) -> None:
@@ -35,14 +35,16 @@ class FilePathService(IFilePathService):
         if not version_part.isdigit() or int(version_part) < 0:
             raise AssertionError("release version must be a non-negative integer")
 
-        if not re.fullmatch(r"\d{2}", region):
+        if not (region == "*" or re.fullmatch(r"\d{2}", region)):
             raise AssertionError("region must be two digits (e.g. '03')")
 
-        if file_name != "*.parquet" or not re.fullmatch(
-                r"part_\d{5,}\.parquet", file_name
+        if not (
+                file_name == "*.parquet"
+                or re.fullmatch(r"part_\d{5,}\.parquet", file_name)
         ):
             raise AssertionError(
-                f"invalid file_name '{file_name}': expected format 'part_00000.parquet' or '*.parquet'")
+                f"invalid file_name '{file_name}': expected format 'part_00000.parquet' or '*.parquet'"
+            )
 
     @staticmethod
     def get_blob_file_name(file_path: str) -> str:
@@ -64,5 +66,5 @@ class FilePathService(IFilePathService):
             **kwargs: str
     ) -> str:
         FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) if kwargs else ''
-        return f"{storage_scheme}://{container.value}/release/{release}/{middle}/theme={theme.value}/region={region}/{file_name}"
+        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) + "/" if kwargs else ''
+        return f"{storage_scheme}://{container.value}/release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"

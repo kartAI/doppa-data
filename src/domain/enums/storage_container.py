@@ -6,5 +6,6 @@ class StorageContainer(Enum):
     SCHEMA = "schema"
     STAC = "stac"
     RAW = "raw"
+    DATA = "data"
     OPEN_STREET_MAP = "open_street_map"
     FKB = "fkb"
