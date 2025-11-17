@@ -181,13 +181,13 @@ class ConflationService(IConflationService):
         fkb_filter = (
             "FALSE"
             if not ids_fkb
-            else f"external_id IN ({', '.join(f'\'{v}\'' for v in ids_fkb)})"
+            else f'external_id IN ({", ".join(f"'{v}'" for v in ids_fkb)})'
         )
 
         osm_filter = (
             "FALSE"
             if not ids_osm
-            else f"external_id IN ({', '.join(f'\'{v}\'' for v in ids_osm)})"
+            else f'external_id IN ({", ".join(f"'{v}'" for v in ids_osm)})'
         )
 
         df = self.__db_context.execute(
