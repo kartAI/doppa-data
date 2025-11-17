@@ -13,11 +13,6 @@ class Containers(containers.DeclarativeContainer):
     db_context = providers.Singleton(create_duckdb_context)
     blob_storage_context = providers.Singleton(create_blob_storage_context)
 
-    county_service = providers.Singleton(
-        CountyService,
-        db_context=db_context
-    )
-
     file_path_service = providers.Singleton(
         FilePathService
     )
@@ -35,6 +30,13 @@ class Containers(containers.DeclarativeContainer):
         BlobStorageService,
         blob_storage_context=blob_storage_context,
         file_path_service=file_path_service
+    )
+
+    county_service = providers.Singleton(
+        CountyService,
+        db_context=db_context,
+        blob_storage_service=blob_storage_service,
+        bytes_service=bytes_service
     )
 
     osm_file_service = providers.Singleton(

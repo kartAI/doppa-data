@@ -10,5 +10,5 @@ class ICountyService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_county_wkb_by_id(self, county_id: str, epsg_code: EPSGCode) -> tuple[bytes, dict[str, Any]]:
+    def get_county_polygons_by_id(self, county_id: str, epsg_code: EPSGCode) -> tuple[bytes, dict[str, Any]]:
         raise NotImplementedError
