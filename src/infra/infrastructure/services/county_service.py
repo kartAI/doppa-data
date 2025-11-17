@@ -74,7 +74,7 @@ class CountyService(ICountyService):
             return None
 
         county_df = self.__bytes_service.convert_parquet_bytes_to_df(county_bytes)
-        if not region in county_df["region"].values:
+        if region not in county_df["region"].values:
             return None
 
         row = county_df.loc[county_df["region"] == region].iloc[0]
