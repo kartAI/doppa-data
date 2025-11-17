@@ -11,7 +11,7 @@ class IConflationService(ABC):
     @abstractmethod
     def get_fkb_osm_id_relations(self, release: str, theme: Theme) -> pd.DataFrame:
         """
-        Creates a with all IDs from FKB and OSM for a given release and theme, and relates them to each other.
+        Creates a DataFrame with all IDs from FKB and OSM for a given release and theme, and relates them to each other.
         :param release: Release identifier 'yyyy-mm-dd.x'
         :param theme: Theme enum
         :return:
