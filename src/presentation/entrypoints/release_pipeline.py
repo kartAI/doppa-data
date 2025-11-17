@@ -217,23 +217,14 @@ def upload_assets_to_blob_storage(
         dataset: DataSource = None,
         blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service]
 ) -> list[str]:
-    if dataset:
-        assets = blob_storage_service.upload_blobs_as_parquet(
-            container=container,
-            release=release,
-            theme=theme,
-            region=region,
-            partitions=partitions,
-            dataset=dataset.value if dataset else None
-        )
-    else:
-        assets = blob_storage_service.upload_blobs_as_parquet(
-            container=container,
-            release=release,
-            theme=theme,
-            region=region,
-            partitions=partitions,
-        )
+    assets = blob_storage_service.upload_blobs_as_parquet(
+        container=container,
+        release=release,
+        theme=theme,
+        region=region,
+        partitions=partitions,
+        **({"dataset": dataset.value} if dataset else {})
+    )
 
     return assets
 
