@@ -2,13 +2,10 @@
 import pandas as pd
 import pyarrow as pa
 from duckdb import DuckDBPyConnection
-from nbconvert.exporters.templateexporter import deprecated
 from shapely import from_wkb
 
 from application.contracts import IBlobStorageService
 from domain.enums import StorageContainer
-from src import Config
-from src.application.common import logger
 from src.application.contracts import (
     IFKBService, IFKBFileService, IZipService, IBytesService
 )
