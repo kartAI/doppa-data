@@ -193,7 +193,7 @@ class ConflationService(IConflationService):
                     bbox,
                     region,
                     partition_key,
-                    TRY_CAST(building_type AS VARCHAR) AS buildling_type, 
+                    TRY_CAST(building_type AS VARCHAR) AS building_type, 
                     TRY_CAST(building_id AS INTEGER) AS building_id,
                     NULL AS feature_update_time,
                     NULL AS feature_capture_time,
