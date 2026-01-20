@@ -62,7 +62,6 @@ class Containers(containers.DeclarativeContainer):
 
     open_street_map_service = providers.Singleton(
         OpenStreetMapService,
-        osm_file_service=osm_file_service,
         blob_storage_service=blob_storage_service,
         bytes_service=bytes_service
     )

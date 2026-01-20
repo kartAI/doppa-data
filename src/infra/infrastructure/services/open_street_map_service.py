@@ -3,22 +3,19 @@
 from application.contracts import IBytesService
 from domain.enums import StorageContainer, EPSGCode
 from src.application.contracts import (
-    IOpenStreetMapService, IOpenStreetMapFileService, IBlobStorageService
+    IOpenStreetMapService, IBlobStorageService
 )
 
 
 class OpenStreetMapService(IOpenStreetMapService):
-    __osm_file_service: IOpenStreetMapFileService
     __blob_storage_service: IBlobStorageService
     __bytes_service: IBytesService
 
     def __init__(
             self,
-            osm_file_service: IOpenStreetMapFileService,
             blob_storage_service: IBlobStorageService,
             bytes_service: IBytesService
     ):
-        self.__osm_file_service = osm_file_service
         self.__blob_storage_service = blob_storage_service
         self.__bytes_service = bytes_service
 
