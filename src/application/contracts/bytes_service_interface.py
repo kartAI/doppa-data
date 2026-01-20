@@ -24,7 +24,7 @@ class IBytesService(ABC):
         Converts a byte array to a GeoPandas GeoDataFrame. This assumes that the files a parquet file and that there is
         a geometry column with geometries represented as WKB
         :param data: Byte array of the parquet file. Often downloaded from blob storage.
-        :param epsg_code: EPSG code for CRSEPSG code for CRS
+        :param epsg_code: EPSG code for CRS
         :return: Dataframe representation of the byte array.
         :rtype: pd.DataFrame
         """
