@@ -19,6 +19,20 @@ class IBytesService(ABC):
 
     @staticmethod
     @abstractmethod
+    def convert_parquet_bytes_to_gdf(data: bytes, epsg_code: EPSGCode) -> gpd.GeoDataFrame:
+        """
+        Converts a byte array to a GeoPandas GeoDataFrame. This assumes that the file is a parquet file and that
+        there is a geometry column with geometries represented as WKB.
+
+        :param data: Byte array of the parquet file. Often downloaded from blob storage.
+        :param epsg_code: EPSG code for the coordinate reference system (CRS).
+        :return: GeoDataFrame representation of the byte array.
+        :rtype: gpd.GeoDataFrame
+        :raises NotImplementedError: This method must be implemented by subclasses.
+        """
+        raise NotImplementedError
+    @staticmethod
+    @abstractmethod
     def convert_fgb_bytes_to_gdf(
             layers: list[bytes],
             crs_in: EPSGCode = EPSGCode.WGS84,

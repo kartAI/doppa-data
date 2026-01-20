@@ -4,8 +4,8 @@ import pyarrow as pa
 from duckdb import DuckDBPyConnection
 from shapely import from_wkb
 
-from src import Config
-from src.application.common import logger
+from application.contracts import IBlobStorageService
+from domain.enums import StorageContainer
 from src.application.contracts import (
     IFKBService, IFKBFileService, IZipService, IBytesService
 )
@@ -17,6 +17,7 @@ class FKBService(IFKBService):
     __zip_service: IZipService
     __fkb_file_service: IFKBFileService
     __bytes_service: IBytesService
+    __blob_storage_service: IBlobStorageService
 
     def __init__(
             self,
@@ -24,45 +25,22 @@ class FKBService(IFKBService):
             zip_service: IZipService,
             fkb_file_service: IFKBFileService,
             bytes_service: IBytesService,
+            blob_storage_service: IBlobStorageService
     ) -> None:
         self.__db_context = db_context
         self.__zip_service = zip_service
         self.__fkb_file_service = fkb_file_service
         self.__bytes_service = bytes_service
+        self.__blob_storage_service = blob_storage_service
 
     def extract_fkb_data(self) -> gpd.GeoDataFrame:
-        logger.info(f"Starting extraction of FKB data from Hugging Face.")
-        wgs84_gdfs: list[gpd.GeoDataFrame] = []
+        fkb_bytes = self.__blob_storage_service.download_file(
+            container_name=StorageContainer.CONTRIBUTION,
+            blob_name="fkb.parquet"
+        )
 
-        for utm32n_path in Config.HUGGING_FACE_UTM32N_PATHS:
-            utm32n_zip_file = self.__fkb_file_service.download_fgb_zip_file(utm32n_path)
-            utm32n_fgb_layers = self.__zip_service.unzip_flat_geobuf(utm32n_zip_file, *Config.FKB_LAYERS)
-
-            wgs84_gdf = self.__bytes_service.convert_fgb_bytes_to_gdf(
-                layers=utm32n_fgb_layers,
-                crs_in=EPSGCode.UTM32N,
-                crs_out=EPSGCode.WGS84
-            )
-
-            wgs84_gdfs.append(wgs84_gdf)
-
-        for utm33n_path in Config.HUGGING_FACE_UTM33N_PATHS:
-            utm33n_zip_file = self.__fkb_file_service.download_fgb_zip_file(utm33n_path)
-            utm33n_fgb_layers = self.__zip_service.unzip_flat_geobuf(utm33n_zip_file, *Config.FKB_LAYERS)
-
-            wgs84_gdf = self.__bytes_service.convert_fgb_bytes_to_gdf(
-                layers=utm33n_fgb_layers,
-                crs_in=EPSGCode.UTM33N,
-                crs_out=EPSGCode.WGS84
-            )
-
-            wgs84_gdfs.append(wgs84_gdf)
-
-        combined_gdf = gpd.GeoDataFrame(pd.concat(wgs84_gdfs, ignore_index=True), crs=EPSGCode.WGS84.value)
-        combined_gdf["layer"] = ([gml_id.split(".", 1)[0] for gml_id in combined_gdf["gml_id"].to_numpy()])
-
-        logger.info(f"Downloaded and converted FKB data to WGS84 CRS. Total records: {combined_gdf.shape[0]}")
-        return combined_gdf
+        gdf = self.__bytes_service.convert_parquet_bytes_to_gdf(fkb_bytes, EPSGCode.WGS84)
+        return gdf
 
     def create_building_polygons(self, gdf: gpd.GeoDataFrame, crs: EPSGCode) -> gpd.GeoDataFrame:
         polygons_gdf, points_gdf = self.__create_polygon_and_point_datasets(fkb_dataset=gdf, crs=EPSGCode.WGS84)

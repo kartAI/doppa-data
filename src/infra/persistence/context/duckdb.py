@@ -1,4 +1,6 @@
-﻿import duckdb
+﻿import platform
+
+import duckdb
 
 from src import Config
 
@@ -17,7 +19,9 @@ def create_duckdb_context() -> duckdb.DuckDBPyConnection:
     );
     """, [Config.BLOB_STORAGE_CONNECTION_STRING])
 
-    db_context.execute("SET azure_transport_option_type = curl")
+    if platform.system() == "Linux":
+        db_context.execute("SET azure_transport_option_type = curl")
+
     db_context.execute("SET azure_storage_connection_string = ?;", [Config.BLOB_STORAGE_CONNECTION_STRING])
 
     return db_context

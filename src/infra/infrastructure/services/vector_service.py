@@ -36,6 +36,9 @@ class VectorService(IVectorService):
             epsg_code: EPSGCode
     ) -> gpd.GeoDataFrame:
         clipped_dataframes: list[pd.DataFrame] = []
+
+        OPTIONAL_COLS = ["feature_update_time", "feature_capture_time"]
+
         for i, gdf in enumerate(dataframes):
             if gdf.empty:
                 continue
@@ -45,13 +48,38 @@ class VectorService(IVectorService):
             view_name = f"gdf_{i}"
             self.__db_context.register(view_name, gdf)
 
-            clipped_gdf = self.__db_context.execute(f"""
-            SELECT * FROM {view_name} 
-            WHERE ST_Intersects(
-                ST_GeomFromWKB(geometry), 
-                ST_GeomFromWKB(?)
-            )
-            """, [wkb]).fetchdf()
+            table_info = self.__db_context.execute(
+                f"PRAGMA table_info('{view_name}')"
+            ).fetchdf()
+
+            cols = set(table_info["name"].tolist())
+
+            select_parts = [
+                "external_id",
+                "geometry",
+                "building_id",
+                "* EXCLUDE(external_id, geometry, building_id)"
+            ]
+
+            for col in OPTIONAL_COLS:
+                if col in cols:
+                    select_parts.append(f"{col} AS {col}")
+                else:
+                    select_parts.append(f"NULL AS {col}")
+
+            select_clause = ",\n".join(select_parts)
+
+            sql = f"""
+                SELECT
+                    {select_clause}
+                FROM {view_name}
+                WHERE ST_Intersects(
+                    ST_GeomFromWKB(geometry),
+                    ST_GeomFromWKB(?)
+                )
+            """
+
+            clipped_gdf = self.__db_context.execute(sql, [wkb]).fetchdf()
 
             clipped_dataframes.append(clipped_gdf)
             self.__db_context.unregister(view_name)
@@ -60,6 +88,6 @@ class VectorService(IVectorService):
         df["geometry"] = df["geometry"].apply(
             lambda x: bytes(x) if isinstance(x, (bytearray, memoryview)) else x
         )
-
         df["geometry"] = gpd.GeoSeries.from_wkb(df["geometry"])
+
         return gpd.GeoDataFrame(df, geometry="geometry", crs=f"EPSG:{epsg_code.value}")

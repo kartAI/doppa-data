@@ -2,6 +2,7 @@
 
 
 class StorageContainer(Enum):
+    CONTRIBUTION = "contributions"
     METADATA = "metadata"
     SCHEMA = "schema"
     STAC = "stac"
