@@ -42,41 +42,6 @@ class FKBService(IFKBService):
         gdf = self.__bytes_service.convert_parquet_bytes_to_gdf(fkb_bytes, EPSGCode.WGS84)
         return gdf
 
-    # @deprecated
-    # def extract_fkb_data(self) -> gpd.GeoDataFrame:
-    #     logger.info(f"Starting extraction of FKB data from Hugging Face.")
-    #     wgs84_gdfs: list[gpd.GeoDataFrame] = []
-    #
-    #     for utm32n_path in Config.HUGGING_FACE_UTM32N_PATHS:
-    #         utm32n_zip_file = self.__fkb_file_service.download_fgb_zip_file(utm32n_path)
-    #         utm32n_fgb_layers = self.__zip_service.unzip_flat_geobuf(utm32n_zip_file, *Config.FKB_LAYERS)
-    #
-    #         wgs84_gdf = self.__bytes_service.convert_fgb_bytes_to_gdf(
-    #             layers=utm32n_fgb_layers,
-    #             crs_in=EPSGCode.UTM32N,
-    #             crs_out=EPSGCode.WGS84
-    #         )
-    #
-    #         wgs84_gdfs.append(wgs84_gdf)
-    #
-    #     for utm33n_path in Config.HUGGING_FACE_UTM33N_PATHS:
-    #         utm33n_zip_file = self.__fkb_file_service.download_fgb_zip_file(utm33n_path)
-    #         utm33n_fgb_layers = self.__zip_service.unzip_flat_geobuf(utm33n_zip_file, *Config.FKB_LAYERS)
-    #
-    #         wgs84_gdf = self.__bytes_service.convert_fgb_bytes_to_gdf(
-    #             layers=utm33n_fgb_layers,
-    #             crs_in=EPSGCode.UTM33N,
-    #             crs_out=EPSGCode.WGS84
-    #         )
-    #
-    #         wgs84_gdfs.append(wgs84_gdf)
-    #
-    #     combined_gdf = gpd.GeoDataFrame(pd.concat(wgs84_gdfs, ignore_index=True), crs=EPSGCode.WGS84.value)
-    #     combined_gdf["layer"] = ([gml_id.split(".", 1)[0] for gml_id in combined_gdf["gml_id"].to_numpy()])
-    #
-    #     logger.info(f"Downloaded and converted FKB data to WGS84 CRS. Total records: {combined_gdf.shape[0]}")
-    #     return combined_gdf
-
     def create_building_polygons(self, gdf: gpd.GeoDataFrame, crs: EPSGCode) -> gpd.GeoDataFrame:
         polygons_gdf, points_gdf = self.__create_polygon_and_point_datasets(fkb_dataset=gdf, crs=EPSGCode.WGS84)
         buildings_gdf = self.__find_overlapping_points(polygons=polygons_gdf, points=points_gdf)
