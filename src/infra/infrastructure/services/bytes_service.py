@@ -2,16 +2,24 @@
 
 import geopandas as gpd
 import pandas as pd
+from shapely import from_wkb
 
 from src.application.contracts import IBytesService
 from src.domain.enums import EPSGCode
 
 
 class BytesService(IBytesService):
-
     @staticmethod
     def convert_parquet_bytes_to_df(data: bytes) -> pd.DataFrame:
         return pd.read_parquet(BytesIO(data))
+
+    @staticmethod
+    def convert_parquet_bytes_to_gdf(data: bytes, epsg_code: EPSGCode) -> gpd.GeoDataFrame:
+        df = BytesService.convert_parquet_bytes_to_df(data)
+        df["geometry"] = df["geometry"].apply(from_wkb)
+
+        gdf = gpd.GeoDataFrame(df, geometry="geometry", crs=f"EPSG:{epsg_code.value}")
+        return gdf
 
     @staticmethod
     def convert_fgb_bytes_to_gdf(

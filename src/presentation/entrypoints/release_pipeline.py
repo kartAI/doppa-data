@@ -119,7 +119,7 @@ def download_and_format_osm_dataset(
         osm_file_service: IOpenStreetMapFileService = Provide[Containers.osm_file_service],
         osm_service: IOpenStreetMapService = Provide[Containers.open_street_map_service]
 ) -> list[gpd.GeoDataFrame]:
-    osm_file_service.download_pbf()
+    # osm_file_service.download_pbf()
     return osm_service.create_building_batches()
 
 
@@ -145,8 +145,8 @@ def download_and_format_fkb_dataset(
         fkb_service: IFKBService = Provide[Containers.fkb_service]
 ) -> list[gpd.GeoDataFrame]:
     fkb_dataset = fkb_service.extract_fkb_data()
-    building_polygons = fkb_service.create_building_polygons(gdf=fkb_dataset, crs=EPSGCode.WGS84)
-    return [building_polygons]
+    # building_polygons = fkb_service.create_building_polygons(gdf=fkb_dataset, crs=EPSGCode.WGS84)
+    return [fkb_dataset]
 
 
 @inject

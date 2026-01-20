@@ -45,8 +45,8 @@ class ConflationService(IConflationService):
             f'''
             WITH fkb AS (
                 SELECT
-                    lokalId AS fkb_id,
-                    TRY_CAST("bygningsnummer" AS INTEGER) AS building_id,
+                    external_id AS fkb_id,
+                    TRY_CAST(building_id AS INTEGER) AS building_id,
                     CAST(FLOOR(ST_X(ST_Centroid(geometry)) * 100) AS INTEGER) AS grid_x,
                     CAST(FLOOR(ST_Y(ST_Centroid(geometry)) * 100) AS INTEGER) AS grid_y,
                     ST_Force2D(geometry) AS geom,
@@ -55,8 +55,8 @@ class ConflationService(IConflationService):
 
             osm AS (
                 SELECT
-                    id AS osm_id,
-                    TRY_CAST("ref:bygningsnr" AS INTEGER) AS building_id,
+                    external_id AS osm_id,
+                    TRY_CAST(building_id AS INTEGER) AS building_id,
                     CAST(FLOOR(ST_X(ST_Centroid(geometry)) * 100) AS INTEGER) AS grid_x,
                     CAST(FLOOR(ST_Y(ST_Centroid(geometry)) * 100) AS INTEGER) AS grid_y,
                     ST_Force2D(geometry) AS geom,
@@ -188,26 +188,30 @@ class ConflationService(IConflationService):
             f'''
             WITH fkb AS (
                 SELECT 
-                    lokalId AS external_id,
+                    external_id,
                     ST_AsWKB(geometry) AS geometry,
                     bbox,
                     region,
                     partition_key,
-                    TRY_CAST(bygningstype AS VARCHAR) AS type, 
-                    TRY_CAST(bygningsnummer AS INTEGER) AS building_id,
+                    TRY_CAST(building_type AS VARCHAR) AS buildling_type, 
+                    TRY_CAST(building_id AS INTEGER) AS building_id,
+                    NULL AS feature_update_time,
+                    NULL AS feature_capture_time,
                     'fkb' AS source
                 FROM '{fkb_release}'
                 WHERE {fkb_filter}
             ),
             osm AS (
                 SELECT 
-                    id AS external_id,
+                    external_id,
                     ST_AsWKB(geometry) as geometry,
                     bbox,
                     region,
                     partition_key,
-                    type,
-                    TRY_CAST("ref:bygningsnr" AS INTEGER) AS building_id,
+                    building_type,
+                    TRY_CAST(building_id AS INTEGER) AS building_id,
+                    feature_update_time,
+                    feature_capture_time,
                     'osm' AS source
                 FROM '{osm_release}'
                 WHERE {osm_filter}
