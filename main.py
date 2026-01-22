@@ -1,5 +1,6 @@
 ﻿from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import run_pipeline
+import cProfile
 
 
 def main() -> None:
@@ -12,3 +13,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    # cProfile.run('main()')
