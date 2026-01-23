@@ -124,10 +124,11 @@ class IStacService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def save_catalog(self, catalog: Catalog) -> None:
+    def save_catalog(self, catalog: Catalog, release: str) -> None:
         """
         Saves catalog to its self href location
         :param catalog:
+        :param release:
         :return:
         """
         raise NotImplementedError

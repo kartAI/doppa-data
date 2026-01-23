@@ -7,7 +7,7 @@ from pystac import Catalog, Collection, Item
 from src.application.common import logger
 from src.application.contracts import (
     IReleaseService, IStacService, IOpenStreetMapFileService, ICountyService, IOpenStreetMapService, IFKBService,
-    IVectorService, IBlobStorageService, IFilePathService, IConflationService
+    IVectorService, IBlobStorageService, IFilePathService, IConflationService, IStacIOService
 )
 from src.domain.enums import EPSGCode, Theme, DataSource, StorageContainer
 from src.infra.infrastructure import Containers
@@ -93,13 +93,13 @@ def run_pipeline() -> None:
 
         add_assets_to_item(conflated_region_item, conflated_blob_paths)
 
-    save_catalog(catalog=root_catalog)
+    save_catalog(catalog=root_catalog, release=latest_release)
 
 
 @inject
 def create_release(
         release_service: IReleaseService = Provide[Containers.release_service],
-        stac_service: IStacService = Provide[Containers.stac_service],
+        stac_service: IStacService = Provide[Containers.stac_service]
 ) -> tuple[str, Catalog, Catalog]:
     root_catalog = stac_service.get_catalog_root()
     current_release = release_service.create_release()
@@ -246,5 +246,10 @@ def add_assets_to_item(
 
 
 @inject
-def save_catalog(catalog: Catalog, stac_service: IStacService = Provide[Containers.stac_service]) -> None:
-    stac_service.save_catalog(catalog)
+def save_catalog(
+        catalog: Catalog,
+        release: str,
+        stac_service: IStacService = Provide[Containers.stac_service],
+        stac_io_service: IStacIOService = Provide[Containers.stac_io_service]
+) -> None:
+    stac_service.save_catalog(catalog, release)

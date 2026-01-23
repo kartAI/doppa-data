@@ -126,8 +126,15 @@ class StacService(IStacService):
 
         return release_catalog
 
-    def save_catalog(self, catalog: Catalog) -> None:
-        catalog.normalize_and_save(
-            root_href=Config.STAC_STORAGE_CONTAINER,
-            catalog_type=CatalogType.ABSOLUTE_PUBLISHED
-        )
+    def save_catalog(self, catalog: Catalog, release: str) -> None:
+        latest_release = catalog.get_child(id=f"release/{release}", recursive=True)
+
+        catalog_copy = catalog.clone()
+        catalog_copy.clear_children()
+        catalog_copy.add_child(latest_release)
+        catalog_copy.normalize_hrefs(root_href=Config.STAC_STORAGE_CONTAINER)
+
+        normalized_latest_release = catalog_copy.get_child(id=f"release/{release}", recursive=True)
+        catalog.remove_child(f"release/{release}")
+        catalog.add_child(normalized_latest_release)
+        catalog.save(catalog_type=CatalogType.ABSOLUTE_PUBLISHED)
