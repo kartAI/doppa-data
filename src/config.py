@@ -18,15 +18,20 @@ class Config:
     BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     BLOB_STORAGE_MAX_CONCURRENCY: int = 1
 
-    # DIRECTORIES14:20:42,140
+    # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
     DATASETS_PATH: Path = ROOT_DIR / "datasets"
+    PROFILING_PATH: Path = ROOT_DIR / "profiling"
     LOG_DIR: Path = ROOT_DIR / f"logs"
     TEMP_DIR: Path = DATASETS_PATH / "temp"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO
     LOG_FILE: Path = LOG_DIR / f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+
+    # PROFILING
+    PROFILE_FILE: Path = PROFILING_PATH / f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    ENABLE_PROFILING: bool = False
 
     # OPEN STREET MAP
     OSM_FILE_PATH: Path = DATASETS_PATH / "osm" / "norway-latest.osm.pbf"
