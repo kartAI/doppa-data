@@ -4,11 +4,10 @@ import geopandas as gpd
 from dependency_injector.wiring import inject, Provide
 from pystac import Catalog, Collection, Item
 
-from application.contracts import IStacIOService
 from src.application.common import logger
 from src.application.contracts import (
     IReleaseService, IStacService, IOpenStreetMapFileService, ICountyService, IOpenStreetMapService, IFKBService,
-    IVectorService, IBlobStorageService, IFilePathService, IConflationService
+    IVectorService, IBlobStorageService, IFilePathService, IConflationService, IStacIOService
 )
 from src.domain.enums import EPSGCode, Theme, DataSource, StorageContainer
 from src.infra.infrastructure import Containers
@@ -100,8 +99,7 @@ def run_pipeline() -> None:
 @inject
 def create_release(
         release_service: IReleaseService = Provide[Containers.release_service],
-        stac_service: IStacService = Provide[Containers.stac_service],
-        stac_io_service: IStacIOService = Provide[Containers.stac_io_service]
+        stac_service: IStacService = Provide[Containers.stac_service]
 ) -> tuple[str, Catalog, Catalog]:
     root_catalog = stac_service.get_catalog_root()
     current_release = release_service.create_release()
@@ -254,6 +252,4 @@ def save_catalog(
         stac_service: IStacService = Provide[Containers.stac_service],
         stac_io_service: IStacIOService = Provide[Containers.stac_io_service]
 ) -> None:
-    stac_io_service.skip_file_download = True
     stac_service.save_catalog(catalog, release)
-    stac_io_service.skip_file_download = False
