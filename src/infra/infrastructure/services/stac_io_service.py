@@ -8,19 +8,11 @@ from src.domain.enums import StorageContainer
 
 class StacIOService(IStacIOService):
     __blob_storage_service: IBlobStorageService
-    __skip_file_download: bool = False
 
     def __init__(self, blob_storage_service: IBlobStorageService):
         super().__init__()
         self.__blob_storage_service = blob_storage_service
 
-    @property
-    def skip_file_download(self) -> bool:
-        return self.__skip_file_download
-
-    @skip_file_download.setter
-    def skip_file_download(self, value: bool) -> None:
-        self.__skip_file_download = value
 
     def write_text(self, dest: HREF, txt: str, *args: Any, **kwargs: Any) -> None:
         data = txt.encode(encoding="utf-8")
