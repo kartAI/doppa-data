@@ -12,7 +12,6 @@ def main() -> None:
         return
 
     tracer = VizTracer(
-        exclude_files=["venv", "site-packages"],
         ignore_c_function=True,
         ignore_frozen=True,
     )
@@ -20,7 +19,6 @@ def main() -> None:
     run_pipeline()
     tracer.stop()
     tracer.save(str(Config.PROFILE_FILE))
-    run_pipeline()
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ class Config:
 
     # PROFILING
     PROFILE_FILE: Path = PROFILING_PATH / f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    ENABLE_PROFILING: bool = False
+    ENABLE_PROFILING: bool = True
 
     # OPEN STREET MAP
     OSM_FILE_PATH: Path = DATASETS_PATH / "osm" / "norway-latest.osm.pbf"
