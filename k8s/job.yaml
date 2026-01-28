@@ -1,0 +1,19 @@
+﻿apiVersion: batch/v1
+kind: Job
+metadata:
+  name: building-conflation-pipeline
+spec:
+  template:
+    spec:
+      containers:
+        - name: building-conflation-pipeline
+          image: doppaacr.azurecr.io/osm-pipeline:latest
+          envFrom:
+            - secretRef:
+                name: prod-secrets
+          command: [ "python", "main.py" ]
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Never
+  backoffLimit: 4
+

@@ -1,10 +1,9 @@
 ﻿import geopandas as gpd
 
-from application.contracts import IBytesService
-from domain.enums import StorageContainer, EPSGCode
 from src.application.contracts import (
-    IOpenStreetMapService, IBlobStorageService
+    IOpenStreetMapService, IBlobStorageService, IBytesService
 )
+from src.domain.enums import StorageContainer, EPSGCode
 
 
 class OpenStreetMapService(IOpenStreetMapService):

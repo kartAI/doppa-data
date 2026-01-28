@@ -4,12 +4,10 @@ import pyarrow as pa
 from duckdb import DuckDBPyConnection
 from shapely import from_wkb
 
-from application.contracts import IBlobStorageService
-from domain.enums import StorageContainer
+from src.domain.enums import StorageContainer, EPSGCode
 from src.application.contracts import (
-    IFKBService, IFKBFileService, IZipService, IBytesService
+    IFKBService, IFKBFileService, IZipService, IBytesService, IBlobStorageService
 )
-from src.domain.enums import EPSGCode
 
 
 class FKBService(IFKBService):
