@@ -1,0 +1,57 @@
+name: Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Build and Push to Azure Container Registry"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (defaults to commit SHA)'
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+
+      - name: Set image tag
+        id: set-tag
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.image_tag }}" ]; then
+            echo "IMAGE_TAG=${{ inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha || github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update job.yaml with versioned image tag
+        run: |
+          sed -i "s|doppaacr.azurecr.io/osm-pipeline:.*|doppaacr.azurecr.io/osm-pipeline:${{ steps.set-tag.outputs.IMAGE_TAG }}|g" k8s/job.yaml
+          echo "Updated job.yaml with image tag: ${{ steps.set-tag.outputs.IMAGE_TAG }}"
+          cat k8s/job.yaml
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/job.yaml
+          echo "Deployed job with image tag: ${{ steps.set-tag.outputs.IMAGE_TAG }}"
