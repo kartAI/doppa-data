@@ -1,5 +1,4 @@
 ﻿from abc import ABC, abstractmethod
-from io import BytesIO
 
 import geopandas as gdf
 
