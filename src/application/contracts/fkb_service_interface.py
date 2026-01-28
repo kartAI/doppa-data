@@ -1,6 +1,6 @@
 ﻿from abc import ABC, abstractmethod
+
 import geopandas as gpd
-from pystac import Catalog
 
 from src.domain.enums import EPSGCode
 
