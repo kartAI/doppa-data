@@ -42,6 +42,15 @@ class IFilePathService(ABC):
 
     @staticmethod
     @abstractmethod
+    def remove_blob_file_name_from_path(file_path: str) -> str:
+        """
+        Removes the file name from a blob path, returning the directory path.
+        :param file_path: File path including the file name.
+        :return: File path without the file name.
+        """
+
+    @staticmethod
+    @abstractmethod
     def create_blob_path(*args) -> str:
         """
         Creates a storage account file path by joining the provided arguments with '/'.
