@@ -52,10 +52,12 @@ class FilePathService(IFilePathService):
         return file_name.split(".")[0]
 
     @staticmethod
-    def remove_blob_file_name_from_path(file_path: str) -> str:
-        file_name = FilePathService.get_blob_file_name(file_path)
-        base_file_path = file_path.removesuffix(file_name)
-        return base_file_path
+    def remove_blob_file_name_from_path(file_path: str, file_name: str, prefix: str | None = None) -> str:
+        file_path = file_path.removesuffix(file_name)
+        if prefix and file_path.startswith(prefix):
+            file_path = file_path.removeprefix(prefix)
+
+        return file_path
 
     @staticmethod
     def create_blob_path(*args) -> str:
