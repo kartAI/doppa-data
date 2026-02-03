@@ -50,6 +50,7 @@ class IFilePathService(ABC):
         :param file_name: File name to be removed from the path.
         :return: File path without the file name.
         """
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
