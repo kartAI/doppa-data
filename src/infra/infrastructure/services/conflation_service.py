@@ -78,7 +78,7 @@ class ConflationService(IConflationService):
 
         logger.info(f"Total number of buildings: {osm_count} in OSM and {fkb_count} FKB")
 
-        osm_cte, fkb_cte = ConflationService.__create_cte(
+        osm_cte, fkb_cte = ConflationService.__create_relation_cte(
             has_osm_files=has_osm_files,
             has_fkb_files=has_fkb_files,
             osm_release=osm_release,
@@ -238,7 +238,7 @@ class ConflationService(IConflationService):
             path=fkb_path_base
         )
 
-        osm_cte, fkb_cte = ConflationService.__create_cte_2(
+        osm_cte, fkb_cte = ConflationService.__create_merge_cte(
             has_osm_files=has_osm_files,
             osm_release=osm_release,
             osm_filter=osm_filter,
@@ -274,7 +274,8 @@ class ConflationService(IConflationService):
         ]
 
     @staticmethod
-    def __create_cte(has_osm_files: bool, has_fkb_files: bool, osm_release: str, fkb_release: str) -> tuple[str, str]:
+    def __create_relation_cte(has_osm_files: bool, has_fkb_files: bool, osm_release: str, fkb_release: str) -> tuple[
+        str, str]:
         if has_osm_files:
             osm_cte = f"""osm AS 
             (
@@ -328,13 +329,13 @@ class ConflationService(IConflationService):
         return osm_cte, fkb_cte
 
     @staticmethod
-    def __create_cte_2(
+    def __create_merge_cte(
             has_osm_files: bool,
             has_fkb_files: bool,
             osm_release: str,
             fkb_release: str,
-            osm_filter,
-            fkb_filter
+            osm_filter: str,
+            fkb_filter: str
     ) -> tuple[str, str]:
         if has_osm_files:
             osm_cte = f"""osm AS 
