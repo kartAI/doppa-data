@@ -97,6 +97,7 @@ class IBlobStorageService(ABC):
         Check if there are any blobs under the specified base path in the given container.
         :param container: Storage container enum to list blobs from.
         :param path: Base path to list blobs from.
-        :return:
+        :return: True if there are any blobs under the specified base path, False otherwise.
+        :rtype: bool
         """
         raise NotImplementedError
