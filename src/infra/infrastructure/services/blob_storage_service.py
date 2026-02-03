@@ -109,3 +109,8 @@ class BlobStorageService(IBlobStorageService):
                     asset_paths.append(asset_file_path)
 
         return asset_paths
+
+    def has_files_under_blob_path_base(self, container: StorageContainer, path: str) -> bool:
+        container_client = self.__blob_storage_context.get_container_client(container.value)
+        blobs = list(container_client.list_blob_names(name_starts_with=path))
+        return len(blobs) > 0

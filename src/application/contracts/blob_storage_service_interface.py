@@ -70,6 +70,7 @@ class IBlobStorageService(ABC):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def upload_blobs_as_parquet(
             self,
             container: StorageContainer,
@@ -87,5 +88,16 @@ class IBlobStorageService(ABC):
         :param region: County ID, e.g. '03' for Oslo.
         :param partitions: List of GeoDataFrame partitions to upload.
         :return: List of URLs of the uploaded blobs.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_files_under_blob_path_base(self, container: StorageContainer, path: str) -> bool:
+        """
+        Check if there are any blobs under the specified base path in the given container.
+        :param container: Storage container enum to list blobs from.
+        :param path: Base path to list blobs from.
+        :return: True if there are any blobs under the specified base path, False otherwise.
+        :rtype: bool
         """
         raise NotImplementedError

@@ -71,9 +71,8 @@ def run_pipeline() -> None:
         add_assets_to_item(osm_region_item, osm_blob_paths)
         add_assets_to_item(fkb_region_item, fkb_blob_paths)
 
-    conflated_partitions = conflate_fkb_and_osm_dataset(release=latest_release)
+        partitions = conflate_fkb_and_osm_dataset(release=latest_release, region=region)
 
-    for region, partitions in conflated_partitions.items():
         conflated_blob_paths = upload_assets_to_blob_storage(
             container=StorageContainer.DATA,
             release=latest_release,
@@ -175,10 +174,16 @@ def clip_and_partition_dataset_to_region(
 @inject
 def conflate_fkb_and_osm_dataset(
         release: str,
+        region: str,
         conflation_service: IConflationService = Provide[Containers.conflation_service]
-) -> Dict[str, list[gpd.GeoDataFrame]]:
-    relation_ids = conflation_service.get_fkb_osm_id_relations(release=release, theme=Theme.BUILDINGS)
-    conflated_partitions = conflation_service.merge_fkb_osm(release=release, theme=Theme.BUILDINGS, ids=relation_ids)
+) -> list[gpd.GeoDataFrame]:
+    relation_ids = conflation_service.get_fkb_osm_id_relations(release=release, theme=Theme.BUILDINGS, region=region)
+    conflated_partitions = conflation_service.merge_fkb_osm(
+        release=release,
+        theme=Theme.BUILDINGS,
+        ids=relation_ids,
+        region=region
+    )
     return conflated_partitions
 
 

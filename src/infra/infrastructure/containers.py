@@ -86,7 +86,8 @@ class Containers(containers.DeclarativeContainer):
     conflation_service = providers.Singleton(
         ConflationService,
         db_context=db_context,
-        file_path_service=file_path_service
+        file_path_service=file_path_service,
+        blob_storage_service=blob_storage_service
     )
 
     StacIO.set_default(stac_io_service)
