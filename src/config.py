@@ -76,3 +76,6 @@ class Config:
     # PARTITIONING
     PARTITION_RESOLUTION: int = 3
     OSM_FEATURE_BATCH_SIZE: int = 250_000  # TODO: Rename this to FEATURE_BATCH_SIZE
+
+    # Monitoring
+    MONITOR_LOG_DIRECTORY: Path = ROOT_DIR / "monitor_logs"
