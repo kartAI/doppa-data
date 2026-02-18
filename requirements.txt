@@ -118,8 +118,8 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-json-logger==3.3.0
 pytz==2025.2
-pywin32==311
-pywinpty==3.0.0
+pywin32==311; sys_platform == "win32"
+pywinpty==3.0.0; sys_platform == "win32"
 PyYAML==6.0.3
 pyzmq==27.1.0
 rasterio==1.4.3
