@@ -1,6 +1,5 @@
 ﻿import argparse
 import uuid
-from argparse import ArgumentError
 
 from src.application.common import monitor_cpu_and_ram
 from src.presentation.configuration import initialize_dependencies
@@ -22,7 +21,7 @@ def main() -> None:
             blob_storage_db_scan()
             return
         case _:
-            raise ArgumentError(argument=None, message="Script ID was invalid")
+            raise ValueError("Script ID is invalid")
 
 
 def get_script_id() -> str:
