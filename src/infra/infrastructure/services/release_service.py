@@ -71,13 +71,12 @@ class ReleaseService(IReleaseService):
                 pd.DataFrame({"release": [release], "date_created": [datetime.now(dt.UTC)]})
             ], ignore_index=True)
 
-        buffer = BytesIO()
-        releases.to_parquet(buffer, index=False)
-        buffer.seek(0)
+        release_bytes = self.__bytes_service.convert_df_to_parquet_bytes(releases)
+
         self.__blob_storage_service.upload_file(
-            StorageContainer.METADATA,
-            Config.RELEASE_FILE_NAME,
-            buffer.read()
+            container_name=StorageContainer.METADATA,
+            blob_name=Config.RELEASE_FILE_NAME,
+            data=release_bytes
         )
 
         return release
