@@ -6,4 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile
     image: osm-pipeline:latest
-    command: python main.py
+    command: python main.py "conflation-pipeline"
+
+  blob_storage_db_scan:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python main.py "blob-storage-db-scan"
