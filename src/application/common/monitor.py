@@ -127,10 +127,6 @@ def _initialize_cpu_metrics(process: psutil.Process) -> None:
     process.cpu_percent(interval=None)
 
 
-def _initialize_ram_metrics(process: psutil.Process) -> float:
-    return _get_rss(process)
-
-
 def _initialize_timers(process: psutil.Process) -> tuple[float, float, float]:
     _, initial_timestamp, initial_user_cpu_time, initial_system_cpu_time = _get_times(process)
     return initial_timestamp, initial_user_cpu_time, initial_system_cpu_time
