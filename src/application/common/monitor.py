@@ -1,6 +1,7 @@
 ﻿import functools
 import threading
 import time
+from builtins import function
 from typing import Any
 
 import pandas as pd
@@ -88,7 +89,7 @@ def _sampler(
 
 
 def _initialize_threading(
-        target: object | None,
+        target: function,
         process: psutil.Process,
         samples: list[dict[str, Any]],
         initial_timestamp: float,
