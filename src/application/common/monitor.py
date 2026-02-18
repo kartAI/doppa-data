@@ -13,7 +13,7 @@ from src.domain.enums import StorageContainer
 from src.infra.infrastructure import Containers
 
 
-def monitor_cpu_and_ram(run_id: str, query_id: str, interval: float = 0.05):
+def monitor_cpu_and_ram(run_id: str, query_id: str, interval: float = 0.00005):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
