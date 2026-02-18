@@ -1,14 +1,13 @@
 ﻿import functools
 import threading
 import time
-from builtins import function
 from typing import Any
 
 import pandas as pd
 import psutil
 from dependency_injector.wiring import Provide
+from jedi.inference.gradual.typing import Callable
 
-from src import Config
 from src.application.contracts import IBlobStorageService, IBytesService
 from src.domain.enums import StorageContainer
 from src.infra.infrastructure import Containers
@@ -89,7 +88,7 @@ def _sampler(
 
 
 def _initialize_threading(
-        target: function,
+        target: Callable[[], object | None],
         process: psutil.Process,
         samples: list[dict[str, Any]],
         initial_timestamp: float,
