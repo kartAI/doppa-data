@@ -40,7 +40,6 @@ def monitor_cpu_and_ram(run_id: str, query_id: str, interval: float = 0.05):
                 finally:
                     thread_event.set()
                     thread.join(timeout=1.0)
-                    pass
 
                 _save_run(run_id=run_id, query_id=query_id, execution_number=i, samples=samples)
 
