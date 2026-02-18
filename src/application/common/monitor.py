@@ -120,13 +120,11 @@ def _initialize_threading(
     return thread, thread_lock, thread_event
 
 
-def _initialize_cpu_metrics(process: psutil.Process) -> float:
+def _initialize_cpu_metrics(process: psutil.Process) -> None:
     # The initial `cpu_percent` returns a meaningless value. See 'https://psutil.readthedocs.io/en/latest/#psutil.cpu_percent' for more information
     process.cpu_percent(interval=None)
     time.sleep(0.1)
-
-    cpu_percent = process.cpu_percent(interval=None)
-    return cpu_percent
+    process.cpu_percent(interval=None)
 
 
 def _initialize_ram_metrics(process: psutil.Process) -> float:
