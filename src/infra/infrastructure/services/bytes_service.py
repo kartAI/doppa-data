@@ -39,5 +39,8 @@ class BytesService(IBytesService):
         return combined_gdf
 
     @staticmethod
-    def convert_df_to_bytes(df: pd.DataFrame | gpd.GeoDataFrame) -> bytes:
-        raise NotImplementedError
+    def convert_df_to_parquet_bytes(df: pd.DataFrame | gpd.GeoDataFrame) -> bytes:
+        buffer = BytesIO()
+        df.to_parquet(buffer, index=False)
+        buffer.seek(0)
+        return buffer.read()

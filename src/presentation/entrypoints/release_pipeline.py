@@ -1,4 +1,4 @@
-﻿from typing import Any, Dict
+﻿from typing import Any
 
 import geopandas as gpd
 from dependency_injector.wiring import inject, Provide

@@ -209,6 +209,8 @@ datasets/**/*.geojson
 datasets/**/*.parquet
 datasets/**/*.fgb
 *.parquet
+monitor_logs/**/*.csv
+monitor_logs/**/*.parquet
 
 # Profiling
 profiling/**.json

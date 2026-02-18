@@ -50,7 +50,7 @@ class IBytesService(ABC):
 
     @staticmethod
     @abstractmethod
-    def convert_df_to_bytes(df: pd.DataFrame | gpd.GeoDataFrame) -> bytes:
+    def convert_df_to_parquet_bytes(df: pd.DataFrame | gpd.GeoDataFrame) -> bytes:
         """
         Converts a Pandas DataFrame or GeoPandas GeoDataFrame to a byte array in parquet format.
         :param df: Pandas DataFrame or GeoPandas GeoDataFrame to convert.
