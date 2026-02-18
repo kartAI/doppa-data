@@ -88,7 +88,7 @@ def _sampler(
 
 
 def _initialize_threading(
-        target: Callable[[], object | None],
+        target: object | None,
         process: psutil.Process,
         samples: list[dict[str, Any]],
         initial_timestamp: float,
