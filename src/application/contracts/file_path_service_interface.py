@@ -5,10 +5,23 @@ from src.domain.enums import Theme, StorageContainer
 
 
 class IFilePathService(ABC):
-    # TODO: Convert this to static method
+    @staticmethod
+    @abstractmethod
+    def create_hive_blob_path(
+            file_name: str,
+            **kwargs: str | int
+    ) -> str:
+        """
+       Create blob path with Hive partitioning format. The kwargs are added at the start of the path in the format 'key=value' joined with '/'.
+        :param file_name: Blob file name
+        :param kwargs: Kwargs that are appended at the start on the format 'key=value' joined with '/'
+        :return: Blob path in the format 'key=value/.../filename'
+        """
+        raise NotImplementedError
+
+    @staticmethod
     @abstractmethod
     def create_dataset_blob_path(
-            self,
             release: str,
             theme: Theme,
             region: str,
@@ -67,6 +80,25 @@ class IFilePathService(ABC):
     @staticmethod
     @abstractmethod
     def create_virtual_filesystem_path(
+            storage_scheme: Literal["az"],
+            container: StorageContainer,
+            file_name: str,
+            **kwargs: str | int
+    ) -> str:
+        """
+        Creates a virtual filesystem path for accessing files in a storage account.
+        :param storage_scheme: Strage scheme, e.g., "az" for Azure Blob Storage
+        :param container: Name of storage container
+        :param file_name: File name to store. Must end with '.parquet'
+        :param kwargs: Additional keyword arguments that will be added between 'container' and 'file_name'.
+        Will be added in the format 'key=value' and joined with '/'.
+        :return:
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def create_release_virtual_filesystem_path(
             storage_scheme: Literal["az"],
             container: StorageContainer,
             release: str,
