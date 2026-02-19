@@ -1,11 +1,8 @@
 ﻿import argparse
-import uuid
 
 from src.application.common import monitor_cpu_and_ram
 from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import run_pipeline, blob_storage_db_scan
-
-RUN_ID = str(uuid.uuid4())
 
 
 @monitor_cpu_and_ram(query_id="main")
