@@ -1,23 +1,28 @@
 ﻿import functools
+import random
+import string
 import threading
 import time
+from datetime import date
 from typing import Any
 
-import pandas as pd
 import psutil
 from dependency_injector.wiring import Provide
-from jedi.inference.gradual.typing import Callable
 
-from src.application.contracts import IBlobStorageService, IBytesService
-from src.domain.enums import StorageContainer
+from src import Config
+from src.application.contracts import IMonitoringStorageService
 from src.infra.infrastructure import Containers
 
 
-def monitor_cpu_and_ram(run_id: str, query_id: str, interval: float = 0.00005):
+def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            for i in range(1, 5):
+            run_id = _create_run_id()
+            result = None
+
+            for i in range(Config.BENCHMARK_RUNS):
+                iteration = i + 1
                 process = psutil.Process()
                 samples: list[dict[str, Any]] = []
 
@@ -41,7 +46,7 @@ def monitor_cpu_and_ram(run_id: str, query_id: str, interval: float = 0.00005):
                     thread_event.set()
                     thread.join(timeout=1.0)
 
-                _save_run(run_id=run_id, query_id=query_id, execution_number=i, samples=samples)
+                _save_run(run_id=run_id, query_id=query_id, iteration=iteration, samples=samples)
 
             return result
 
@@ -61,6 +66,7 @@ def _sampler(
         interval: float
 ) -> None:
     cpu_count = _get_cpu_count()
+    start_time = time.time()
 
     while not thread_event.wait(interval):
         try:
@@ -71,9 +77,11 @@ def _sampler(
             cpu_percent = (delta_cpu / elapsed_time) * 100.0 / cpu_count if elapsed_time > 0 else 0.0
             rss = _get_rss(process)
 
+            zeroed_wall_clock_time = wall_clock_timestamp - start_time
+
             with thread_lock:
                 samples.append({
-                    "wall_clock_time": wall_clock_timestamp,
+                    "wall_clock_time": zeroed_wall_clock_time,
                     "delta_time": elapsed_time,
                     "delta_cpu": delta_cpu,
                     "cpu_percentage": cpu_percent,
@@ -151,19 +159,26 @@ def _get_rss(process: psutil.Process) -> float:
     return rss
 
 
+def _create_run_id() -> str:
+    date_prefix = date.today().isoformat()
+    random_suffix = ''.join(
+        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
+        for _ in range(Config.RUN_ID_LENGTH)
+    )
+
+    return f"{date_prefix}-{random_suffix}"
+
+
 def _save_run(
         run_id: str,
         query_id: str,
-        execution_number: int,
+        iteration: int,
         samples: list[dict[str, Any]],
-        blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
-        bytes_service: IBytesService = Provide[Containers.bytes_service]
+        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
-    parquet_file_name = f"{query_id}-{run_id}-{execution_number}.parquet"
-    df = pd.DataFrame(samples)
-    df_bytes = bytes_service.convert_df_to_parquet_bytes(df=df)
-    blob_storage_service.upload_file(
-        container_name=StorageContainer.BENCHMARKS,
-        blob_name=parquet_file_name,
-        data=df_bytes
+    monitoring_storage_service.write_run_to_blob_storage(
+        samples=samples,
+        query_id=query_id,
+        run_id=run_id,
+        iteration=iteration
     )

@@ -56,3 +56,8 @@ class Config:
     # PARTITIONING
     PARTITION_RESOLUTION: int = 3
     OSM_FEATURE_BATCH_SIZE: int = 250_000  # TODO: Rename this to FEATURE_BATCH_SIZE
+
+    # Monitoring
+    RUN_ID_LENGTH: int = 6
+    DEFAULT_SAMPLE_TIMEOUT: float = 0.00005
+    BENCHMARK_RUNS: int = 30
