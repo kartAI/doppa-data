@@ -94,7 +94,8 @@ class Containers(containers.DeclarativeContainer):
     monitoring_storage_service = providers.Singleton(
         MonitoringStorageService,
         blob_storage_service=blob_storage_service,
-        bytes_service=bytes_service
+        bytes_service=bytes_service,
+        file_path_service=file_path_service
     )
 
     StacIO.set_default(stac_io_service)
