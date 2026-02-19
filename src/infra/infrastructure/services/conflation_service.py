@@ -26,7 +26,7 @@ class ConflationService(IConflationService):
     def get_fkb_osm_id_relations(self, release: str, theme: Theme, region: str) -> pd.DataFrame:
         logger.info(f"Finding diff between the raw OSM- and FKB-datasets for region '{region}'.")
 
-        osm_release = self.__file_path_service.create_virtual_filesystem_path(
+        osm_release = self.__file_path_service.create_release_virtual_filesystem_path(
             storage_scheme="az",
             container=StorageContainer.RAW,
             release=release,
@@ -36,7 +36,7 @@ class ConflationService(IConflationService):
             dataset=DataSource.OSM.value
         )
 
-        fkb_release = self.__file_path_service.create_virtual_filesystem_path(
+        fkb_release = self.__file_path_service.create_release_virtual_filesystem_path(
             storage_scheme="az",
             container=StorageContainer.RAW,
             release=release,
@@ -187,7 +187,7 @@ class ConflationService(IConflationService):
             ids: pd.DataFrame
     ) -> list[gpd.GeoDataFrame]:
         logger.info(f"Merging OSM- and FKB-datasets for region '{region}'")
-        osm_release = self.__file_path_service.create_virtual_filesystem_path(
+        osm_release = self.__file_path_service.create_release_virtual_filesystem_path(
             storage_scheme="az",
             container=StorageContainer.RAW,
             release=release,
@@ -197,7 +197,7 @@ class ConflationService(IConflationService):
             dataset=DataSource.OSM.value
         )
 
-        fkb_release = self.__file_path_service.create_virtual_filesystem_path(
+        fkb_release = self.__file_path_service.create_release_virtual_filesystem_path(
             storage_scheme="az",
             container=StorageContainer.RAW,
             release=release,
