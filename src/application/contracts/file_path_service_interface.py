@@ -87,7 +87,7 @@ class IFilePathService(ABC):
     ) -> str:
         """
         Creates a virtual filesystem path for accessing files in a storage account.
-        :param storage_scheme: Strage scheme, e.g., "az" for Azure Blob Storage
+        :param storage_scheme: Storage scheme, e.g., "az" for Azure Blob Storage
         :param container: Name of storage container
         :param file_name: File name to store. Must end with '.parquet'
         :param kwargs: Additional keyword arguments that will be added between 'container' and 'file_name'.
