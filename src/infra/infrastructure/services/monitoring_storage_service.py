@@ -1,10 +1,7 @@
 ﻿import datetime
-import uuid
 from typing import Any
 
 import pandas as pd
-from duckdb import DuckDBPyConnection
-from pyarrow.util import guid
 
 from src import Config
 from src.application.contracts import IMonitoringStorageService, IBlobStorageService, IBytesService, IFilePathService
