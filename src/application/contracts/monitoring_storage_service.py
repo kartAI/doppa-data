@@ -1,16 +1,26 @@
-﻿from abc import ABC, abstractmethod
+﻿import datetime
+from abc import ABC, abstractmethod
 from typing import Any
 
 
 class IMonitoringStorageService(ABC):
     @abstractmethod
-    def write_metadata_to_blob_storage(self, query_id: str, run_id: str) -> None:
+    def write_metadata_to_blob_storage(
+            self,
+            metadata_id: str,
+            timestamp: datetime.datetime,
+            query_id: str,
+            run_id: str
+    ) -> None:
         """
         Save metadata to blob storage. Metadata includes information about the query and the run, such as query text,
         parameters, execution time, etc. The metadata is saved with a Hive compatible partition structure to allow for
         efficient querying and analysis of the data. The partition structure is defined as follows:
         `query_id=<query_id>/run_id=<run_id>/metadata.json`. This structure allows for easy retrieval of metadata based
         on query ID and run ID.
+        :param metadata_id: A GUID for the metadata entry which is generated in the main method and passed to this method.
+        :param timestamp: Timestamp of when the metadata entry was created which is generated in the main method and
+        passed to this method.
         :param query_id: Query ID associated with the run which is passed from the main method
         :param run_id: A unique identifier for the run
         :return:

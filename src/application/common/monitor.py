@@ -1,9 +1,11 @@
-﻿import functools
+﻿import datetime
+import functools
 import random
 import string
 import threading
 import time
-from datetime import date
+import uuid
+from datetime import date, timezone
 from typing import Any
 
 import psutil
@@ -48,6 +50,7 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
 
                 _save_run(run_id=run_id, query_id=query_id, iteration=iteration, samples=samples)
 
+            _save_run_metadata(query_id=query_id, run_id=run_id)
             return result
 
         return wrapper
@@ -181,4 +184,19 @@ def _save_run(
         query_id=query_id,
         run_id=run_id,
         iteration=iteration
+    )
+
+
+def _save_run_metadata(
+        query_id: str,
+        run_id: str,
+        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
+) -> None:
+    metadata_id = str(uuid.uuid4())
+    timestamp = datetime.datetime.now(timezone.utc)
+    monitoring_storage_service.write_metadata_to_blob_storage(
+        metadata_id=metadata_id,
+        timestamp=timestamp,
+        query_id=query_id,
+        run_id=run_id
     )

@@ -61,3 +61,4 @@ class Config:
     RUN_ID_LENGTH: int = 6
     DEFAULT_SAMPLE_TIMEOUT: float = 0.00005
     BENCHMARK_RUNS: int = 30
+    BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"
