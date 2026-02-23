@@ -46,7 +46,10 @@ class MonitoringStorageService(IMonitoringStorageService):
             "run_id": run_id
         }])
 
-        updated_benchmark_df = pd.concat([benchmark_df, entry]) if benchmark_df is not None else entry
+        updated_benchmark_df = pd.concat(
+            [benchmark_df, entry],
+            ignore_index=True
+        ) if benchmark_df is not None else entry
         updated_benchmark_bytes = self.__bytes_service.convert_df_to_parquet_bytes(updated_benchmark_df)
 
         self.__blob_storage_service.upload_file(
