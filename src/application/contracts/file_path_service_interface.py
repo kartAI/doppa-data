@@ -92,7 +92,7 @@ class IFilePathService(ABC):
         :param file_name: File name to store. Must end with '.parquet'
         :param kwargs: Additional keyword arguments that will be added between 'container' and 'file_name'.
         Will be added in the format 'key=value' and joined with '/'.
-        :return:
+        :return: Virtual filesystem path
         """
         raise NotImplementedError
 
