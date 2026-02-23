@@ -3,7 +3,8 @@ from pystac import StacIO
 
 from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
-    CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService
+    CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
+    MonitoringStorageService
 )
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context
 
@@ -88,6 +89,13 @@ class Containers(containers.DeclarativeContainer):
         db_context=db_context,
         file_path_service=file_path_service,
         blob_storage_service=blob_storage_service
+    )
+
+    monitoring_storage_service = providers.Singleton(
+        MonitoringStorageService,
+        blob_storage_service=blob_storage_service,
+        bytes_service=bytes_service,
+        file_path_service=file_path_service
     )
 
     StacIO.set_default(stac_io_service)

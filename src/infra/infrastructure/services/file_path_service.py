@@ -7,8 +7,16 @@ from src.domain.enums import Theme, StorageContainer
 
 
 class FilePathService(IFilePathService):
+    @staticmethod
+    def create_hive_blob_path(
+            file_name: str,
+            **kwargs: str | int
+    ) -> str:
+        hive_path = "/".join([f"{key}={value}" for key, value in kwargs.items()]) if kwargs else ""
+        return f"{hive_path}/{file_name}"
+
+    @staticmethod
     def create_dataset_blob_path(
-            self,
             release: str,
             theme: Theme,
             region: str,
@@ -65,6 +73,19 @@ class FilePathService(IFilePathService):
 
     @staticmethod
     def create_virtual_filesystem_path(
+            storage_scheme: Literal["az"],
+            container: StorageContainer,
+            file_name: str,
+            **kwargs: str | int
+    ) -> str:
+        if not file_name.endswith(".parquet"):
+            raise AssertionError(f"Filename '{file_name}' is invalid. Filename must end with '.parquet'.")
+
+        middle = "/".join([f"{key}={value}" for key, value in kwargs.items()]) if kwargs else ""
+        return f"{storage_scheme}://{container.value}/{middle}/{file_name}"
+
+    @staticmethod
+    def create_release_virtual_filesystem_path(
             storage_scheme: Literal["az"],
             container: StorageContainer,
             release: str,
