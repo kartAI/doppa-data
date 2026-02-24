@@ -50,6 +50,7 @@ jobs:
 
   build-and-push-container-orcestrator:
     name: Build & Push Container Orchestrator
+    needs: build-and-push-queries
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
 
