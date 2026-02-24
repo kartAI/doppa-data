@@ -118,4 +118,4 @@ jobs:
           ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        run: docker run --rm -v $HOME/.azure:/root/.azure ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+        run: docker run --rm -v "$HOME/.azure:/root/.azure" -e ACR_LOGIN_SERVER -e ACR_USERNAME -e ACR_PASSWORD ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
