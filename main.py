@@ -79,6 +79,8 @@ def _create_container_instance(
         "--registry-login-server", acr_login_server,
         "--registry-username", acr_username,
         "--registry-password", acr_password,
+        "--secure-environment-variables",
+        f"AZURE_BLOB_STORAGE_CONNECTION_STRING={Config.AZURE_BLOB_STORAGE_CONNECTION_STRING}",
         "--no-wait"
     ]
 

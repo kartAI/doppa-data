@@ -110,7 +110,7 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Pull Orchestrator From ACR
+      - name: Pull Orchestrator from ACR
         run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
 
       - name: Run Orchestrator Container
@@ -118,4 +118,5 @@ jobs:
           ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        run: docker run --rm -v "$HOME/.azure:/root/.azure" -e ACR_LOGIN_SERVER -e ACR_USERNAME -e ACR_PASSWORD ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+          AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+        run: docker run --rm -v "$HOME/.azure:/root/.azure" -e ACR_LOGIN_SERVER -e ACR_USERNAME -e ACR_PASSWORD -e AZURE_BLOB_STORAGE_CONNECTION_STRING ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
