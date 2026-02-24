@@ -98,15 +98,20 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
         data = json.loads(_run_cmd(show_command))
         state = data["instanceView"]["state"]
 
-        if state in ("Succeeded", "Failed"):
-            logger.info(f"Container '{container_group_name}' has stopped with state '{state}'")
-            break
+        match state:
+            case "Succeeded":
+                logger.info(f"Container '{container_group_name}' has stopped with state '{state}'")
+                break
+            case "Failed":
+                raise RuntimeError(
+                    f"Container '{container_group_name}' failed. Please check the logs for more information."
+                )
+            case _:
+                logger.info(
+                    f"Current container state for '{container_group_name}' is '{state}. Checking again in {timeout} seconds..."
+                )
 
-        logger.info(
-            f"Current container state for '{container_group_name}' is '{state}. Checking again in {timeout} seconds..."
-        )
-
-        time.sleep(timeout)
+                time.sleep(timeout)
 
 
 def main() -> None:
