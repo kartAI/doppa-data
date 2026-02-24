@@ -21,7 +21,7 @@ class Config:
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     BLOB_STORAGE_MAX_CONCURRENCY: int = 1
 
-    # DIRECTORIES14:20:42,140
+    # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
     LOG_DIR: Path = ROOT_DIR / f"logs"
 
