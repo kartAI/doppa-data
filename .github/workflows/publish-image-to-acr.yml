@@ -114,7 +114,4 @@ jobs:
         run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
 
       - name: Run Orchestrator Container
-        run: |
-          docker run --rm \
-            -v $HOME/.azure:/root/.azure:ro \
-            ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+        run: docker run --rm -v $HOME/.azure:/root/.azure ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
