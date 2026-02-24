@@ -5,11 +5,15 @@ on:
     types: [ closed ]
   workflow_dispatch:
 
-
 jobs:
   build-and-push:
-    if: ${{ github.event.pull_request.merged == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: [ osm-pipeline, blob_storage_db_scan, duckdb_bbox_filtering ]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,16 +26,22 @@ jobs:
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build image from docker-compose
-        run: docker compose build osm-pipeline
+        run: docker compose build ${{ matrix.service }}
 
       - name: Tag image as latest
-        run: docker tag osm-pipeline:latest ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:latest
+        run: |
+          docker tag \
+            ${{ matrix.service }}:latest \
+            ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
 
       - name: Tag image with commit SHA
-        run: docker tag osm-pipeline:latest ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:${{ github.sha }}
+        run: |
+          docker tag \
+            ${{ matrix.service }}:latest \
+            ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
 
       - name: Push image to ACR (latest)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:latest
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
 
       - name: Push image to ACR (commit SHA)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:${{ github.sha }}
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}

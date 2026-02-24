@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: osm-pipeline:latest
-    command: python main.py "conflation-pipeline"
+    command: python benchmark_runner.py "conflation-pipeline"
 
   blob_storage_db_scan:
     env_file:
@@ -14,7 +14,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: python main.py "blob-storage-db-scan"
+    image: blob-storage-db-scan:latest
+    command: python benchmark_runner.py "blob-storage-db-scan"
 
   duckdb_bbox_filtering:
     env_file:
@@ -22,4 +23,5 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: python main.py duckdb-bbox-filtering
+    image: duckdb-bbox-filtering:latest
+    command: python benchmark_runner.py duckdb-bbox-filtering
