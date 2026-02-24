@@ -63,7 +63,7 @@ def _create_container_instance(
     acr_username = os.getenv("ACR_USERNAME")
     acr_password = os.getenv("ACR_PASSWORD")
 
-    startup_command = f"python -m main --script-id {experiment_id} --run-id {run_id}"
+    startup_command = f"python benchmark_runner.py --script-id {experiment_id} --run-id {run_id}"
 
     create_command = [
         "az", "container", "create",

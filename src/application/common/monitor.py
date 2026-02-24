@@ -164,7 +164,13 @@ def _get_rss(process: psutil.Process) -> float:
 
 @inject
 def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
-    return run_id
+    if run_id is not None:
+        return run_id
+
+    today = date.today().strftime("%Y-%m-%d")
+    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+    return f"{today}-{suffix}"
 
 
 def _save_run(
