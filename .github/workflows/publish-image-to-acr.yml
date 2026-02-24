@@ -12,30 +12,37 @@ jobs:
 
     strategy:
       matrix:
-        service: [ osm-pipeline, blob-storage-db-scan, duckdb-bbox-filtering ]
+        include:
+          - service: blob-storage-db-scan
+            image: blob-storage-db-scan
+            display_name: Blob Storage DB Scan
+
+          - service: duckdb-bbox-filtering
+            image: duckdb-bbox-filtering
+            display_name: DuckDB Bounding Box Filtering
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to Azure Container Registry
+      - name: Log in to ACR
         uses: azure/docker-login@v2
         with:
           login-server: ${{ secrets.ACR_NAME }}.azurecr.io
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build image from docker-compose
+      - name: Build \${{ matrix.display_name }} from docker\-compose
         run: docker compose build ${{ matrix.service }}
 
-      - name: Tag image as latest
-        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+      - name: Tag \${{ matrix.display_name }} as latest
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
 
-      - name: Tag image with commit SHA
-        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+      - name: Tag \${{ matrix.display_name }} with commit SHA
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
 
-      - name: Push image to ACR (latest)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+      - name: Push \${{ matrix.display_name }} (latest)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
 
-      - name: Push image to ACR (commit SHA)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+      - name: Push \${{ matrix.display_name }} (commit SHA)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
