@@ -1,7 +1,7 @@
 ﻿import argparse
 
 from src.presentation.configuration import initialize_dependencies
-from src.presentation.entrypoints import run_pipeline, blob_storage_db_scan, duckdb_bbox_filtering
+from src.presentation.entrypoints import blob_storage_db_scan, duckdb_bbox_filtering
 
 
 def main() -> None:
