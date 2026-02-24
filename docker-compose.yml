@@ -1,13 +1,4 @@
 services:
-  osm-pipeline:
-    env_file:
-      - .env
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: osm-pipeline:latest
-    command: python benchmark_runner.py --script-id conflation-pipeline
-
   blob-storage-db-scan:
     env_file:
       - .env
