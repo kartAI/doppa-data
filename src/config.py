@@ -16,7 +16,7 @@ class Config:
 
     # AZURE
     AZURE_RESOURCE_GROUP: str = "doppa"
-    AZURE_RESOURCE_LOCATION: str = "westeurope"
+    AZURE_RESOURCE_LOCATION: str = "norwayeast"
     BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     BLOB_STORAGE_MAX_CONCURRENCY: int = 1
 

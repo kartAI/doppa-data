@@ -1,5 +1,7 @@
 services:
   container-orchestrator:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: .docker/Orchestrator.Dockerfile

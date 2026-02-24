@@ -1,10 +1,10 @@
 experiments:
   - id: blob-storage-db-scan
-    image: blob-storage-db-scan:latest
-    cpu: 8
+    image: doppaacr.azurecr.io/blob-storage-db-scan:latest
+    cpu: 4
     memory_gb: 16
 
   - id: duckdb-bbox-filtering
-    image: duckdb-bbox-filtering:latest
-    cpu: 8
+    image: doppaacr.azurecr.io/duckdb-bbox-filtering:latest
+    cpu: 4
     memory_gb: 16
