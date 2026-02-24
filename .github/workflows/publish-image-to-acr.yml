@@ -29,16 +29,10 @@ jobs:
         run: docker compose build ${{ matrix.service }}
 
       - name: Tag image as latest
-        run: |
-          docker tag \
-            ${{ matrix.service }}:latest \
-            ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
 
       - name: Tag image with commit SHA
-        run: |
-          docker tag \
-            ${{ matrix.service }}:latest \
-            ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
 
       - name: Push image to ACR (latest)
         run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
