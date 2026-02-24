@@ -1,12 +1,14 @@
 ﻿from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
+from src.application.common.monitor import monitor_cpu_and_ram
 from src.application.contracts import IFilePathService
 from src.domain.enums import StorageContainer, Theme
 from src.infra.infrastructure import Containers
 
 
 @inject
+@monitor_cpu_and_ram(query_id="blob-storage-db-scan")
 def blob_storage_db_scan(
         db_context: DuckDBPyConnection = Provide[Containers.db_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]

@@ -1,21 +1,19 @@
 ﻿import argparse
 
-from src.application.common import monitor_cpu_and_ram
 from src.presentation.configuration import initialize_dependencies
-from src.presentation.entrypoints import run_pipeline, blob_storage_db_scan
+from src.presentation.entrypoints import blob_storage_db_scan, duckdb_bbox_filtering
 
 
-@monitor_cpu_and_ram(query_id="main")
 def main() -> None:
     initialize_dependencies()
     script_id = get_script_id()
 
     match script_id:
-        case "conflation-pipeline":
-            run_pipeline()
-            return
         case "blob-storage-db-scan":
             blob_storage_db_scan()
+            return
+        case "duckdb-bbox-filtering":
+            duckdb_bbox_filtering()
             return
         case _:
             raise ValueError("Script ID is invalid")

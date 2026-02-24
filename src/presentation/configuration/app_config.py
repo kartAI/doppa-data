@@ -6,3 +6,4 @@ def initialize_dependencies() -> None:
     container.wire(modules=["src.application.common.monitor"])
     container.wire(modules=["src.presentation.entrypoints.release_pipeline"])
     container.wire(modules=["src.presentation.entrypoints.blob_storage_db_scan"])
+    container.wire(modules=["src.presentation.entrypoints.bbox_filtering"])

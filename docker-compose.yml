@@ -15,3 +15,11 @@ services:
       context: .
       dockerfile: Dockerfile
     command: python main.py "blob-storage-db-scan"
+
+  duckdb_bbox_filtering:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python main.py duckdb-bbox-filtering
