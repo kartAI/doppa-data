@@ -15,6 +15,8 @@ class Config:
     IOU_ROUNDING_DECIMALS: int = 9
 
     # AZURE
+    AZURE_RESOURCE_GROUP: str = "doppa"
+    AZURE_RESOURCE_LOCATION: str = "westeurope"
     BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     BLOB_STORAGE_MAX_CONCURRENCY: int = 1
 
@@ -57,8 +59,10 @@ class Config:
     PARTITION_RESOLUTION: int = 3
     OSM_FEATURE_BATCH_SIZE: int = 250_000  # TODO: Rename this to FEATURE_BATCH_SIZE
 
-    # Monitoring
+    # BENCHMARKING
+    BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
     DEFAULT_SAMPLE_TIMEOUT: float = 0.00005
+    BENCHMARK_WARMUP_RUNS: int = 3
     BENCHMARK_RUNS: int = 30
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"

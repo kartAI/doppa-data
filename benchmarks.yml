@@ -1,0 +1,10 @@
+experiments:
+  - id: blob-storage-db-scan
+    image: blob-storage-db-scan:latest
+    cpu: 8
+    memory_gb: 16
+
+  - id: duckdb-bbox-filtering
+    image: duckdb-bbox-filtering:latest
+    cpu: 8
+    memory_gb: 16

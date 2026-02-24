@@ -1,0 +1,30 @@
+﻿import argparse
+
+from src.presentation.configuration import initialize_dependencies
+from src.presentation.entrypoints import blob_storage_db_scan, duckdb_bbox_filtering
+
+
+def benchmark_runner() -> None:
+    initialize_dependencies()
+    script_id = get_script_id()
+
+    match script_id:
+        case "blob-storage-db-scan":
+            blob_storage_db_scan()
+            return
+        case "duckdb-bbox-filtering":
+            duckdb_bbox_filtering()
+            return
+        case _:
+            raise ValueError("Script ID is invalid")
+
+
+def get_script_id() -> str:
+    parser = argparse.ArgumentParser("doppa-data")
+    parser.add_argument("id", help="ID of script to run")
+    args = parser.parse_args()
+    return args.id
+
+
+if __name__ == "__main__":
+    benchmark_runner()
