@@ -3,6 +3,8 @@ name: Build and Push to Azure Container Registry
 on:
   pull_request:
     types: [ closed ]
+  schedule:
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -48,7 +50,7 @@ jobs:
       - name: Push ${{ matrix.display_name }} (commit SHA)
         run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
 
-  build-and-push-container-orcestrator:
+  build-and-push-container-orchestrator:
     name: Build & Push Container Orchestrator
     needs: build-and-push-queries
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
@@ -79,3 +81,26 @@ jobs:
 
       - name: Push Container Orchestrator (commit SHA)
         run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:${{ github.sha }}
+
+  run-benchmarks:
+    name: Run Benchmarks via Orchestrator
+    needs: build-and-push-container-orchestrator
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Pull Orchestrator From ACR
+        run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+
+      - name: Run Orchestrator Container
+        run: |
+          docker run --rm \
+            -v $HOME/.azure:/root/.azure:ro \
+            ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
