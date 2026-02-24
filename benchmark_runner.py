@@ -27,7 +27,7 @@ def get_script_id() -> str:
     return args.id
 
 
-def get_args() -> tuple[str, str]:
+def get_args() -> tuple[str, Optional[str]]:
     parser = argparse.ArgumentParser("doppa-data")
     parser.add_argument("--script-id", required=True, help="Script identifier. Must one of the specified IDs")
     parser.add_argument("--run-id", help="Run identifier. Randomly generated and prefixed with today's date")

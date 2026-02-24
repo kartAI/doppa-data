@@ -111,7 +111,7 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
                 )
             case _:
                 logger.info(
-                    f"Current container state for '{container_group_name}' is '{state}. Checking again in {timeout} seconds..."
+                    f"Current container state for '{container_group_name}' is '{state}'. Checking again in {timeout} seconds..."
                 )
 
                 time.sleep(timeout)
