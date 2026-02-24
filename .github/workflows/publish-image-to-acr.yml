@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ osm-pipeline, blob_storage_db_scan, duckdb_bbox_filtering ]
+        service: [ osm-pipeline, blob-storage-db-scan, duckdb-bbox-filtering ]
 
     steps:
       - name: Checkout code
