@@ -6,22 +6,22 @@ services:
       context: .
       dockerfile: Dockerfile
     image: osm-pipeline:latest
-    command: python benchmark_runner.py "conflation-pipeline"
+    command: python benchmark_runner.py --script-id conflation-pipeline
 
-  blob_storage_db_scan:
+  blob-storage-db-scan:
     env_file:
       - .env
     build:
       context: .
       dockerfile: Dockerfile
     image: blob-storage-db-scan:latest
-    command: python benchmark_runner.py "blob-storage-db-scan"
+    command: python benchmark_runner.py --script-id blob-storage-db-scan
 
-  duckdb_bbox_filtering:
+  duckdb-bbox-filtering:
     env_file:
       - .env
     build:
       context: .
       dockerfile: Dockerfile
     image: duckdb-bbox-filtering:latest
-    command: python benchmark_runner.py duckdb-bbox-filtering
+    command: python benchmark_runner.py --script-id duckdb-bbox-filtering
