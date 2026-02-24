@@ -102,6 +102,13 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Log in to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
       - name: Pull Orchestrator From ACR
         run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
 
