@@ -7,6 +7,7 @@ on:
 
 jobs:
   build-and-push:
+    name: Build & Push – ${{ matrix.display_name }}
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
 
@@ -32,17 +33,17 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build \${{ matrix.display_name }} from docker\-compose
+      - name: Build ${{ matrix.display_name }} from docker-compose
         run: docker compose build ${{ matrix.service }}
 
-      - name: Tag \${{ matrix.display_name }} as latest
+      - name: Tag ${{ matrix.display_name }} as latest
         run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
 
-      - name: Tag \${{ matrix.display_name }} with commit SHA
+      - name: Tag ${{ matrix.display_name }} with commit SHA
         run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
 
-      - name: Push \${{ matrix.display_name }} (latest)
+      - name: Push ${{ matrix.display_name }} (latest)
         run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
 
-      - name: Push \${{ matrix.display_name }} (commit SHA)
+      - name: Push ${{ matrix.display_name }} (commit SHA)
         run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
