@@ -1,4 +1,13 @@
 services:
+  container-orchestrator:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: container-orchestrator:latest
+    command: python -m main
+
   blob-storage-db-scan:
     env_file:
       - .env
