@@ -1,7 +1,5 @@
 services:
   container-orchestrator:
-    env_file:
-      - .env
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,8 +7,6 @@ services:
     command: python -m main
 
   blob-storage-db-scan:
-    env_file:
-      - .env
     build:
       context: .
       dockerfile: Dockerfile
@@ -18,8 +14,6 @@ services:
     command: python benchmark_runner.py --script-id blob-storage-db-scan
 
   duckdb-bbox-filtering:
-    env_file:
-      - .env
     build:
       context: .
       dockerfile: Dockerfile
