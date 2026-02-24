@@ -15,13 +15,12 @@ def create_duckdb_context() -> duckdb.DuckDBPyConnection:
     db_context.execute("""
     CREATE OR REPLACE SECRET azure_secret(
         TYPE azure,
-        CONNECTION_STRING ?
+        PROVIDER config,
+        ACCOUNT_NAME ?
     );
-    """, [Config.BLOB_STORAGE_CONNECTION_STRING])
+    """, [Config.AZURE_BLOB_STORAGE_ACCOUNT_NAME])
 
     if platform.system() == "Linux":
         db_context.execute("SET azure_transport_option_type = curl")
-
-    db_context.execute("SET azure_storage_connection_string = ?;", [Config.BLOB_STORAGE_CONNECTION_STRING])
 
     return db_context

@@ -3,35 +3,120 @@ name: Build and Push to Azure Container Registry
 on:
   pull_request:
     types: [ closed ]
+  schedule:
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  build-and-push:
-    if: ${{ github.event.pull_request.merged == true }}
+  build-and-push-queries:
+    name: Build & Push Query ${{ matrix.display_name }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - service: blob-storage-db-scan
+            image: blob-storage-db-scan
+            display_name: Blob Storage DB Scan
+
+          - service: duckdb-bbox-filtering
+            image: duckdb-bbox-filtering
+            display_name: DuckDB BBOX Filtering
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to Azure Container Registry
+      - name: Log in to ACR
         uses: azure/docker-login@v2
         with:
           login-server: ${{ secrets.ACR_NAME }}.azurecr.io
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build image from docker-compose
-        run: docker compose build osm-pipeline
+      - name: Build ${{ matrix.display_name }} from docker-compose
+        run: docker compose build ${{ matrix.service }}
 
-      - name: Tag image as latest
-        run: docker tag osm-pipeline:latest ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:latest
+      - name: Tag ${{ matrix.display_name }} as latest
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
 
-      - name: Tag image with commit SHA
-        run: docker tag osm-pipeline:latest ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:${{ github.sha }}
+      - name: Tag ${{ matrix.display_name }} with commit SHA
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
 
-      - name: Push image to ACR (latest)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:latest
+      - name: Push ${{ matrix.display_name }} (latest)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
 
-      - name: Push image to ACR (commit SHA)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/osm-pipeline:${{ github.sha }}
+      - name: Push ${{ matrix.display_name }} (commit SHA)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
+
+  build-and-push-container-orchestrator:
+    name: Build & Push Container Orchestrator
+    needs: build-and-push-queries
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build Container Orchestrator from docker-compose
+        run: docker compose build container-orchestrator
+
+      - name: Tag Container Orchestrator as latest
+        run: docker tag container-orchestrator:latest ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+
+      - name: Tag Container Orchestrator with commit SHA
+        run: docker tag container-orchestrator:latest ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:${{ github.sha }}
+
+      - name: Push Container Orchestrator (latest)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+
+      - name: Push Container Orchestrator (commit SHA)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:${{ github.sha }}
+
+  run-benchmarks:
+    name: Run Benchmarks via Orchestrator
+    needs: build-and-push-container-orchestrator
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Pull Orchestrator from ACR
+        run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+
+      - name: Run Orchestrator Container
+        env:
+          ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+        run: docker run --rm -v "$HOME/.azure:/root/.azure" -e ACR_LOGIN_SERVER -e ACR_USERNAME -e ACR_PASSWORD -e AZURE_BLOB_STORAGE_CONNECTION_STRING ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest

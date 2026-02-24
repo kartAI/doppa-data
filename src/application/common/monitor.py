@@ -9,7 +9,7 @@ from datetime import date, timezone
 from typing import Any
 
 import psutil
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import Provide, inject
 
 from src import Config
 from src.application.contracts import IMonitoringStorageService
@@ -20,8 +20,8 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            run_id = _create_run_id()
             result = None
+            run_id = _get_run_id()
 
             for i in range(Config.BENCHMARK_RUNS):
                 iteration = i + 1
@@ -162,14 +162,15 @@ def _get_rss(process: psutil.Process) -> float:
     return rss
 
 
-def _create_run_id() -> str:
-    date_prefix = date.today().isoformat()
-    random_suffix = ''.join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
-        for _ in range(Config.RUN_ID_LENGTH)
-    )
+@inject
+def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
+    if run_id is not None:
+        return run_id
 
-    return f"{date_prefix}-{random_suffix}"
+    today = date.today().strftime("%Y-%m-%d")
+    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+    return f"{today}-{suffix}"
 
 
 def _save_run(

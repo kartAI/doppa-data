@@ -1,9 +1,14 @@
 ﻿from src.infra.infrastructure import Containers
 
 
-def initialize_dependencies() -> None:
+def initialize_dependencies(run_id: str) -> None:
     container = Containers()
-    container.wire(modules=["src.application.common.monitor"])
-    container.wire(modules=["src.presentation.entrypoints.release_pipeline"])
-    container.wire(modules=["src.presentation.entrypoints.blob_storage_db_scan"])
-    container.wire(modules=["src.presentation.entrypoints.bbox_filtering"])
+
+    container.config.run_id.from_value(run_id)
+    container.wire(
+        modules=[
+            "src.application.common.monitor",
+            "src.presentation.entrypoints.blob_storage_db_scan",
+            "src.presentation.entrypoints.bbox_filtering",
+        ]
+    )

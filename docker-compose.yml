@@ -1,25 +1,27 @@
 services:
-  osm-pipeline:
+  container-orchestrator:
     env_file:
       - .env
     build:
       context: .
-      dockerfile: Dockerfile
-    image: osm-pipeline:latest
-    command: python main.py "conflation-pipeline"
+      dockerfile: .docker/Orchestrator.Dockerfile
+    image: container-orchestrator:latest
+    command: python -m main
 
-  blob_storage_db_scan:
+  blob-storage-db-scan:
     env_file:
       - .env
     build:
       context: .
-      dockerfile: Dockerfile
-    command: python main.py "blob-storage-db-scan"
+      dockerfile: .docker/Query.Dockerfile
+    image: blob-storage-db-scan:latest
+    command: python benchmark_runner.py --script-id blob-storage-db-scan
 
-  duckdb_bbox_filtering:
+  duckdb-bbox-filtering:
     env_file:
       - .env
     build:
       context: .
-      dockerfile: Dockerfile
-    command: python main.py duckdb-bbox-filtering
+      dockerfile: .docker/Query.Dockerfile
+    image: duckdb-bbox-filtering:latest
+    command: python benchmark_runner.py --script-id duckdb-bbox-filtering
