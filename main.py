@@ -39,7 +39,7 @@ def _run_cmd(cmd: list[str]) -> str:
     return result.stdout
 
 
-def _delete_container_instance(container_group_name: str) -> None
+def _delete_container_instance(container_group_name: str) -> None:
     delete_command = [
         "az", "container", "delete",
         "--resource-group", Config.AZURE_RESOURCE_GROUP,
