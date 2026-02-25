@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-and-push-queries:
     name: Build & Push Query ${{ matrix.display_name }}
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true  || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -57,7 +57,7 @@ jobs:
   build-and-push-container-orchestrator:
     name: Build & Push Container Orchestrator
     needs: build-and-push-queries
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
 
     steps:
