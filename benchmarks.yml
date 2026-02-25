@@ -4,6 +4,11 @@ experiments:
     cpu: 4
     memory_gb: 16
 
+  - id: db-scan-postgis
+    image: doppaacr.azurecr.io/db-scan-postgis:latest
+    cpu: 4
+    memory_gb: 16
+
   - id: duckdb-bbox-filtering
     image: doppaacr.azurecr.io/duckdb-bbox-filtering:latest
     cpu: 4
