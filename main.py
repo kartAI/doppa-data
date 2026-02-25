@@ -142,6 +142,7 @@ def main() -> None:
             memory_gb=memory_gb
         )
         _check_container_state(container_group_name=container_group_name)
+        _delete_container_instance(container_group_name=container_group_name)
 
 
 if __name__ == '__main__':
