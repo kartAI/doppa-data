@@ -12,6 +12,7 @@ import psutil
 from dependency_injector.wiring import Provide, inject
 
 from src import Config
+from src.application.common import logger
 from src.application.contracts import IMonitoringStorageService
 from src.infra.infrastructure import Containers
 
@@ -165,12 +166,15 @@ def _get_rss(process: psutil.Process) -> float:
 @inject
 def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
     if run_id is not None:
+        logger.info(f"Found run ID '{run_id}' from DI.")
         return run_id
 
     today = date.today().strftime("%Y-%m-%d")
-    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH))
+    run_id = f"{today}-{suffix}"
+    logger.info(f"No run ID from DI. Created run ID '{run_id}'")
 
-    return f"{today}-{suffix}"
+    return run_id
 
 
 def _save_run(
