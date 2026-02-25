@@ -86,7 +86,9 @@ def _create_container_instance(
 
     logger.info(f"Creating container group '{container_group_name}'...")
     _run_cmd(create_command)
-    logger.info(f"Created container group '{container_group_name}'")
+    logger.info(
+        f"Created container group '{container_group_name}' (CPU: {cpu} cores | RAM: {memory_gb} GB) with startup command '{startup_command}'"
+    )
 
 
 def _check_container_state(container_group_name: str, timeout: float = 5) -> None:
