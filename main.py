@@ -15,12 +15,9 @@ from src.application.common import logger
 
 def _create_run_id() -> str:
     date_prefix = date.today().isoformat()
-    random_suffix = ''.join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
-        for _ in range(Config.RUN_ID_LENGTH)
-    )
+    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH))
 
-    return f"{date_prefix}-{random_suffix}"
+    return f"{date_prefix}-{suffix}"
 
 
 def _run_cmd(cmd: list[str]) -> str:
