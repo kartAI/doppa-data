@@ -51,14 +51,13 @@ def _delete_container_instance(container_group_name: str) -> None:
 
 
 def _create_container_instance(
+        run_id: str,
         experiment_id: str,
         container_group_name: str,
         docker_image: str,
         cpu: str,
         memory_gb: str,
 ) -> None:
-    run_id = _create_run_id()
-
     acr_login_server = os.getenv("ACR_LOGIN_SERVER")
     acr_username = os.getenv("ACR_USERNAME")
     acr_password = os.getenv("ACR_PASSWORD")
@@ -123,6 +122,8 @@ def main() -> None:
     with open(Config.BENCHMARK_FILE) as f:
         benchmark_configuration = yaml.safe_load(f)
 
+    run_id = _create_run_id()
+
     for experiment in benchmark_configuration["experiments"]:
         experiment_id = experiment["id"]
         container_group_name = f"benchmark-{experiment_id}"
@@ -134,6 +135,7 @@ def main() -> None:
 
         _delete_container_instance(container_group_name=container_group_name)
         _create_container_instance(
+            run_id=run_id,
             experiment_id=experiment_id,
             container_group_name=container_group_name,
             docker_image=docker_image,
