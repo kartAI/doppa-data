@@ -77,6 +77,8 @@ def _create_container_instance(
         "--registry-password", acr_password,
         "--secure-environment-variables",
         f"AZURE_BLOB_STORAGE_CONNECTION_STRING={Config.AZURE_BLOB_STORAGE_CONNECTION_STRING}",
+        f"POSTGRES_USERNAME={Config.POSTGRES_USERNAME}",
+        f"POSTGRES_PASSWORD={Config.POSTGRES_PASSWORD}"
         "--no-wait"
     ]
 
