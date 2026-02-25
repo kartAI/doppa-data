@@ -1,9 +1,6 @@
 name: Run Benchmarks
 
 on:
-  workflow_run:
-    workflows: [ "Build and Push Query- and Orchestration-containers to Azure Container Registry" ]
-    types: [ completed ]
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
