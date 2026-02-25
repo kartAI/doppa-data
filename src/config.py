@@ -21,6 +21,11 @@ class Config:
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     BLOB_STORAGE_MAX_CONCURRENCY: int = 1
 
+    # POSTGRESQL
+    POSTGRES_USERNAME: str = os.getenv("POSTGRES_USERNAME")
+    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB")
+
     # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
     LOG_DIR: Path = ROOT_DIR / f"logs"
