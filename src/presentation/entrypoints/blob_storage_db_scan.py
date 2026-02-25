@@ -1,6 +1,7 @@
 ﻿from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
+from src import Config
 from src.application.common.monitor import monitor_cpu_and_ram
 from src.application.contracts import IFilePathService
 from src.domain.enums import StorageContainer, Theme
@@ -15,7 +16,7 @@ def blob_storage_db_scan(
 ) -> None:
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release="2026-02-16.3",
+        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",

@@ -11,5 +11,6 @@ def initialize_dependencies(run_id: str) -> None:
             "src.presentation.entrypoints.blob_storage_db_scan",
             "src.presentation.entrypoints.db_scan_postgis",
             "src.presentation.entrypoints.bbox_filtering",
+            "src.presentation.entrypoints.setup_benchmarking_framework",
         ]
     )

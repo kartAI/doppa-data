@@ -53,7 +53,7 @@ class OpenStreetMapFileService(IOpenStreetMapFileService):
                 feature = self.__create_feature(area)
                 self.__buildings.append(feature)
 
-                if len(self.__buildings) >= Config.OSM_FEATURE_BATCH_SIZE:
+                if len(self.__buildings) >= Config.BUILDINGS_BATCH_SIZE:
                     self.create_gdf_from_batch(self.__buildings)
                     self.__buildings = []
                     logger.info(f"Created batch #{len(self.batches)}")

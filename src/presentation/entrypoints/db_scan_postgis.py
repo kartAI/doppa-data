@@ -1,5 +1,5 @@
 ﻿from dependency_injector.wiring import inject, Provide
-from psycopg2.extensions import cursor
+from sqlalchemy import Engine, text
 
 from src.application.common.monitor import monitor_cpu_and_ram
 from src.infra.infrastructure import Containers
@@ -8,6 +8,7 @@ from src.infra.infrastructure import Containers
 @inject
 @monitor_cpu_and_ram(query_id="db-scan-postgis")
 def db_scan_postgis(
-        db_context: cursor = Provide[Containers.postgres_context]
+        db_context: Engine = Provide[Containers.postgres_context]
 ) -> None:
-    db_context.execute("SELECT count(*) AS count FROM 'buildings'")
+    with db_context.connect() as conn:
+        conn.execute(text("SELECT count(*) AS count FROM buildings"))

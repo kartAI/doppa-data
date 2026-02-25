@@ -27,6 +27,7 @@ class Config:
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
+    POSTGRES_PAGE_SIZE: int = 10_000
 
     # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
@@ -65,7 +66,7 @@ class Config:
 
     # PARTITIONING
     PARTITION_RESOLUTION: int = 3
-    OSM_FEATURE_BATCH_SIZE: int = 250_000  # TODO: Rename this to FEATURE_BATCH_SIZE
+    BUILDINGS_BATCH_SIZE: int = 250_000
 
     # BENCHMARKING
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
@@ -74,3 +75,4 @@ class Config:
     BENCHMARK_WARMUP_RUNS: int = 3
     BENCHMARK_RUNS: int = 30
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"
+    BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-02-16.3"

@@ -1,22 +1,23 @@
-﻿import psycopg2
-from psycopg2.extensions import connection, ISOLATION_LEVEL_AUTOCOMMIT, cursor
+﻿from sqlalchemy import Engine, create_engine
 
 from src import Config
 
 
-def create_postgres_db_context() -> cursor:
-    postgres_db_connection: connection = psycopg2.connect(
-        host=Config.POSTGRES_HOST,
-        port=Config.POSTGRES_PORT,
-        user=Config.POSTGRES_USERNAME,
-        password=Config.POSTGRES_PASSWORD,
-        dbname=Config.POSTGRES_DB,
-        sslmode="require"
+def create_postgres_db_context() -> Engine:
+    conn_str = (
+        f"postgresql+psycopg2://{Config.POSTGRES_USERNAME}:{Config.POSTGRES_PASSWORD}"
+        f"@{Config.POSTGRES_HOST}:{Config.POSTGRES_PORT}/{Config.POSTGRES_DB}"
+        f"?sslmode=require"
     )
 
-    postgres_db_connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    # Create the Engine
+    engine = create_engine(
+        conn_str,
+        future=True,
+        pool_pre_ping=True,
+    )
 
-    postgres_db_context = postgres_db_connection.cursor()
-    postgres_db_context.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+    with engine.connect() as conn:
+        conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS postgis;")
 
-    return postgres_db_context
+    return engine

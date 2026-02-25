@@ -2,7 +2,9 @@
 from typing import Optional
 
 from src.presentation.configuration import initialize_dependencies
-from src.presentation.entrypoints import blob_storage_db_scan, duckdb_bbox_filtering, db_scan_postgis
+from src.presentation.entrypoints import (
+    blob_storage_db_scan, duckdb_bbox_filtering, db_scan_postgis, setup_benchmarking_framework
+)
 
 
 def benchmark_runner() -> None:
@@ -18,6 +20,9 @@ def benchmark_runner() -> None:
             return
         case "duckdb-bbox-filtering":
             duckdb_bbox_filtering()
+            return
+        case "setup-framework":
+            setup_benchmarking_framework()
             return
         case _:
             raise ValueError("Script ID is invalid")
