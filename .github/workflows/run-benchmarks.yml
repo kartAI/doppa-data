@@ -1,0 +1,56 @@
+﻿name: Run Benchmarks
+
+on:
+  workflow_run:
+    workflows: [ "Build and Push to Azure Container Registry" ]
+    types: [ completed ]
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  run-benchmarks:
+    name: Run Benchmarks via Orchestrator
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'workflow_run'
+          && github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Pull Orchestrator from ACR
+        run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+
+      - name: Run Orchestrator Container
+        env:
+          ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+        run: >
+          docker run --rm
+          -v "$HOME/.azure:/root/.azure"
+          -e ACR_LOGIN_SERVER
+          -e ACR_USERNAME
+          -e ACR_PASSWORD
+          -e AZURE_BLOB_STORAGE_CONNECTION_STRING
+          ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
