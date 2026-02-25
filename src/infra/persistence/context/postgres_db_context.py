@@ -10,7 +10,8 @@ def create_postgres_db_context() -> cursor:
         port=Config.POSTGRES_PORT,
         user=Config.POSTGRES_USERNAME,
         password=Config.POSTGRES_PASSWORD,
-        dbname=Config.POSTGRES_DB
+        dbname=Config.POSTGRES_DB,
+        sslmode="require"
     )
 
     postgres_db_connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)

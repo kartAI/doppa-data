@@ -2,7 +2,7 @@
 from typing import Optional
 
 from src.presentation.configuration import initialize_dependencies
-from src.presentation.entrypoints import blob_storage_db_scan, duckdb_bbox_filtering
+from src.presentation.entrypoints import blob_storage_db_scan, duckdb_bbox_filtering, db_scan_postgis
 
 
 def benchmark_runner() -> None:
@@ -12,6 +12,9 @@ def benchmark_runner() -> None:
     match script_id:
         case "blob-storage-db-scan":
             blob_storage_db_scan()
+            return
+        case "db-scan-postgis":
+            db_scan_postgis()
             return
         case "duckdb-bbox-filtering":
             duckdb_bbox_filtering()

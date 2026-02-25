@@ -25,7 +25,7 @@ class Config:
     POSTGRES_HOST: str = "doppa-db.postgres.database.azure.com"
     POSTGRES_USERNAME: str = os.getenv("POSTGRES_USERNAME")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_DB: str = "doppa-db"
+    POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
 
     # DIRECTORIES
