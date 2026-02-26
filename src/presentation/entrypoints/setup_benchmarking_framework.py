@@ -50,13 +50,6 @@ def _postgres_buildings_seed(
         logger.warning(f"No buildings found at blob storage path '{path}'")
         return
 
-    with postgres_db_context.connect() as conn:
-        row_count = conn.execute(text("SELECT COUNT(*) FROM buildings")).scalar_one()
-
-        if row_count > 0:
-            logger.info(f"Table 'buildings' already contains {row_count} rows. Aborting seed.")
-            return
-
     logger.info(f"Inserting {building_gdf.shape[0]} rows into 'buildings' table...")
     with postgres_db_context.connect() as conn:
         building_gdf.to_postgis(
