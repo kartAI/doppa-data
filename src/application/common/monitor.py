@@ -68,11 +68,11 @@ def _sampler(
         thread_lock: threading.Lock,
         thread_event: threading.Event,
         samples: list[dict[str, Any]],
-        previous_timestamp: float,
-        previous_process_cpu_time: float,
         interval: float
 ) -> None:
     start_timestamp, start_process_cpu_time, start_system_cpu_time_per_core = _get_times(process)
+    previous_timestamp = start_timestamp
+    previous_process_cpu_time = start_process_cpu_time
 
     while not thread_event.wait(interval):
         try:
@@ -124,15 +124,11 @@ def _initialize_threading(
     thread_lock = threading.Lock()
     thread_event = threading.Event()
 
-    initial_timestamp, initial_process_cpu_time, _ = _get_times(process)
-
     kwargs = {
         "process": process,
         "thread_lock": thread_lock,
         "thread_event": thread_event,
         "samples": samples,
-        "previous_timestamp": initial_timestamp,
-        "previous_process_cpu_time": initial_process_cpu_time,
         "interval": interval
     }
 
@@ -146,11 +142,6 @@ def _initialize_cpu_metrics(process: psutil.Process) -> None:
     process.cpu_percent(interval=None)
     time.sleep(0.1)
     process.cpu_percent(interval=None)
-
-
-def _initialize_timers(process: psutil.Process) -> tuple[float, float]:
-    initial_timestamp, initial_cpu_time, _ = _get_times(process)
-    return initial_timestamp, initial_cpu_time
 
 
 def _get_times(process: psutil.Process) -> tuple[float, float, dict[int, dict[str, float]]]:
