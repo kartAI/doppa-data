@@ -10,7 +10,6 @@ def create_postgres_db_context() -> Engine:
         f"?sslmode=require"
     )
 
-    # Create the Engine
     engine = create_engine(
         conn_str,
         future=True,
@@ -19,5 +18,6 @@ def create_postgres_db_context() -> Engine:
 
     with engine.connect() as conn:
         conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS postgis;")
+        conn.commit()
 
     return engine
