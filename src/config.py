@@ -71,7 +71,7 @@ class Config:
     # BENCHMARKING
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
-    DEFAULT_SAMPLE_TIMEOUT: float = 0.00005
+    DEFAULT_SAMPLE_TIMEOUT: float = 0.05
     BENCHMARK_WARMUP_RUNS: int = 5
     BENCHMARK_RUNS: int = 100
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"

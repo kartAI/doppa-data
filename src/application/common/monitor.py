@@ -24,6 +24,13 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
             result = None
             run_id = _get_run_id()
 
+            logger.info(f"Starting benchmark for query '{query_id}' with run ID '{run_id}'.")
+            logger.info(f"Executing {Config.BENCHMARK_WARMUP_RUNS} warmup runs.")
+            for _ in range(Config.BENCHMARK_WARMUP_RUNS):
+                func(*args, **kwargs)
+
+            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_RUNS} benchmark runs.")
+            logger.info(f"Benchmarking started with sampling interval of {interval} seconds.")
             for i in range(Config.BENCHMARK_RUNS):
                 iteration = i + 1
                 process = psutil.Process()
@@ -51,6 +58,7 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
 
                 _save_run(run_id=run_id, query_id=query_id, iteration=iteration, samples=samples)
 
+            logger.info(f"Benchmarking completed")
             _save_run_metadata(query_id=query_id, run_id=run_id)
             return result
 
@@ -166,7 +174,7 @@ def _get_rss(process: psutil.Process) -> float:
 @inject
 def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
     if run_id is not None:
-        logger.info(f"Found run ID '{run_id}' from DI.")
+        logger.debug(f"Found run ID '{run_id}' from DI.")
         return run_id
 
     today = date.today().strftime("%Y-%m-%d")
@@ -197,6 +205,7 @@ def _save_run_metadata(
         run_id: str,
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
 ) -> None:
+    logger.info("Saving benchmark metadata to blob storage.")
     metadata_id = str(uuid.uuid4())
     timestamp = datetime.datetime.now(timezone.utc)
     monitoring_storage_service.write_metadata_to_blob_storage(
@@ -205,3 +214,5 @@ def _save_run_metadata(
         query_id=query_id,
         run_id=run_id
     )
+
+    logger.info(f"Benchmark metadata saved with ID '{metadata_id}'.")

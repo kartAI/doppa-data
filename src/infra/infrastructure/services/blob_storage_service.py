@@ -41,7 +41,7 @@ class BlobStorageService(IBlobStorageService):
             max_concurrency=Config.BLOB_STORAGE_MAX_CONCURRENCY
         )
 
-        logger.info(f"Uploaded blob '{blob_name}'. It can be accessed at: {blob_client.url}")
+        logger.debug(f"Uploaded blob '{blob_name}'. It can be accessed at: {blob_client.url}")
         return blob_client.url
 
     def delete_file(self) -> bool:
