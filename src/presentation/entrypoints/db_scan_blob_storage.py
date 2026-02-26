@@ -9,7 +9,7 @@ from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_cpu_and_ram(query_id="blob-storage-db-scan")
+@monitor_cpu_and_ram(query_id="db-scan-blob-storage")
 def db_scan_blob_storage(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]
