@@ -70,7 +70,7 @@ def _sampler(
         samples: list[dict[str, Any]],
         interval: float
 ) -> None:
-    start_timestamp, start_process_cpu_time, start_system_cpu_time_per_core = _get_times(process)
+    start_timestamp, start_process_cpu_time, _ = _get_times(process)
     previous_timestamp = start_timestamp
     previous_process_cpu_time = start_process_cpu_time
 
