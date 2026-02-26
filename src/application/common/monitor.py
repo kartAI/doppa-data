@@ -54,7 +54,7 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
 
                 _save_run(run_id=run_id, query_id=query_id, iteration=iteration, samples=samples)
 
-            logger.info(f"Benchmarking completed")
+            logger.info(f"Benchmarking completed.")
             _save_run_metadata(query_id=query_id, run_id=run_id)
             return result
 
