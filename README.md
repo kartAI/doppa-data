@@ -4,7 +4,9 @@
 
 ## Setup
 
-Add the following `.env` file
+Create a virtual environment and install the dependencies in the [requirements-file](./requirements.txt).
+
+Add the following `.env` file in the root
 
 ```dotenv
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
@@ -14,3 +16,16 @@ ACR_PASSWORD=<azure-container-registry-password>
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
 ```
+
+> [!NOTE]
+> Ensure that the needed Azure Resources have been configured
+
+To run the entire script simply run `python main.py` and to run a single benchmark run
+`python benchmark_runner.py --script-id <script-id> --run-id <run-id>`. See the table below for more information about
+`--script-id` and `--run-id`.
+
+| Flag          | Format / Pattern             | Meaning                                                                                                                                                       |
+|---------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--script-id` | `<query-type>-<service>`     | Identifies which query is being executed. `<query-type>` examples: `db-scan`, `bbox-filtering`. `<service>` examples: `blob-storage`, `postgis`.              |
+| `--run-id`    | `<current-date>-<random-id>` | Identifies a benchmark run. Shared across all queries in a single orchestrated run. Date format: `yyyy-mm-dd`; random ID: 6-character uppercase alphanumeric. |
+
