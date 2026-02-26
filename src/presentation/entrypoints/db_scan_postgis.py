@@ -11,4 +11,4 @@ def db_scan_postgis(
         db_context: Engine = Provide[Containers.postgres_context]
 ) -> None:
     with db_context.connect() as conn:
-        conn.execute(text("SELECT count(*) AS count FROM buildings"))
+        conn.execute(text("SELECT count(*) AS count FROM buildings")).scalar_one()
