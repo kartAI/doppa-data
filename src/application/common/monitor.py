@@ -107,8 +107,8 @@ def _sampler(
 
             previous_timestamp = timestamp
             previous_process_cpu_time = process_cpu_time
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Sampling error in _sampler: {e}")
 
 
 def _initialize_threading(
