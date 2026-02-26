@@ -70,7 +70,7 @@ def _sampler(
         samples: list[dict[str, Any]],
         interval: float
 ) -> None:
-    start_timestamp, start_process_cpu_time, _ = _get_times(process)
+    start_timestamp, start_process_cpu_time, start_system_cpu_time_per_core = _get_times(process)
     previous_timestamp = start_timestamp
     previous_process_cpu_time = start_process_cpu_time
 
@@ -84,17 +84,17 @@ def _sampler(
             rss = _get_rss(process)
 
             zeroed_elapsed_time = timestamp - start_timestamp
+            core_structs = {
+                f"core_{core_id}": {
+                    "user": t["user"] - start_system_cpu_time_per_core[core_id]["user"],
+                    "system": t["system"] - start_system_cpu_time_per_core[core_id]["system"],
+                    "idle": t["idle"] - start_system_cpu_time_per_core[core_id]["idle"],
+                    "iowait": t["iowait"] - start_system_cpu_time_per_core[core_id]["iowait"],
+                }
+                for core_id, t in system_cpu_time_per_core.items()
+            }
 
             with thread_lock:
-                core_structs = {
-                    f"core_{core_id}": {
-                        "user": t["user"],
-                        "system": t["system"],
-                        "idle": t["idle"],
-                        "iowait": t["iowait"],
-                    }
-                    for core_id, t in system_cpu_time_per_core.items()
-                }
 
                 samples.append({
                     "elapsed_time": zeroed_elapsed_time,
