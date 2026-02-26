@@ -72,7 +72,6 @@ def _sampler(
         previous_process_cpu_time: float,
         interval: float
 ) -> None:
-    cpu_count = _get_cpu_count()
     start_timestamp, start_process_cpu_time, start_system_cpu_time_per_core = _get_times(process)
 
     while not thread_event.wait(interval):
@@ -81,7 +80,6 @@ def _sampler(
             delta_process_cpu_time = process_cpu_time - previous_process_cpu_time
             elapsed_time = timestamp - previous_timestamp
 
-            # cpu_percent = (delta_process_cpu_time / elapsed_time) * 100.0 / cpu_count if elapsed_time > 0 else 0.0
             cpu_percent = process.cpu_percent()
             rss = _get_rss(process)
 
