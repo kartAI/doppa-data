@@ -8,7 +8,7 @@ services:
     image: container-orchestrator:latest
     command: python -m main
 
-  blob-storage-db-scan:
+  db-scan-blob-storage:
     env_file:
       - .env
     build:
