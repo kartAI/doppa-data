@@ -23,6 +23,7 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
         def wrapper(*args, **kwargs):
             result = None
             run_id = _get_run_id()
+            process = psutil.Process()
 
             logger.info(f"Starting benchmark for query '{query_id}' with run ID '{run_id}'.")
             logger.info(f"Executing {Config.BENCHMARK_WARMUP_RUNS} warmup runs.")
@@ -33,7 +34,6 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
             logger.info(f"Benchmarking started with sampling interval of {interval} seconds.")
             for i in range(Config.BENCHMARK_RUNS):
                 iteration = i + 1
-                process = psutil.Process()
                 samples: list[dict[str, Any]] = []
 
                 _initialize_cpu_metrics(process=process)
