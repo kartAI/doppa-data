@@ -38,14 +38,10 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
 
                 _initialize_cpu_metrics(process=process)
 
-                initial_timestamp, initial_user_cpu_time, initial_system_cpu_time = _initialize_timers(process=process)
                 thread, thread_lock, thread_event = _initialize_threading(
                     target=_sampler,
                     process=process,
                     samples=samples,
-                    initial_timestamp=initial_timestamp,
-                    initial_user_cpu_time=initial_user_cpu_time,
-                    initial_system_cpu_time=initial_system_cpu_time,
                     interval=interval
                 )
 
@@ -73,36 +69,46 @@ def _sampler(
         thread_event: threading.Event,
         samples: list[dict[str, Any]],
         previous_timestamp: float,
-        previous_user_cpu_time: float,
-        previous_system_cpu_time: float,
+        previous_process_cpu_time: float,
         interval: float
 ) -> None:
     cpu_count = _get_cpu_count()
-    start_time = time.time()
+    start_timestamp, start_process_cpu_time, start_system_cpu_time_per_core = _get_times(process)
 
     while not thread_event.wait(interval):
         try:
-            wall_clock_timestamp, timestamp, user_cpu_time, system_cpu_time = _get_times(process)
-            delta_cpu = (user_cpu_time + system_cpu_time) - (previous_user_cpu_time + previous_system_cpu_time)
+            timestamp, process_cpu_time, system_cpu_time_per_core = _get_times(process)
+            delta_process_cpu_time = process_cpu_time - previous_process_cpu_time
             elapsed_time = timestamp - previous_timestamp
 
-            cpu_percent = (delta_cpu / elapsed_time) * 100.0 / cpu_count if elapsed_time > 0 else 0.0
+            # cpu_percent = (delta_process_cpu_time / elapsed_time) * 100.0 / cpu_count if elapsed_time > 0 else 0.0
+            cpu_percent = process.cpu_percent()
             rss = _get_rss(process)
 
-            zeroed_wall_clock_time = wall_clock_timestamp - start_time
+            zeroed_elapsed_time = timestamp - start_timestamp
 
             with thread_lock:
+                core_structs = {
+                    f"core_{core_id}": {
+                        "user": t["user"],
+                        "system": t["system"],
+                        "idle": t["idle"],
+                        "iowait": t["iowait"],
+                    }
+                    for core_id, t in system_cpu_time_per_core.items()
+                }
+
                 samples.append({
-                    "wall_clock_time": zeroed_wall_clock_time,
+                    "elapsed_time": zeroed_elapsed_time,
                     "delta_time": elapsed_time,
-                    "delta_cpu": delta_cpu,
-                    "cpu_percentage": cpu_percent,
+                    "delta_process_cpu_time": delta_process_cpu_time,
+                    "process_cpu_percentage": cpu_percent,
                     "rss": rss,
+                    **core_structs
                 })
 
             previous_timestamp = timestamp
-            previous_user_cpu_time = user_cpu_time
-            previous_system_cpu_time = system_cpu_time
+            previous_process_cpu_time = process_cpu_time
         except Exception:
             pass
 
@@ -111,9 +117,6 @@ def _initialize_threading(
         target: object | None,
         process: psutil.Process,
         samples: list[dict[str, Any]],
-        initial_timestamp: float,
-        initial_user_cpu_time: float,
-        initial_system_cpu_time: float,
         interval: float
 ) -> tuple[
     threading.Thread,
@@ -123,14 +126,15 @@ def _initialize_threading(
     thread_lock = threading.Lock()
     thread_event = threading.Event()
 
+    initial_timestamp, initial_process_cpu_time, _ = _get_times(process)
+
     kwargs = {
         "process": process,
         "thread_lock": thread_lock,
         "thread_event": thread_event,
         "samples": samples,
         "previous_timestamp": initial_timestamp,
-        "previous_user_cpu_time": initial_user_cpu_time,
-        "previous_system_cpu_time": initial_system_cpu_time,
+        "previous_process_cpu_time": initial_process_cpu_time,
         "interval": interval
     }
 
@@ -146,20 +150,31 @@ def _initialize_cpu_metrics(process: psutil.Process) -> None:
     process.cpu_percent(interval=None)
 
 
-def _initialize_timers(process: psutil.Process) -> tuple[float, float, float]:
-    _, initial_timestamp, initial_user_cpu_time, initial_system_cpu_time = _get_times(process)
-    return initial_timestamp, initial_user_cpu_time, initial_system_cpu_time
+def _initialize_timers(process: psutil.Process) -> tuple[float, float]:
+    initial_timestamp, initial_cpu_time, _ = _get_times(process)
+    return initial_timestamp, initial_cpu_time
 
 
-def _get_times(process: psutil.Process) -> tuple[float, float, float, float]:
+def _get_times(process: psutil.Process) -> tuple[float, float, dict[int, dict[str, float]]]:
     cpu_times = process.cpu_times()
+    per_core_raw = psutil.cpu_times(percpu=True)
+    system_cpu_times_per_core = {
+        i + 1: {
+            "user": c.user,
+            "system": c.system,
+            "idle": c.idle,
+            "iowait": getattr(c, "iowait", 0.0),
+        }
+        for i, c in enumerate(per_core_raw)
+    }
 
     user_cpu_time = cpu_times.user
     system_cpu_time = cpu_times.system
-    timestamp = time.perf_counter()
-    wall_clock_timestamp = time.time()
+    process_cpu_time = user_cpu_time + system_cpu_time
 
-    return wall_clock_timestamp, timestamp, user_cpu_time, system_cpu_time
+    timestamp = time.perf_counter()
+
+    return timestamp, process_cpu_time, system_cpu_times_per_core
 
 
 def _get_cpu_count() -> int:
