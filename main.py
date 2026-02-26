@@ -44,7 +44,9 @@ def _delete_container_instance(container_group_name: str) -> None:
         "--yes"
     ]
 
+    logger.info(f"Deleting container group '{container_group_name}...'")
     _run_cmd(delete_command)
+    logger.info(f"Deleted container group '{container_group_name}'")
 
 
 def _create_container_instance(
