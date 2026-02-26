@@ -18,8 +18,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - service: blob-storage-db-scan
-            image: blob-storage-db-scan
+          - service: db-scan-blob-storage
+            image: db-scan-blob-storage
             display_name: Blob Storage DB Scan
 
           - service: db-scan-postgis

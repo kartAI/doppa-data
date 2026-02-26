@@ -10,7 +10,7 @@ from src.infra.infrastructure import Containers
 
 @inject
 @monitor_cpu_and_ram(query_id="blob-storage-db-scan")
-def blob_storage_db_scan(
+def db_scan_blob_storage(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]
 ) -> None:
