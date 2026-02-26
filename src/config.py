@@ -71,8 +71,8 @@ class Config:
     # BENCHMARKING
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
-    DEFAULT_SAMPLE_TIMEOUT: float = 0.00005
-    BENCHMARK_WARMUP_RUNS: int = 3
-    BENCHMARK_RUNS: int = 30
+    DEFAULT_SAMPLE_TIMEOUT: float = 0.001
+    BENCHMARK_WARMUP_RUNS: int = 5
+    BENCHMARK_RUNS: int = 100
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"
     BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-02-16.3"
