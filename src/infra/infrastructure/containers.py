@@ -6,12 +6,15 @@ from src.infra.infrastructure.services import (
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
     MonitoringStorageService
 )
-from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context
+from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
 
 
 class Containers(containers.DeclarativeContainer):
     config = providers.Configuration()
-    db_context = providers.Singleton(create_duckdb_context)
+
+    duckdb_context = providers.Singleton(create_duckdb_context)
+    postgres_context = providers.Singleton(create_postgres_db_context)
+
     blob_storage_context = providers.Singleton(create_blob_storage_context)
 
     file_path_service = providers.Singleton(
@@ -24,7 +27,7 @@ class Containers(containers.DeclarativeContainer):
 
     vector_service = providers.Singleton(
         VectorService,
-        db_context=db_context
+        db_context=duckdb_context
     )
 
     blob_storage_service = providers.Singleton(
@@ -35,7 +38,7 @@ class Containers(containers.DeclarativeContainer):
 
     county_service = providers.Singleton(
         CountyService,
-        db_context=db_context,
+        db_context=duckdb_context,
         blob_storage_service=blob_storage_service,
         bytes_service=bytes_service
     )
@@ -77,7 +80,7 @@ class Containers(containers.DeclarativeContainer):
 
     fkb_service = providers.Singleton(
         FKBService,
-        db_context=db_context,
+        db_context=duckdb_context,
         zip_service=zip_service,
         fkb_file_service=fkb_file_service,
         bytes_service=bytes_service,
@@ -86,7 +89,7 @@ class Containers(containers.DeclarativeContainer):
 
     conflation_service = providers.Singleton(
         ConflationService,
-        db_context=db_context,
+        db_context=duckdb_context,
         file_path_service=file_path_service,
         blob_storage_service=blob_storage_service
     )

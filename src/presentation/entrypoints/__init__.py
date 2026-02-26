@@ -1,3 +1,5 @@
 ﻿from .release_pipeline import run_pipeline
-from .blob_storage_db_scan import blob_storage_db_scan
+from .db_scan_blob_storage import db_scan_blob_storage
+from .db_scan_postgis import db_scan_postgis
 from .bbox_filtering import duckdb_bbox_filtering
+from .setup_benchmarking_framework import setup_benchmarking_framework

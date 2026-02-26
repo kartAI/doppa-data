@@ -44,7 +44,9 @@ def _delete_container_instance(container_group_name: str) -> None:
         "--yes"
     ]
 
+    logger.info(f"Deleting container group '{container_group_name}...'")
     _run_cmd(delete_command)
+    logger.info(f"Deleted container group '{container_group_name}'")
 
 
 def _create_container_instance(
@@ -77,6 +79,8 @@ def _create_container_instance(
         "--registry-password", acr_password,
         "--secure-environment-variables",
         f"AZURE_BLOB_STORAGE_CONNECTION_STRING={Config.AZURE_BLOB_STORAGE_CONNECTION_STRING}",
+        f"POSTGRES_USERNAME={Config.POSTGRES_USERNAME}",
+        f"POSTGRES_PASSWORD={Config.POSTGRES_PASSWORD}",
         "--no-wait"
     ]
 
@@ -140,6 +144,7 @@ def main() -> None:
             memory_gb=memory_gb
         )
         _check_container_state(container_group_name=container_group_name)
+        _delete_container_instance(container_group_name=container_group_name)
 
 
 if __name__ == '__main__':

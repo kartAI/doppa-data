@@ -1,6 +1,7 @@
 ﻿from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
+from src import Config
 from src.application.common.monitor import monitor_cpu_and_ram
 from src.application.contracts import IFilePathService
 from src.domain.enums import StorageContainer, Theme
@@ -9,13 +10,13 @@ from src.infra.infrastructure import Containers
 
 @inject
 @monitor_cpu_and_ram(query_id="blob-storage-db-scan")
-def blob_storage_db_scan(
-        db_context: DuckDBPyConnection = Provide[Containers.db_context],
+def db_scan_blob_storage(
+        db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]
 ) -> None:
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release="2026-02-16.3",
+        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",

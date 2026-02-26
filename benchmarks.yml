@@ -1,6 +1,11 @@
 experiments:
-  - id: blob-storage-db-scan
-    image: doppaacr.azurecr.io/blob-storage-db-scan:latest
+  - id: db-scan-blob-storage
+    image: doppaacr.azurecr.io/db-scan-blob-storage:latest
+    cpu: 4
+    memory_gb: 16
+
+  - id: db-scan-postgis
+    image: doppaacr.azurecr.io/db-scan-postgis:latest
     cpu: 4
     memory_gb: 16
 
