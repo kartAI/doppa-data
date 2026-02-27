@@ -39,6 +39,7 @@ jobs:
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
           AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+          AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER: ${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}
           POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
@@ -49,6 +50,7 @@ jobs:
           -e ACR_USERNAME
           -e ACR_PASSWORD
           -e AZURE_BLOB_STORAGE_CONNECTION_STRING
+          -e AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER
           -e POSTGRES_USERNAME
           -e POSTGRES_PASSWORD
           ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest

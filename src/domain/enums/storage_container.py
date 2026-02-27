@@ -1,4 +1,5 @@
-﻿from enum import Enum
+﻿import os
+from enum import Enum
 
 
 class StorageContainer(Enum):
@@ -10,4 +11,4 @@ class StorageContainer(Enum):
     DATA = "data"
     OPEN_STREET_MAP = "open_street_map"
     FKB = "fkb"
-    BENCHMARKS = "benchmarks"
+    BENCHMARKS = os.getenv("AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER")
