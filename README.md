@@ -10,6 +10,8 @@ Add the following `.env` file in the root
 
 ```dotenv
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
+AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
+AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
 ACR_LOGIN_SERVER=<azure-container-registry-login-server>
 ACR_USERNAME=<azure-container-registry-username>
 ACR_PASSWORD=<azure-container-registry-password>
