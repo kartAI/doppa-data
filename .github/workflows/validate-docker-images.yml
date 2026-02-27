@@ -1,0 +1,40 @@
+﻿name: Validate Docker Images
+
+on:
+  pull_request:
+    branches: [ main ]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  build-queries:
+    name: Build Query Images – ${{ matrix.display_name }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - service: container-orchestrator
+            display_name: Container Orchestrator
+
+          - service: db-scan-blob-storage
+            display_name: Blob Storage DB Scan
+
+          - service: db-scan-postgis
+            display_name: PostGIS DB Scan
+
+          - service: duckdb-bbox-filtering
+            display_name: DuckDB BBOX Filtering
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.display_name }} from docker-compose
+        run: docker compose build ${{ matrix.service }}
