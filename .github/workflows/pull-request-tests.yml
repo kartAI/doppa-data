@@ -1,0 +1,107 @@
+﻿name: Code Quality and Docker Image Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  lint:
+    name: Lint with Ruff
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff
+        run: ruff check .
+
+  type-check:
+    name: Type Check with mypy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies and mypy
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install mypy
+        # adjust paths / extra mypy deps as needed
+
+      - name: Run mypy
+        run: mypy .
+
+  test-imports:
+    name: Test Import Collection with pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies and pytest
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest
+
+      - name: Run pytest in collect-only mode
+        run: pytest --collect-only
+
+  build-queries:
+    name: Build Query Images – ${{ matrix.display_name }}
+    runs-on: ubuntu-latest
+
+    needs:
+      - lint
+      - type-check
+      - test-imports
+
+    strategy:
+      matrix:
+        include:
+          - service: container-orchestrator
+            display_name: Container Orchestrator
+
+          - service: db-scan-blob-storage
+            display_name: Blob Storage DB Scan
+
+          - service: db-scan-postgis
+            display_name: PostGIS DB Scan
+
+          - service: duckdb-bbox-filtering
+            display_name: DuckDB BBOX Filtering
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.display_name }} from docker-compose
+        run: docker compose build ${{ matrix.service }}
