@@ -93,18 +93,26 @@ def _create_container_instance(
         "--image", docker_image,
         "--location", Config.AZURE_RESOURCE_LOCATION,
         "--restart-policy", "Never",
+
         "--os-type", "Linux",
         "--cpu", cpu,
         "--memory", memory_gb,
+
         "--command-line", startup_command,
+
         "--registry-login-server", acr_login_server,
         "--registry-username", acr_username,
         "--registry-password", acr_password,
-        "--environment-variables", f"AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER={StorageContainer.BENCHMARKS.value}",
+
+        "--environment-variables",
+        f"AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER={StorageContainer.BENCHMARKS.value}",
+        f"AZURE_BLOB_STORAGE_METADATA_CONTAINER={StorageContainer.METADATA.value}",
+
         "--secure-environment-variables",
         f"AZURE_BLOB_STORAGE_CONNECTION_STRING={Config.AZURE_BLOB_STORAGE_CONNECTION_STRING}",
         f"POSTGRES_USERNAME={Config.POSTGRES_USERNAME}",
         f"POSTGRES_PASSWORD={Config.POSTGRES_PASSWORD}",
+
         "--no-wait"
     ]
 

@@ -4,7 +4,7 @@ from enum import Enum
 
 class StorageContainer(Enum):
     CONTRIBUTION = "contributions"
-    METADATA = "metadata"
+    METADATA = os.getenv("AZURE_BLOB_STORAGE_METADATA_CONTAINER")
     SCHEMA = "schema"
     STAC = "stac"
     RAW = "raw"
