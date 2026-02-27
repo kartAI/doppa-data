@@ -1,5 +1,9 @@
 name: Code Quality and Docker Image Validation
 
+concurrency:
+  group: code-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches: [ main ]
