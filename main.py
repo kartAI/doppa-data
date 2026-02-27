@@ -152,7 +152,6 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
 
 
 def main() -> None:
-    print(StorageContainer.BENCHMARKS.value)
     with open(Config.BENCHMARK_FILE) as f:
         benchmark_configuration = yaml.safe_load(f)
 
