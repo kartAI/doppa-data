@@ -21,7 +21,7 @@ def _create_run_id() -> str:
     return f"{date_prefix}-{suffix}"
 
 
-def _run_cmd(cmd: list[str]) -> str:
+def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
     az_path = shutil.which(cmd[0])
     if az_path is not None:
         cmd[0] = az_path
@@ -30,14 +30,36 @@ def _run_cmd(cmd: list[str]) -> str:
 
     if result.returncode != 0:
         cmd_str = " ".join(cmd)
-        logger.info(f"Command: {cmd_str}")
-        logger.error(result.stderr)
+
+        # Only log as error if we are not in a "soft-check" scenario
+        if not suppress_error_log:
+            logger.info(f"Command: {cmd_str}")
+            logger.error(result.stderr)
+
         raise RuntimeError(f"Command failed with exit code {result.returncode}")
 
     return result.stdout
 
 
+def _container_exists(container_group_name: str) -> bool:
+    check_cmd = [
+        "az", "container", "show",
+        "--resource-group", Config.AZURE_RESOURCE_GROUP,
+        "--name", container_group_name
+    ]
+
+    try:
+        _run_cmd(check_cmd, suppress_error_log=True)
+        return True
+    except RuntimeError:
+        return False
+
+
 def _delete_container_instance(container_group_name: str) -> None:
+    if not _container_exists(container_group_name):
+        logger.info(f"Container group '{container_group_name}' does not exist. Skipping deletion.")
+        return
+
     delete_command = [
         "az", "container", "delete",
         "--resource-group", Config.AZURE_RESOURCE_GROUP,
@@ -45,7 +67,7 @@ def _delete_container_instance(container_group_name: str) -> None:
         "--yes"
     ]
 
-    logger.info(f"Deleting container group '{container_group_name}...'")
+    logger.info(f"Deleting container group '{container_group_name}'...")
     _run_cmd(delete_command)
     logger.info(f"Deleted container group '{container_group_name}'")
 
@@ -122,6 +144,7 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
 
 
 def main() -> None:
+    print(StorageContainer.BENCHMARKS.value)
     with open(Config.BENCHMARK_FILE) as f:
         benchmark_configuration = yaml.safe_load(f)
 
