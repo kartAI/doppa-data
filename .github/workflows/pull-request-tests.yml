@@ -1,4 +1,4 @@
-﻿name: Code Quality and Docker Image Validation
+name: Code Quality and Docker Image Validation
 
 on:
   pull_request:
@@ -28,7 +28,7 @@ jobs:
       - name: Compile all Python files
         run: python -m compileall src main.py benchmark_runner.py
 
-  build-queries:
+  build-docker-images:
     name: Build Query Images – ${{ matrix.display_name }}
     runs-on: ubuntu-latest
 
@@ -36,6 +36,7 @@ jobs:
       - compile
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - service: container-orchestrator
