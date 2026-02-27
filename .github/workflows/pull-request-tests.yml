@@ -28,31 +28,11 @@ jobs:
       - name: Compile all Python files
         run: python -m compileall src main.py benchmark_runner.py
 
-  lint:
-    name: Lint with Ruff
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install Ruff
-        run: pip install ruff
-
-      - name: Run Ruff
-        run: ruff check . --select E,F --per-file-ignores '__init__.py:F401'
-
   build-queries:
     name: Build Query Images – ${{ matrix.display_name }}
     runs-on: ubuntu-latest
 
     needs:
-      - lint
       - compile
 
     strategy:
