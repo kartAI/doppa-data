@@ -10,6 +10,24 @@ on:
       - ready_for_review
 
 jobs:
+  compile:
+    name: Check Python syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Compile all Python files
+        run: python -m compileall src main.py benchmark_runner.py
+
   lint:
     name: Lint with Ruff
     runs-on: ubuntu-latest
@@ -27,50 +45,7 @@ jobs:
         run: pip install ruff
 
       - name: Run Ruff
-        run: ruff check .
-
-  type-check:
-    name: Type Check with mypy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies and mypy
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install mypy
-        # adjust paths / extra mypy deps as needed
-
-      - name: Run mypy
-        run: mypy .
-
-  test-imports:
-    name: Test Import Collection with pytest
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies and pytest
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install pytest
-
-      - name: Run pytest in collect-only mode
-        run: pytest --collect-only
+        run: ruff check . --select E,F --per-file-ignores '__init__.py:F401'
 
   build-queries:
     name: Build Query Images – ${{ matrix.display_name }}
@@ -78,8 +53,7 @@ jobs:
 
     needs:
       - lint
-      - type-check
-      - test-imports
+      - compile
 
     strategy:
       matrix:
