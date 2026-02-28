@@ -2,14 +2,14 @@
 from duckdb import DuckDBPyConnection
 
 from src import Config
-from src.application.common.monitor import monitor_cpu_and_ram
+from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
 from src.domain.enums import StorageContainer, Theme
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_cpu_and_ram(query_id="db-scan-blob-storage")
+@monitor(query_id="db-scan-blob-storage")
 def db_scan_blob_storage(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]
