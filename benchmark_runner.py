@@ -8,8 +8,8 @@ from src.presentation.entrypoints import (
 
 
 def benchmark_runner() -> None:
-    script_id, run_id = get_args()
-    initialize_dependencies(run_id=run_id)
+    script_id, benchmark_run, run_id = _get_args()
+    initialize_dependencies(run_id=run_id, benchmark_run=benchmark_run)
 
     match script_id:
         case "db-scan-blob-storage":
@@ -28,19 +28,27 @@ def benchmark_runner() -> None:
             raise ValueError("Script ID is invalid")
 
 
-def get_script_id() -> str:
+def _get_args() -> tuple[str, int, Optional[str]]:
     parser = argparse.ArgumentParser("doppa-data")
-    parser.add_argument("id", help="ID of script to run")
-    args = parser.parse_args()
-    return args.id
+    parser.add_argument(
+        "--script-id",
+        required=True,
+        help="Script identifier. Must be one of the specified IDs"
+    )
 
+    parser.add_argument(
+        "--benchmark-run",
+        required=True,
+        help="Identifier for benchmark iteration. Must be an integer greater than or equal to 1",
+    )
 
-def get_args() -> tuple[str, Optional[str]]:
-    parser = argparse.ArgumentParser("doppa-data")
-    parser.add_argument("--script-id", required=True, help="Script identifier. Must one of the specified IDs")
-    parser.add_argument("--run-id", help="Run identifier. Randomly generated and prefixed with today's date")
+    parser.add_argument(
+        "--run-id",
+        help="Run identifier. Randomly generated and prefixed with today's date"
+    )
+
     args = parser.parse_args()
-    return args.script_id, args.run_id
+    return args.script_id, int(args.benchmark_run), args.run_id
 
 
 if __name__ == "__main__":

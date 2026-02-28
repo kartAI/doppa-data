@@ -22,12 +22,14 @@ POSTGRES_PASSWORD=<postgres-password>
 > [!NOTE]
 > Ensure that the needed Azure Resources have been configured
 
-To run the entire script simply run `python main.py` and to run a single benchmark run
-`python benchmark_runner.py --script-id <script-id> --run-id <run-id>`. See the table below for more information about
+To run the entire script simply run `python main.py` or `python -m main` and to run a single benchmark run
+`python benchmark_runner.py --script-id <script-id> --benchmark-run <int >= 1> --run-id <run-id>`. See the table
+below for more information about
 `--script-id` and `--run-id`.
 
-| Flag          | Format / Pattern             | Meaning                                                                                                                                                       |
-|---------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--script-id` | `<query-type>-<service>`     | Identifies which query is being executed. `<query-type>` examples: `db-scan`, `bbox-filtering`. `<service>` examples: `blob-storage`, `postgis`.              |
-| `--run-id`    | `<current-date>-<random-id>` | Identifies a benchmark run. Shared across all queries in a single orchestrated run. Date format: `yyyy-mm-dd`; random ID: 6-character uppercase alphanumeric. |
+| Flag              | Format / Pattern             | Meaning                                                                                                                                                       |
+|-------------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--script-id`     | `<query-type>-<service>`     | Identifies which query is being executed. `<query-type>` examples: `db-scan`, `bbox-filtering`. `<service>` examples: `blob-storage`, `postgis`.              |
+| `--benchmark-run` | `int`                        | Identifier that tells which iteration of the benchmarking is currently running. This is to run the benchmarks on multiple container instances.                |
+| `--run-id`        | `<current-date>-<random-id>` | Identifies a benchmark run. Shared across all queries in a single orchestrated run. Date format: `yyyy-mm-dd`; random ID: 6-character uppercase alphanumeric. |
 

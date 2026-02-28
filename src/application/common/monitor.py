@@ -22,17 +22,20 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             result = None
+
             run_id = _get_run_id()
+            benchmark_run = _get_benchmark_run()
+
             process = psutil.Process()
 
             logger.info(f"Starting benchmark for query '{query_id}' with run ID '{run_id}'.")
-            logger.info(f"Executing {Config.BENCHMARK_WARMUP_RUNS} warmup runs.")
-            for _ in range(Config.BENCHMARK_WARMUP_RUNS):
+            logger.info(f"Executing {Config.BENCHMARK_WARMUP_ITERATIONS} warmup runs.")
+            for _ in range(Config.BENCHMARK_WARMUP_ITERATIONS):
                 func(*args, **kwargs)
 
-            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_RUNS} benchmark runs.")
+            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_ITERATIONS} benchmark runs.")
             logger.info(f"Benchmarking started with sampling interval of {interval} seconds.")
-            for i in range(Config.BENCHMARK_RUNS):
+            for i in range(Config.BENCHMARK_ITERATIONS):
                 iteration = i + 1
                 samples: list[dict[str, Any]] = []
 
@@ -52,7 +55,13 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
                     thread_event.set()
                     thread.join(timeout=1.0)
 
-                _save_run(run_id=run_id, query_id=query_id, iteration=iteration, samples=samples)
+                _save_run(
+                    run_id=run_id,
+                    query_id=query_id,
+                    benchmark_run=benchmark_run,
+                    iteration=iteration,
+                    samples=samples
+                )
 
             logger.info(f"Benchmarking completed.")
             _save_run_metadata(query_id=query_id, run_id=run_id)
@@ -196,17 +205,25 @@ def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
     return run_id
 
 
+@inject
+def _get_benchmark_run(benchmark_run: int = Provide[Containers.config.benchmark_run]) -> int:
+    return benchmark_run
+
+
 def _save_run(
         run_id: str,
+        benchmark_run: int,
         query_id: str,
         iteration: int,
         samples: list[dict[str, Any]],
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
+    iteration = _create_global_iteration(iteration=iteration, benchmark_run=benchmark_run)
     monitoring_storage_service.write_run_to_blob_storage(
         samples=samples,
         query_id=query_id,
         run_id=run_id,
+        benchmark_run=benchmark_run,
         iteration=iteration
     )
 
@@ -227,3 +244,7 @@ def _save_run_metadata(
     )
 
     logger.info(f"Benchmark metadata saved with ID '{metadata_id}'.")
+
+
+def _create_global_iteration(iteration: int, benchmark_run: int) -> int:
+    return iteration + Config.BENCHMARK_ITERATIONS * (benchmark_run - 1)
