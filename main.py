@@ -14,6 +14,34 @@ from src.application.common import logger
 from src.domain.enums import StorageContainer
 
 
+def main() -> None:
+    with open(Config.BENCHMARK_FILE) as f:
+        benchmark_configuration = yaml.safe_load(f)
+
+    run_id = _create_run_id()
+
+    for experiment in benchmark_configuration["experiments"]:
+        experiment_id = experiment["id"]
+        container_group_name = f"benchmark-{experiment_id}"
+
+        docker_image = experiment["image"]
+
+        cpu = str(experiment["cpu"])
+        memory_gb = str(experiment["memory_gb"])
+
+        _delete_container_instance(container_group_name=container_group_name)
+        _create_container_instance(
+            run_id=run_id,
+            experiment_id=experiment_id,
+            container_group_name=container_group_name,
+            docker_image=docker_image,
+            cpu=cpu,
+            memory_gb=memory_gb
+        )
+        _check_container_state(container_group_name=container_group_name)
+        _delete_container_instance(container_group_name=container_group_name)
+
+
 def _create_run_id() -> str:
     date_prefix = date.today().isoformat()
     suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH))
@@ -21,6 +49,7 @@ def _create_run_id() -> str:
     return f"{date_prefix}-{suffix}"
 
 
+# noinspection PyDeprecation
 def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
     az_path = shutil.which(cmd[0])
     if az_path is not None:
@@ -149,34 +178,6 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
                 )
 
                 time.sleep(timeout)
-
-
-def main() -> None:
-    with open(Config.BENCHMARK_FILE) as f:
-        benchmark_configuration = yaml.safe_load(f)
-
-    run_id = _create_run_id()
-
-    for experiment in benchmark_configuration["experiments"]:
-        experiment_id = experiment["id"]
-        container_group_name = f"benchmark-{experiment_id}"
-
-        docker_image = experiment["image"]
-
-        cpu = str(experiment["cpu"])
-        memory_gb = str(experiment["memory_gb"])
-
-        _delete_container_instance(container_group_name=container_group_name)
-        _create_container_instance(
-            run_id=run_id,
-            experiment_id=experiment_id,
-            container_group_name=container_group_name,
-            docker_image=docker_image,
-            cpu=cpu,
-            memory_gb=memory_gb
-        )
-        _check_container_state(container_group_name=container_group_name)
-        _delete_container_instance(container_group_name=container_group_name)
 
 
 if __name__ == '__main__':
