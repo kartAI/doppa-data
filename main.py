@@ -6,6 +6,7 @@ import string
 import subprocess
 import time
 from datetime import date
+from typing import Any
 
 import yaml
 
@@ -20,6 +21,11 @@ def main() -> None:
 
     run_id = _create_run_id()
 
+    for iteration in range(1, Config.BENCHMARK_RUNS + 1):
+        _run_benchmarks(run_id=run_id, run_iteration=iteration, benchmark_configuration=benchmark_configuration)
+
+
+def _run_benchmarks(run_id: str, run_iteration: int, benchmark_configuration: Any) -> None:
     for experiment in benchmark_configuration["experiments"]:
         experiment_id = experiment["id"]
         container_group_name = f"benchmark-{experiment_id}"
