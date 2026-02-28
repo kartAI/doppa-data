@@ -140,8 +140,10 @@ def _initialize_threading(
 def _initialize_cpu_metrics(process: psutil.Process) -> None:
     # The initial `cpu_percent` returns a meaningless value. See 'https://psutil.readthedocs.io/en/latest/#psutil.cpu_percent' for more information
     process.cpu_percent(interval=None)
+    psutil.cpu_percent(percpu=True)
     time.sleep(0.1)
     process.cpu_percent(interval=None)
+    psutil.cpu_percent(percpu=True)
 
 
 def _get_cpu_metrics(process: psutil.Process) -> tuple[float, float, float, dict[int, dict[str, float]]]:
