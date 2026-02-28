@@ -26,13 +26,13 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
             process = psutil.Process()
 
             logger.info(f"Starting benchmark for query '{query_id}' with run ID '{run_id}'.")
-            logger.info(f"Executing {Config.BENCHMARK_WARMUP_RUNS} warmup runs.")
-            for _ in range(Config.BENCHMARK_WARMUP_RUNS):
+            logger.info(f"Executing {Config.BENCHMARK_WARMUP_ITERATIONS} warmup runs.")
+            for _ in range(Config.BENCHMARK_WARMUP_ITERATIONS):
                 func(*args, **kwargs)
 
-            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_RUNS} benchmark runs.")
+            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_ITERATIONS} benchmark runs.")
             logger.info(f"Benchmarking started with sampling interval of {interval} seconds.")
-            for i in range(Config.BENCHMARK_RUNS):
+            for i in range(Config.BENCHMARK_ITERATIONS):
                 iteration = i + 1
                 samples: list[dict[str, Any]] = []
 
