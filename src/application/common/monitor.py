@@ -70,18 +70,17 @@ def _sampler(
         samples: list[dict[str, Any]],
         interval: float
 ) -> None:
-    start_timestamp, start_process_cpu_time, start_system_cpu_time_per_core = _get_times(process)
+    start_timestamp, start_process_cpu_time, _, start_system_cpu_time_per_core = _get_cpu_metrics(process)
     previous_timestamp = start_timestamp
     previous_process_cpu_time = start_process_cpu_time
 
     while not thread_event.wait(interval):
         try:
-            timestamp, process_cpu_time, system_cpu_time_per_core = _get_times(process)
+            timestamp, process_cpu_time, cpu_percent, system_cpu_time_per_core = _get_cpu_metrics(process)
+            rss = _get_rss(process)
+
             delta_process_cpu_time = process_cpu_time - previous_process_cpu_time
             elapsed_time = timestamp - previous_timestamp
-
-            cpu_percent = process.cpu_percent()
-            rss = _get_rss(process)
 
             zeroed_elapsed_time = timestamp - start_timestamp
             core_structs = {
@@ -90,6 +89,7 @@ def _sampler(
                     "system": t["system"] - start_system_cpu_time_per_core[core_id]["system"],
                     "idle": t["idle"] - start_system_cpu_time_per_core[core_id]["idle"],
                     "iowait": t["iowait"] - start_system_cpu_time_per_core[core_id]["iowait"],
+                    "percent": t["percent"]
                 }
                 for core_id, t in system_cpu_time_per_core.items()
             }
@@ -144,15 +144,20 @@ def _initialize_cpu_metrics(process: psutil.Process) -> None:
     process.cpu_percent(interval=None)
 
 
-def _get_times(process: psutil.Process) -> tuple[float, float, dict[int, dict[str, float]]]:
+def _get_cpu_metrics(process: psutil.Process) -> tuple[float, float, float, dict[int, dict[str, float]]]:
     cpu_times = process.cpu_times()
+    cpu_percent = process.cpu_percent()
+
     per_core_raw = psutil.cpu_times(percpu=True)
-    system_cpu_times_per_core = {
+    per_core_percent = psutil.cpu_percent(percpu=True)
+
+    system_metrics_per_core = {
         i + 1: {
             "user": c.user,
             "system": c.system,
             "idle": c.idle,
             "iowait": getattr(c, "iowait", 0.0),
+            "percent": per_core_percent[i]
         }
         for i, c in enumerate(per_core_raw)
     }
@@ -163,7 +168,7 @@ def _get_times(process: psutil.Process) -> tuple[float, float, dict[int, dict[st
 
     timestamp = time.perf_counter()
 
-    return timestamp, process_cpu_time, system_cpu_times_per_core
+    return timestamp, process_cpu_time, cpu_percent, system_metrics_per_core
 
 
 def _get_cpu_count() -> int:
