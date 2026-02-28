@@ -22,7 +22,10 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             result = None
+
             run_id = _get_run_id()
+            benchmark_iteration = _get_benchmark_iteration()
+
             process = psutil.Process()
 
             logger.info(f"Starting benchmark for query '{query_id}' with run ID '{run_id}'.")
@@ -52,7 +55,13 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
                     thread_event.set()
                     thread.join(timeout=1.0)
 
-                _save_run(run_id=run_id, query_id=query_id, iteration=iteration, samples=samples)
+                _save_run(
+                    run_id=run_id,
+                    query_id=query_id,
+                    benchmark_iteration=benchmark_iteration,
+                    iteration=iteration,
+                    samples=samples
+                )
 
             logger.info(f"Benchmarking completed.")
             _save_run_metadata(query_id=query_id, run_id=run_id)
@@ -196,17 +205,25 @@ def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
     return run_id
 
 
+@inject
+def _get_benchmark_iteration(benchmark_iteration: int = Provide[Containers.config.benchmark_iteration]) -> int:
+    return benchmark_iteration
+
+
 def _save_run(
         run_id: str,
+        benchmark_iteration: int,
         query_id: str,
         iteration: int,
         samples: list[dict[str, Any]],
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
+    iteration = _create_global_iteration(iteration=iteration, benchmark_iteration=benchmark_iteration)
     monitoring_storage_service.write_run_to_blob_storage(
         samples=samples,
         query_id=query_id,
         run_id=run_id,
+        benchmark_iteration=benchmark_iteration,
         iteration=iteration
     )
 
@@ -227,3 +244,7 @@ def _save_run_metadata(
     )
 
     logger.info(f"Benchmark metadata saved with ID '{metadata_id}'.")
+
+
+def _create_global_iteration(iteration: int, benchmark_iteration: int) -> int:
+    return iteration + Config.BENCHMARK_ITERATIONS * (benchmark_iteration - 1)

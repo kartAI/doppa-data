@@ -33,6 +33,7 @@ class IMonitoringStorageService(ABC):
             samples: list[dict[str, Any]],
             query_id: str,
             run_id: str,
+            benchmark_iteration: int,
             iteration: int
     ) -> None:
         """
@@ -43,6 +44,7 @@ class IMonitoringStorageService(ABC):
         :param samples: Samples collected during the execution of the query which is passed from the main method. Each sample is a dictionary containing information about the system metrics at a specific point in time.
         :param query_id: Query ID associated with the run which is passed from the main method
         :param run_id: A unique identifier for the run which is passed from the main method.
+        :param benchmark_iteration: Benchmark iteration number which is passed from the main method. This is used to differentiate between multiple benchmark iterations of the same query.
         :param iteration: Iteration number of the run which is passed from the main method. This is used to differentiate between multiple runs of the same query.
         :return:
         """

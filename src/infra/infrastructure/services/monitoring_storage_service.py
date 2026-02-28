@@ -63,12 +63,14 @@ class MonitoringStorageService(IMonitoringStorageService):
             samples: list[dict[str, Any]],
             query_id: str,
             run_id: str,
+            benchmark_iteration: int,
             iteration: int
     ) -> None:
         blob_name = self.__file_path_service.create_hive_blob_path(
             file_name="data.parquet",
             query_id=query_id,
             run_id=run_id,
+            benchmark_iteration=benchmark_iteration,
             iteration=iteration
         )
 
