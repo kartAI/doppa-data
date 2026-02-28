@@ -17,7 +17,7 @@ from src.application.contracts import IMonitoringStorageService
 from src.infra.infrastructure import Containers
 
 
-def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
+def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
