@@ -4,6 +4,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely import from_wkb
 
+from src.application.common import logger
 from src.application.contracts import IBytesService
 from src.domain.enums import EPSGCode
 
@@ -40,6 +41,9 @@ class BytesService(IBytesService):
 
     @staticmethod
     def convert_df_to_parquet_bytes(df: pd.DataFrame | gpd.GeoDataFrame) -> bytes:
+        if df.empty:
+            logger.warning("Converting empty DataFrame to bytes.")
+
         buffer = BytesIO()
         df.to_parquet(buffer, index=False)
         buffer.seek(0)
