@@ -24,7 +24,7 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
             result = None
 
             run_id = _get_run_id()
-            benchmark_iteration = _get_benchmark_iteration()
+            benchmark_run = _get_benchmark_run()
 
             process = psutil.Process()
 
@@ -58,7 +58,7 @@ def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
                 _save_run(
                     run_id=run_id,
                     query_id=query_id,
-                    benchmark_iteration=benchmark_iteration,
+                    benchmark_run=benchmark_run,
                     iteration=iteration,
                     samples=samples
                 )
@@ -206,24 +206,24 @@ def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
 
 
 @inject
-def _get_benchmark_iteration(benchmark_iteration: int = Provide[Containers.config.benchmark_iteration]) -> int:
-    return benchmark_iteration
+def _get_benchmark_run(benchmark_run: int = Provide[Containers.config.benchmark_run]) -> int:
+    return benchmark_run
 
 
 def _save_run(
         run_id: str,
-        benchmark_iteration: int,
+        benchmark_run: int,
         query_id: str,
         iteration: int,
         samples: list[dict[str, Any]],
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
-    iteration = _create_global_iteration(iteration=iteration, benchmark_iteration=benchmark_iteration)
+    iteration = _create_global_iteration(iteration=iteration, benchmark_run=benchmark_run)
     monitoring_storage_service.write_run_to_blob_storage(
         samples=samples,
         query_id=query_id,
         run_id=run_id,
-        benchmark_iteration=benchmark_iteration,
+        benchmark_run=benchmark_run,
         iteration=iteration
     )
 
@@ -246,5 +246,5 @@ def _save_run_metadata(
     logger.info(f"Benchmark metadata saved with ID '{metadata_id}'.")
 
 
-def _create_global_iteration(iteration: int, benchmark_iteration: int) -> int:
-    return iteration + Config.BENCHMARK_ITERATIONS * (benchmark_iteration - 1)
+def _create_global_iteration(iteration: int, benchmark_run: int) -> int:
+    return iteration + Config.BENCHMARK_ITERATIONS * (benchmark_run - 1)

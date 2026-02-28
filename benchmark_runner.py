@@ -8,8 +8,8 @@ from src.presentation.entrypoints import (
 
 
 def benchmark_runner() -> None:
-    script_id, benchmark_iteration, run_id = _get_args()
-    initialize_dependencies(run_id=run_id, benchmark_iteration=benchmark_iteration)
+    script_id, benchmark_run, run_id = _get_args()
+    initialize_dependencies(run_id=run_id, benchmark_run=benchmark_run)
 
     match script_id:
         case "db-scan-blob-storage":
@@ -37,7 +37,7 @@ def _get_args() -> tuple[str, int, Optional[str]]:
     )
 
     parser.add_argument(
-        "--benchmark-iteration",
+        "--benchmark-run",
         required=True,
         help="Identifier for benchmark iteration. Must be an integer greater than or equal to 1"
     )
@@ -48,7 +48,7 @@ def _get_args() -> tuple[str, int, Optional[str]]:
     )
 
     args = parser.parse_args()
-    return args.script_id, int(args.benchmark_iteration), args.run_id
+    return args.script_id, int(args.benchmark_run), args.run_id
 
 
 if __name__ == "__main__":

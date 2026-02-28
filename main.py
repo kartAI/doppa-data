@@ -124,7 +124,7 @@ def _create_container_instance(
     startup_command = (
         f"python benchmark_runner.py "
         f"--script-id {experiment_id} "
-        f"--benchmark-iteration {benchmark_run} "
+        f"--benchmark-run {benchmark_run} "
         f"--run-id {run_id}"
     )
 
