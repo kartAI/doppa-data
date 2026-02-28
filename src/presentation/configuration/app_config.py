@@ -1,10 +1,12 @@
 ﻿from src.infra.infrastructure import Containers
 
 
-def initialize_dependencies(run_id: str) -> None:
+def initialize_dependencies(run_id: str, benchmark_iteration: int) -> None:
     container = Containers()
 
     container.config.run_id.from_value(run_id)
+    container.config.benchmark_iteration.from_value(benchmark_iteration)
+
     container.wire(
         modules=[
             "src.application.common.monitor",
