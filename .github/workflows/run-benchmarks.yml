@@ -5,11 +5,46 @@ on:
     - cron: "30 3 * * *"
   workflow_dispatch:
 
+#concurrency:
+#  group: ${{ github.workflow }}-${{ github.ref }}
+#  cancel-in-progress: true
+
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  check-concurrency:
+    name: Check if another run is in progress
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+
+    steps:
+      - name: Check for in-progress runs
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: context.workflow,
+              branch: context.ref.replace('refs/heads/', ''),
+              status: 'in_progress',
+              per_page: 50,
+            });
+            
+            // Exclude the current run from the check
+            const otherInProgress = runs.data.workflow_runs
+              .filter(r => r.id !== context.runId);
+            
+            const shouldRun = otherInProgress.length === 0;
+            core.info(`Other in-progress runs: ${otherInProgress.length}`);
+            core.setOutput('should_run', shouldRun ? 'true' : 'false');
+
   run-benchmarks:
     name: Run Benchmarks via Orchestrator
     runs-on: ubuntu-latest
