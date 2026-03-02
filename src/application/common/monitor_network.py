@@ -43,7 +43,7 @@ def monitor_network(query_id: str):
                     ],
                 )
 
-            _save_run_metadata(query_id=query_id, run_id=query_id)
+            _save_run_metadata(query_id=query_id, run_id=run_id)
             logger.info(f"Benchmark run {benchmark_run} completed.")
             return result
 
@@ -52,7 +52,7 @@ def monitor_network(query_id: str):
     return decorator
 
 
-def _benchmark(func, *args, **kwargs) -> tuple[Any, float, float, float]:
+def _benchmark(func, *args, **kwargs) -> tuple[Any, float, int, int]:
     before = psutil.net_io_counters()
     start_time = time.perf_counter()
 
