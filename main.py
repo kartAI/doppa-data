@@ -201,7 +201,7 @@ def _check_container_state(container_group_name: str, poll_interval_seconds: flo
 
         match state:
             case "Succeeded":
-                logger.info(f"Container '{container_group_name}' | State: {state} | Benchmark run completed.")
+                logger.info(f"Container '{container_group_name}' | State: '{state}' | Benchmark run completed.")
                 break
             case "Failed":
                 logger.error(
