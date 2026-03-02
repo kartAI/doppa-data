@@ -69,12 +69,10 @@ def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
     if az_path is not None:
         cmd[0] = az_path
 
-    cmd_str = " ".join(cmd)
-    logger.debug(f"Running command: {cmd_str}")
-
     result = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=False)
 
     if result.returncode != 0:
+        cmd_str = " ".join(cmd)
         if not suppress_error_log:
             stderr = result.stderr.strip()
             stdout = result.stdout.strip()
@@ -90,7 +88,6 @@ def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
 
         raise RuntimeError(f"Command failed with exit code {result.returncode}")
 
-    logger.debug("Command succeeded: %s", cmd_str)
     return result.stdout
 
 
