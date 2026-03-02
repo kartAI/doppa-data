@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   build-and-push-queries:
-    name: Build & Push Query ${{ matrix.display_name }}
+    name: Build & Push ${{ matrix.display_name }}
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
 
@@ -33,6 +33,10 @@ jobs:
           - service: bbox-filtering-advanced-duckdb
             image: bbox-filtering-advanced-duckdb
             display_name: Advanced DuckDB Bounding Box Filtering
+
+          - service: bbox-filtering-advanced-postgis
+            image: bbox-filtering-advanced-postgis
+            display_name: Advanced PostGIS Bounding Box Filtering
 
     steps:
       - name: Checkout code

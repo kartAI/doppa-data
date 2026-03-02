@@ -2,4 +2,5 @@
 from .db_scan_blob_storage import db_scan_blob_storage
 from .db_scan_postgis import db_scan_postgis
 from .bbox_filtering import duckdb_bbox_filtering
+from .bbox_filtering_advanced_postgis import bbox_filtering_advanced_postgis
 from .setup_benchmarking_framework import setup_benchmarking_framework

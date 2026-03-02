@@ -33,7 +33,7 @@ jobs:
         run: python -m compileall src main.py benchmark_runner.py
 
   build-docker-images:
-    name: Build Docker Images – ${{ matrix.display_name }}
+    name: Build ${{ matrix.display_name }}
     runs-on: ubuntu-latest
 
     needs:
@@ -54,6 +54,9 @@ jobs:
 
           - service: bbox-filtering-advanced-duckdb
             display_name: Advanced DuckDB Bounding Box Filtering
+
+          - service: bbox-filtering-advanced-postgis
+            display_name: Advanced PostGIS Bounding Box Filtering
 
     steps:
       - name: Checkout code
