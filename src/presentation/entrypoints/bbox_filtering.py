@@ -8,8 +8,8 @@ from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor(query_id="bbox-filtering-advanced-duckdb")
-def bbox_filtering_advanced_duckdb(
+@monitor(query_id="duckdb-bbox-filtering")
+def duckdb_bbox_filtering(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> None:
@@ -22,6 +22,7 @@ def bbox_filtering_advanced_duckdb(
         file_name="*.parquet",
     )
 
+    # Example bbox in Norway (Oslo-ish, WGS84 lon/lat)
     min_lon = 10.40
     max_lon = 10.95
     min_lat = 59.70

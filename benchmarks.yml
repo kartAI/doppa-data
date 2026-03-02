@@ -9,7 +9,7 @@ experiments:
     cpu: 4
     memory_gb: 16
 
-  - id: bbox-filtering-advanced-duckdb
-    image: doppaacr.azurecr.io/bbox-filtering-advanced-duckdb:latest
+  - id: duckdb-bbox-filtering
+    image: doppaacr.azurecr.io/duckdb-bbox-filtering:latest
     cpu: 4
     memory_gb: 16
