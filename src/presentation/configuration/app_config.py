@@ -9,7 +9,7 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
 
     container.wire(
         modules=[
-            "src.application.common.monitor",
+            "src.application.common.monitor_utils",
             "src.presentation.entrypoints.db_scan_blob_storage",
             "src.presentation.entrypoints.db_scan_postgis",
             "src.presentation.entrypoints.bbox_filtering_advanced_duckdb",
