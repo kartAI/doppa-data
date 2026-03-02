@@ -165,7 +165,7 @@ def _create_container_instance(
     )
 
 
-def _check_container_state(container_group_name: str, timeout: float = 5) -> None:
+def _check_container_state(container_group_name: str, timeout: float = 20) -> None:
     while True:
         show_command = [
             "az", "container", "show",
@@ -179,17 +179,14 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
 
         match state:
             case "Succeeded":
-                logger.info(f"Container '{container_group_name}' has stopped with state '{state}'")
+                logger.info(f"Container '{container_group_name}' | State: {state} | Benchmark run completed.")
                 break
             case "Failed":
                 raise RuntimeError(
                     f"Container '{container_group_name}' failed. Please check the logs for more information."
                 )
             case _:
-                logger.info(
-                    f"Current container state for '{container_group_name}' is '{state}'. Checking again in {timeout} seconds..."
-                )
-
+                logger.info(f"Container '{container_group_name}' | State: '{state}' | Checking again in {timeout}s.")
                 time.sleep(timeout)
 
 
