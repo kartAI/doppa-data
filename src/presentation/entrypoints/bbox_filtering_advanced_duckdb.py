@@ -1,14 +1,14 @@
 ﻿from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
-from src.application.common.monitor import monitor
+from src.application.common.monitor_network import monitor_network
 from src.application.contracts import IFilePathService
 from src.domain.enums import StorageContainer, Theme
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor(query_id="bbox-filtering-advanced-duckdb", interval=0.01)
+@monitor_network(query_id="bbox-filtering-advanced-duckdb")
 def bbox_filtering_advanced_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],

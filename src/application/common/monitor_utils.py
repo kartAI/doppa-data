@@ -32,6 +32,7 @@ def _get_benchmark_run(benchmark_run: int = Provide[Containers.config.benchmark_
     return benchmark_run
 
 
+@inject
 def _save_run(
         run_id: str,
         benchmark_run: int,
@@ -50,6 +51,7 @@ def _save_run(
     )
 
 
+@inject
 def _save_run_metadata(
         query_id: str,
         run_id: str,
