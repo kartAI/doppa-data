@@ -3,7 +3,8 @@ from typing import Optional
 
 from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import (
-    db_scan_blob_storage, duckdb_bbox_filtering, db_scan_postgis, setup_benchmarking_framework
+    db_scan_blob_storage, db_scan_postgis, setup_benchmarking_framework, bbox_filtering_advanced_postgis,
+    bbox_filtering_advanced_duckdb
 )
 
 
@@ -18,8 +19,11 @@ def benchmark_runner() -> None:
         case "db-scan-postgis":
             db_scan_postgis()
             return
-        case "duckdb-bbox-filtering":
-            duckdb_bbox_filtering()
+        case "bbox-filtering-advanced-duckdb":
+            bbox_filtering_advanced_duckdb()
+            return
+        case "bbox-filtering-advanced-postgis":
+            bbox_filtering_advanced_postgis()
             return
         case "setup-framework":
             setup_benchmarking_framework()
