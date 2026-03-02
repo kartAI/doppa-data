@@ -8,7 +8,7 @@ from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor(query_id="bbox-filtering-advanced-duckdb")
+@monitor(query_id="bbox-filtering-advanced-duckdb", interval=0.01)
 def bbox_filtering_advanced_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
