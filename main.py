@@ -20,6 +20,7 @@ def main() -> None:
         benchmark_configuration = yaml.safe_load(f)
 
     run_id = _create_run_id()
+    logger.info(f"Starting benchmark run '{run_id}'")
 
     for benchmark_run in range(1, Config.BENCHMARK_RUNS + 1):
         _run_benchmarks(run_id=run_id, benchmark_run=benchmark_run, benchmark_configuration=benchmark_configuration)
@@ -35,6 +36,10 @@ def _run_benchmarks(run_id: str, benchmark_run: int, benchmark_configuration: An
         cpu = str(experiment["cpu"])
         memory_gb = str(experiment["memory_gb"])
 
+        logger.info(
+            f"Run {benchmark_run}/{Config.BENCHMARK_RUNS} - Experiment '{experiment_id}' | cpu={cpu} | memory={memory_gb} | run_id='{run_id}'"
+        )
+
         _delete_container_instance(container_group_name=container_group_name)
         _create_container_instance(
             run_id=run_id,
@@ -47,6 +52,8 @@ def _run_benchmarks(run_id: str, benchmark_run: int, benchmark_configuration: An
         )
         _check_container_state(container_group_name=container_group_name)
         _delete_container_instance(container_group_name=container_group_name)
+
+    logger.info(f"Completed benchmark run '{run_id}' - iteration {benchmark_run}")
 
 
 def _create_run_id() -> str:
@@ -66,11 +73,18 @@ def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
 
     if result.returncode != 0:
         cmd_str = " ".join(cmd)
-
-        # Only log as error if we are not in a "soft-check" scenario
         if not suppress_error_log:
-            logger.info(f"Command: {cmd_str}")
-            logger.error(result.stderr)
+            stderr = result.stderr.strip()
+            stdout = result.stdout.strip()
+            logger.error(
+                "Command failed (exit %s): %s | stderr: %s%s",
+                result.returncode,
+                cmd_str,
+                stderr,
+                f" | stdout: {stdout}" if stdout else ""
+            )
+        else:
+            logger.debug("Soft-check command failure: %s | stderr: %s", cmd_str, result.stderr.strip())
 
         raise RuntimeError(f"Command failed with exit code {result.returncode}")
 
@@ -161,11 +175,16 @@ def _create_container_instance(
     logger.info(f"Creating container group '{container_group_name}'...")
     _run_cmd(create_command)
     logger.info(
-        f"Created container group '{container_group_name}' (CPU: {cpu} cores | RAM: {memory_gb} GB) with startup command '{startup_command}'"
+        "Created container group '%s' (experiment=%s, CPU=%s cores, RAM=%s GB) - startup: %s",
+        container_group_name,
+        experiment_id,
+        cpu,
+        memory_gb,
+        startup_command
     )
 
 
-def _check_container_state(container_group_name: str, timeout: float = 5) -> None:
+def _check_container_state(container_group_name: str, poll_interval_seconds: float = 20) -> None:
     while True:
         show_command = [
             "az", "container", "show",
@@ -179,18 +198,20 @@ def _check_container_state(container_group_name: str, timeout: float = 5) -> Non
 
         match state:
             case "Succeeded":
-                logger.info(f"Container '{container_group_name}' has stopped with state '{state}'")
+                logger.info(f"Container '{container_group_name}' | State: '{state}' | Benchmark run completed.")
                 break
             case "Failed":
+                logger.error(
+                    f"Container '{container_group_name}' failed. Please check the logs for more information."
+                )
                 raise RuntimeError(
                     f"Container '{container_group_name}' failed. Please check the logs for more information."
                 )
             case _:
                 logger.info(
-                    f"Current container state for '{container_group_name}' is '{state}'. Checking again in {timeout} seconds..."
+                    f"Container '{container_group_name}' | State: '{state}' | Checking again in {poll_interval_seconds} seconds..."
                 )
-
-                time.sleep(timeout)
+                time.sleep(poll_interval_seconds)
 
 
 if __name__ == '__main__':
