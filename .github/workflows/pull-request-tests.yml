@@ -52,8 +52,8 @@ jobs:
           - service: db-scan-postgis
             display_name: PostGIS DB Scan
 
-          - service: duckdb-bbox-filtering
-            display_name: DuckDB BBOX Filtering
+          - service: bbox-filtering-advanced-duckdb
+            display_name: Advanced DuckDB Bounding Box Filtering
 
     steps:
       - name: Checkout code
