@@ -12,7 +12,7 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.application.common.monitor",
             "src.presentation.entrypoints.db_scan_blob_storage",
             "src.presentation.entrypoints.db_scan_postgis",
-            "src.presentation.entrypoints.bbox_filtering",
+            "src.presentation.entrypoints.bbox_filtering_advanced_duckdb",
             "src.presentation.entrypoints.setup_benchmarking_framework",
         ]
     )
