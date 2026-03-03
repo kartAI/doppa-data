@@ -1,4 +1,6 @@
 ﻿from abc import ABC, abstractmethod
+from pathlib import Path
+
 import pandas as pd
 import geopandas as gpd
 
@@ -31,6 +33,7 @@ class IBytesService(ABC):
         :raises NotImplementedError: This method must be implemented by subclasses.
         """
         raise NotImplementedError
+
     @staticmethod
     @abstractmethod
     def convert_fgb_bytes_to_gdf(
@@ -55,6 +58,17 @@ class IBytesService(ABC):
         Converts a Pandas DataFrame or GeoPandas GeoDataFrame to a byte array in parquet format.
         :param df: Pandas DataFrame or GeoPandas GeoDataFrame to convert.
         :return: Byte array representation of the DataFrame in parquet format.
+        :rtype: bytes
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def convert_pmtiles_to_bytes(path: Path) -> bytes:
+        """
+        Converts a PMTiles file to a byte array.
+        :param path: Path to the PMTiles file.
+        :return: Byte array representation of the PMTiles file.
         :rtype: bytes
         """
         raise NotImplementedError

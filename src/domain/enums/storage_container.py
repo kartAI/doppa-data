@@ -12,3 +12,4 @@ class StorageContainer(Enum):
     OPEN_STREET_MAP = "open_street_map"
     FKB = "fkb"
     BENCHMARKS = os.getenv("AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER")
+    TILES = "tiles"
