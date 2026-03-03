@@ -21,22 +21,14 @@ class BenchmarkService(IBenchmarkService):
 
         self.__duckdb_context.execute(
             f"""
-            CREATE  TABLE buildings AS SELECT
-                *,
-                bbox.maxx AS bbox_maxx,
-                bbox.maxy AS bbox_maxy,
-                bbox.minx AS bbox_minx,
-                bbox.miny AS bbox_miny,
-                bbox.xmax AS bbox_xmax,
-                bbox.xmin AS bbox_xmin,
-                bbox.ymax AS bbox_ymax,
-                bbox.ymin AS bbox_ymin
-            FROM read_parquet('{virtual_file_path}');
-
             COPY (
                 SELECT
-                    * EXCLUDE (bbox)
-                FROM buildings
+                    * EXCLUDE (bbox),
+                    bbox.maxx AS bbox_maxx,
+                    bbox.maxy AS bbox_maxy,
+                    bbox.minx AS bbox_minx,
+                    bbox.miny AS bbox_miny
+                FROM read_parquet('{virtual_file_path}')
             ) TO '{save_path.as_posix()}'
             WITH (
                 FORMAT GDAL,
