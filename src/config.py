@@ -33,6 +33,9 @@ class Config:
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
     LOG_DIR: Path = ROOT_DIR / f"logs"
     BUILDINGS_SHAPEFILE: Path = ROOT_DIR / "resources" / "buildings.shp"
+    BUILDINGS_PARQUET_FILE: Path = ROOT_DIR / "resources" / "buildings.parquet"
+    BUILDINGS_GEOJSONL_FILE: Path = ROOT_DIR / "resources" / "buildings.geojsonl"
+    BUILDINGS_PMTILES_FILE: Path = ROOT_DIR / "resources" / "buildings.pmtiles"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO

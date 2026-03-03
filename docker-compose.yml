@@ -1,4 +1,14 @@
 services:
+  setup-framework:
+    container_name: setup-framework
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Setup.Dockerfile
+    image: setup-framework:latest
+    command: python benchmark_runner.py --script-id setup-framework --benchmark-run 1
+
   container-orchestrator:
     env_file:
       - .env
