@@ -40,11 +40,11 @@ jobs:
 
           - service: bbox-filtering-simple-local
             image: bbox-filtering-simple-local
-            display_name: Simple Shapefile + Shapefile Bounding Box Filtering
+            display_name: Simple Shapefile Bounding Box Filtering
 
           - service: bbox-filtering-simple-blob-storage
             image: bbox-filtering-simple-blob-storage
-            display_name: Simple GeoParquet + Shapefile Bounding Box Filtering
+            display_name: Simple GeoParquet Bounding Box Filtering
 
     steps:
       - name: Checkout code
