@@ -31,7 +31,7 @@ class BenchmarkService(IBenchmarkService):
                 bbox.xmin AS bbox_xmin,
                 bbox.ymax AS bbox_ymax,
                 bbox.ymin AS bbox_ymin
-            FROM read_parquet('{virtual_file_path}') LIMIT 100;
+            FROM read_parquet('{virtual_file_path}');
 
             COPY (
                 SELECT
