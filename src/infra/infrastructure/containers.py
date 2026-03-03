@@ -6,6 +6,7 @@ from src.infra.infrastructure.services import (
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
     MonitoringStorageService
 )
+from src.infra.infrastructure.services.benchmark_service import BenchmarkService
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
 
 
@@ -99,6 +100,11 @@ class Containers(containers.DeclarativeContainer):
         blob_storage_service=blob_storage_service,
         bytes_service=bytes_service,
         file_path_service=file_path_service
+    )
+
+    benchmark_service = providers.Singleton(
+        BenchmarkService,
+        duckdb_context=duckdb_context
     )
 
     StacIO.set_default(stac_io_service)

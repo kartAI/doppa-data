@@ -32,6 +32,7 @@ class Config:
     # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
     LOG_DIR: Path = ROOT_DIR / f"logs"
+    BUILDINGS_SHAPEFILE: Path = ROOT_DIR / "resources" / "buildings.shp"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO
