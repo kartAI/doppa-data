@@ -18,3 +18,13 @@ experiments:
     image: doppaacr.azurecr.io/bbox-filtering-advanced-postgis:latest
     cpu: 4
     memory_gb: 16
+
+  - id: bbox-filtering-simple-local
+    image: doppaacr.azurecr.io/bbox-filtering-simple-local:latest
+    cpu: 4
+    memory_gb: 16
+
+  - id: bbox-filtering-simple-blob-storage
+    image: doppaacr.azurecr.io/bbox-filtering-simple-blob-storage:latest
+    cpu: 4
+    memory_gb: 16

@@ -32,6 +32,7 @@ class Config:
     # DIRECTORIES
     ROOT_DIR: Path = Path.cwd() if not IS_NOTEBOOK else Path.cwd().parent.parent.parent
     LOG_DIR: Path = ROOT_DIR / f"logs"
+    BUILDINGS_SHAPEFILE: Path = ROOT_DIR / "resources" / "buildings.shp"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO
@@ -71,7 +72,7 @@ class Config:
     # BENCHMARKING
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
-    DEFAULT_SAMPLE_TIMEOUT: float = 0.001
+    DEFAULT_SAMPLE_TIMEOUT: float = 0.01
     BENCHMARK_RUNS: int = 5
     BENCHMARK_WARMUP_ITERATIONS: int = 5
     BENCHMARK_ITERATIONS: int = 100

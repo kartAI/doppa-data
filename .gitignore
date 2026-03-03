@@ -211,6 +211,8 @@ datasets/**/*.fgb
 *.parquet
 monitor_logs/**/*.csv
 monitor_logs/**/*.parquet
+resources/*
+!resources/.gitkeep
 
 # Profiling
 profiling/**.json
