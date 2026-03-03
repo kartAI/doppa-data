@@ -72,7 +72,7 @@ class Config:
     # BENCHMARKING
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
-    DEFAULT_SAMPLE_TIMEOUT: float = 0.001
+    DEFAULT_SAMPLE_TIMEOUT: float = 0.01
     BENCHMARK_RUNS: int = 5
     BENCHMARK_WARMUP_ITERATIONS: int = 5
     BENCHMARK_ITERATIONS: int = 100
