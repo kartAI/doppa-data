@@ -25,7 +25,7 @@ def _benchmark(db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb
         f"""
         SELECT * FROM ST_ReadShp('{str(Config.BUILDINGS_SHAPEFILE)}')
         WHERE ST_Intersects(
-            geometry,
+            geom,
             ST_MakeEnvelope({min_lon}, {min_lat}, {max_lon}, {max_lat})
         );
         """
