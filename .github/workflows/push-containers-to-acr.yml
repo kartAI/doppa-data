@@ -38,6 +38,14 @@ jobs:
             image: bbox-filtering-advanced-postgis
             display_name: Advanced PostGIS Bounding Box Filtering
 
+          - service: bbox-filtering-simple-local
+            image: bbox-filtering-simple-local
+            display_name: Simple Shapefile + Shapefile Bounding Box Filtering
+
+          - service: bbox-filtering-simple-blob-storage
+            image: bbox-filtering-simple-blob-storage
+            display_name: Simple GeoParquet + Shapefile Bounding Box Filtering
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
