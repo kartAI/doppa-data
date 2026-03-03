@@ -17,6 +17,7 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.bbox_filtering_advanced_postgis",
 
             "src.presentation.entrypoints.bbox_filtering_simple_local",
+            "src.presentation.entrypoints.bbox_filtering_simple_blob_storage",
 
             "src.presentation.entrypoints.setup_benchmarking_framework",
         ]
