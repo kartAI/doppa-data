@@ -28,3 +28,8 @@ experiments:
     image: doppaacr.azurecr.io/bbox-filtering-simple-blob-storage:latest
     cpu: 4
     memory_gb: 16
+
+  - id: vector-tiles-single-tile-pmtiles
+    image: doppaacr.azurecr.io/vector-tiles-single-tile-pmtiles:latest
+    cpu: 4
+    memory_gb: 16
