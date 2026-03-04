@@ -2,14 +2,14 @@
 from dependency_injector.wiring import inject, Provide
 
 from src import Config
-from src.application.common.monitor import monitor
+from src.application.common.monitor_cpu_and_ram import monitor_cpu_and_ram
 from src.application.contracts import IFilePathService
 from src.domain.enums import StorageContainer, Theme
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor(query_id="bbox-filtering-simple-blob-storage")
+@monitor_cpu_and_ram(query_id="bbox-filtering-simple-blob-storage")
 def bbox_filtering_simple_blob_storage(
         db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service]
