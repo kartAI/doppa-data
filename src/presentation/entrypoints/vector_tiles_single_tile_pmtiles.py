@@ -43,8 +43,34 @@ def _http_range_source(url: str) -> Callable:
             "Accept-Encoding": "identity",
         }
         r = session.get(url, headers=headers, stream=False, timeout=30)
-        if r.status_code not in (200, 206):
-            r.raise_for_status()
+        if r.status_code != 206:
+            if r.status_code != 200:
+                r.raise_for_status()
+            raise RuntimeError(f"Expected HTTP 206 Partial Content for range request, got {r.status_code}")
+
+        content_range = r.headers.get("Content-Range")
+        if content_range:
+            try:
+                units, range_spec = content_range.split(" ", 1)
+                if units.strip().lower() != "bytes":
+                    raise ValueError("Unsupported Content-Range units")
+                byte_range, _ = range_spec.split("/", 1)
+                start_str, end_str = byte_range.split("-", 1)
+                start = int(start_str)
+                end_returned = int(end_str)
+            except Exception as exc:
+                raise RuntimeError(f"Invalid Content-Range header: {content_range}") from exc
+            if start != offset or (end_returned - start + 1) != length:
+                raise RuntimeError(
+                    f"Server returned unexpected byte range {content_range} "
+                    f"for requested offset={offset}, length={length}"
+                )
+
+        if len(r.content) != length:
+            raise RuntimeError(
+                f"Server returned {len(r.content)} bytes, expected {length} "
+                f"for offset={offset}"
+            )
         return r.content
 
     return _get_bytes
