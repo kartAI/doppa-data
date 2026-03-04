@@ -1,12 +1,12 @@
 ﻿from dependency_injector.wiring import inject, Provide
 from sqlalchemy import Engine, text
 
-from src.application.common.monitor import monitor
+from src.application.common.monitor_cpu_and_ram import monitor_cpu_and_ram
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor(query_id="db-scan-postgis")
+@monitor_cpu_and_ram(query_id="db-scan-postgis")
 def db_scan_postgis(
         db_context: Engine = Provide[Containers.postgres_context]
 ) -> None:

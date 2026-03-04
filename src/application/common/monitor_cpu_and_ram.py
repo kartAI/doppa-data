@@ -10,7 +10,7 @@ from src.application.common import logger
 from src.application.common.monitor_utils import _get_run_id, _get_benchmark_run, _save_run_metadata, _save_run
 
 
-def monitor(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
+def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
