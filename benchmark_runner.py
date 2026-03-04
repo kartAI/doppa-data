@@ -4,7 +4,8 @@ from typing import Optional
 from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import (
     db_scan_blob_storage, db_scan_postgis, setup_benchmarking_framework, bbox_filtering_advanced_postgis,
-    bbox_filtering_advanced_duckdb, bbox_filtering_simple_local, bbox_filtering_simple_blob_storage
+    bbox_filtering_advanced_duckdb, bbox_filtering_simple_local, bbox_filtering_simple_blob_storage,
+    vector_tiles_single_tile_pmtiles
 )
 
 
@@ -30,6 +31,9 @@ def benchmark_runner() -> None:
             return
         case "bbox-filtering-simple-blob-storage":
             bbox_filtering_simple_blob_storage()
+            return
+        case "vector-tiles-single-tile-pmtiles":
+            vector_tiles_single_tile_pmtiles()
             return
         case "setup-framework":
             setup_benchmarking_framework()
