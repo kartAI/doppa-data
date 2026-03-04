@@ -7,6 +7,17 @@ from src.domain.enums import Theme, StorageContainer
 class IFilePathService(ABC):
     @staticmethod
     @abstractmethod
+    def create_url_to_blob_resource(container: StorageContainer, blob_path: str) -> str:
+        """
+        Creates a URL to a blob resource in a storage account.
+        :param container: Container where the blob is stored
+        :param blob_path: Path to blob resource within the container
+        :return: A URL to the blob resource
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
     def create_hive_blob_path(
             file_name: str,
             **kwargs: str | int
