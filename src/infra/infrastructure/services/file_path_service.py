@@ -2,11 +2,16 @@
 from datetime import datetime
 from typing import Literal
 
+from src import Config
 from src.application.contracts import IFilePathService
 from src.domain.enums import Theme, StorageContainer
 
 
 class FilePathService(IFilePathService):
+    @staticmethod
+    def create_url_to_blob_resource(container: StorageContainer, blob_path: str) -> str:
+        return f"{Config.AZURE_BLOB_STORAGE_HTTPS_URL}/{container.value}/{blob_path}"
+
     @staticmethod
     def create_hive_blob_path(
             file_name: str,
