@@ -37,6 +37,7 @@ class Config:
     BUILDINGS_PARQUET_FILE: Path = ROOT_DIR / "resources" / "buildings.parquet"
     BUILDINGS_GEOJSONL_FILE: Path = ROOT_DIR / "resources" / "buildings.geojsonl"
     BUILDINGS_PMTILES_FILE: Path = ROOT_DIR / "resources" / "buildings.pmtiles"
+    BUILDINGS_MVT_DIR: Path = ROOT_DIR / "resources" / "buildings_mvt"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO

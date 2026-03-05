@@ -16,6 +16,7 @@ from src.infra.infrastructure import Containers
 def setup_benchmarking_framework() -> None:
     _postgres_buildings_seed()
     _create_pmtiles()
+    _create_mvt()
 
 
 @inject
@@ -148,3 +149,94 @@ def _create_pmtiles(
     )
 
     logger.info(f"Uploaded PMTiles to container '{StorageContainer.TILES.value}'")
+
+
+@inject
+def _create_mvt(
+        duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
+        file_path_service: IFilePathService = Provide[Containers.file_path_service],
+        blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
+) -> None:
+    path = file_path_service.create_release_virtual_filesystem_path(
+        storage_scheme="az",
+        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
+        container=StorageContainer.DATA,
+        theme=Theme.BUILDINGS,
+        region="*",
+        file_name="*.parquet",
+    )
+
+    Config.BUILDINGS_GEOJSONL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    Config.BUILDINGS_MVT_DIR.parent.mkdir(parents=True, exist_ok=True)
+
+    if not Config.BUILDINGS_GEOJSONL_FILE.exists():
+        logger.info("Fetching buildings as GeoJSONL file for MVT generation.")
+
+        duckdb_context.execute(
+            f"""
+            COPY (
+                SELECT 
+                    * EXCLUDE (geometry, bbox),
+                    bbox.maxx, 
+                    bbox.maxy, 
+                    bbox.minx, 
+                    bbox.miny,
+                    geometry
+                FROM read_parquet('{path}')
+            )
+            TO '{Config.BUILDINGS_GEOJSONL_FILE.as_posix()}'
+            WITH (
+                FORMAT GDAL,
+                DRIVER 'GeoJSONSeq'
+            );
+            """
+        )
+
+        logger.info(f"Saved buildings to '{Config.BUILDINGS_GEOJSONL_FILE}'")
+    else:
+        logger.info(f"GeoJSONL file already exists at '{Config.BUILDINGS_GEOJSONL_FILE}', skipping creation.")
+
+    cmd = [
+        "tippecanoe",
+        "-e",
+        Config.BUILDINGS_MVT_DIR.as_posix(),
+        "-zg",
+        "--drop-densest-as-needed",
+        "--coalesce",
+        "--read-parallel",
+        "--no-tile-compression",
+        "-l",
+        "buildings",
+        Config.BUILDINGS_GEOJSONL_FILE.as_posix(),
+    ]
+
+    cmd_str = " ".join(cmd)
+    logger.info(f"Creating MVT tiles with command:\t{cmd_str}")
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"tippecanoe failed with exit code {result.returncode}:\n"
+            f"STDOUT:\n{result.stdout}\n\nSTDERR:\n{result.stderr}"
+        )
+
+    logger.info(f"MVT tiles saved to '{Config.BUILDINGS_MVT_DIR}'")
+    logger.info("Uploading MVT tiles to blob storage.")
+
+    mvt_dir = Config.BUILDINGS_MVT_DIR
+    tile_count = 0
+
+    for tile_file in mvt_dir.rglob("*.pbf"):
+        relative_path = tile_file.relative_to(mvt_dir)
+        blob_name = f"mvt/{relative_path.as_posix()}"
+
+        tile_bytes = tile_file.read_bytes()
+        blob_storage_service.upload_file(
+            container_name=StorageContainer.TILES,
+            blob_name=blob_name,
+            data=tile_bytes,
+        )
+        tile_count += 1
+
+    logger.info(f"Uploaded {tile_count} MVT tiles to container '{StorageContainer.TILES.value}' under 'mvt/' prefix.")
+
