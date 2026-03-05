@@ -14,3 +14,4 @@ from .fkb_service_interface import IFKBService
 from .zip_service_interface import IZipService
 from .conflation_service_interface import IConflationService
 from .monitoring_storage_service import IMonitoringStorageService
+from .mvt_service_interface import IMVTService
