@@ -1,0 +1,99 @@
+﻿name: Publish APIs
+
+on:
+  pull_request:
+    types: [ closed ]
+    paths-ignore:
+      - src/presentation/entrypoints/**
+  workflow_dispatch:
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push-api-images-to-acr:
+    name: Build & Push API Images to ACR
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service: vmt-api-server
+            display_name: VMT API Server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build ${{ matrix.display_name }} from docker-compose
+        run: docker compose build ${{ matrix.service }}
+
+      - name: Tag ${{ matrix.display_name }} as latest
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+
+      - name: Tag ${{ matrix.display_name }} with commit SHA
+        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+
+      - name: Push ${{ matrix.display_name }} (latest)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+
+      - name: Push ${{ matrix.display_name }} (commit SHA)
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+
+
+  deploy-vmt-api:
+    name: Deploy VMT API to VM
+    runs-on: ubuntu-latest
+    needs: build-and-push-api-images-to-acr
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy container on VM
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az ssh vm --ip ${{ secrets.AZURE_VMT_VM_IP }} --command "
+              docker login ${{ vars.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }} &&
+              docker pull ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest &&
+              docker stop ${{ matrix.service }} || true &&
+              docker rm ${{ matrix.service }} || true &&
+              docker run -d \
+                --name ${{ matrix.service }} \
+                -p 8000:8000 \
+                -e AZURE_BLOB_STORAGE_CONNECTION_STRING='${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}' \
+                -e AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER='${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}' \
+                -e AZURE_BLOB_STORAGE_METADATA_CONTAINER='${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}' \
+                -e POSTGRES_USERNAME='${{ secrets.POSTGRES_USERNAME }}' \
+                -e POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
+                ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
+            "
