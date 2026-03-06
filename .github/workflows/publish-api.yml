@@ -1,4 +1,4 @@
-﻿name: Publish APIs
+name: Publish APIs
 
 on:
   pull_request:
@@ -81,18 +81,26 @@ jobs:
 
       - name: Configure app settings
         uses: azure/cli@v2
+        env:
+          WEBAPP_NAME: ${{ matrix.webapp_name }}
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          BLOB_CONN_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+          BLOB_BENCHMARK: ${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}
+          BLOB_METADATA: ${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}
         with:
           azcliversion: latest
-          inlineScript: >
-            az webapp config appsettings set
-            --name "${{ matrix.webapp_name }}"
-            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}"
-            --settings
-            "POSTGRES_USERNAME=${{ secrets.POSTGRES_USERNAME }}"
-            "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
-            "AZURE_BLOB_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}"
-            "AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}"
-            "AZURE_BLOB_STORAGE_METADATA_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}"
+          inlineScript: |
+            az webapp config appsettings set \
+              --name "$WEBAPP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --settings \
+                POSTGRES_USERNAME="$POSTGRES_USERNAME" \
+                POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+                AZURE_BLOB_STORAGE_CONNECTION_STRING="$BLOB_CONN_STRING" \
+                AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER="$BLOB_BENCHMARK" \
+                AZURE_BLOB_STORAGE_METADATA_CONTAINER="$BLOB_METADATA"
 
       - name: Deploy ${{ matrix.display_name }}
         uses: azure/webapps-deploy@v3
