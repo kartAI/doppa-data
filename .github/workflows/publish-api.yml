@@ -73,6 +73,13 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Update Azure Container App
         uses: azure/cli@v2
         with:
@@ -80,11 +87,11 @@ jobs:
           inlineScript: |
             az containerapp update \
               --name vmt-api-server \
-              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --image ${{ vars.ACR_LOGIN_SERVER }}/vmt-api-server:latest \
+              --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+              --image "${{ vars.ACR_LOGIN_SERVER }}/vmt-api-server:latest" \
               --set-env-vars \
-                AZURE_BLOB_STORAGE_CONNECTION_STRING='${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}' \
-                AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER='${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}' \
-                AZURE_BLOB_STORAGE_METADATA_CONTAINER='${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}' \
-                POSTGRES_USERNAME='${{ secrets.POSTGRES_USERNAME }}' \
-                POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
+                AZURE_BLOB_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}" \
+                AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER="${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}" \
+                AZURE_BLOB_STORAGE_METADATA_CONTAINER="${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}" \
+                POSTGRES_USERNAME="${{ secrets.POSTGRES_USERNAME }}" \
+                POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
