@@ -1,4 +1,5 @@
-﻿from sqlalchemy import Engine, text
+﻿import asyncio
+from sqlalchemy import Engine, text
 
 from src.application.contracts import IMVTService
 
@@ -9,7 +10,7 @@ class MVTService(IMVTService):
     def __init__(self, db_context: Engine):
         self.__db_context = db_context
 
-    def get_mvt_tiles(self, z: int, x: int, y: int) -> bytes | None:
+    async def get_mvt_tiles(self, z: int, x: int, y: int) -> bytes | None:
         query = text(
             """
             WITH
@@ -37,10 +38,13 @@ class MVTService(IMVTService):
             """
         )
 
-        with self.__db_context.connect() as conn:
-            result = conn.execute(query, {"z": z, "x": x, "y": y}).fetchone()
+        def _blocking_db_call():
+            with self.__db_context.connect() as conn:
+                result = conn.execute(query, {"z": z, "x": x, "y": y}).fetchone()
 
-        if result is None or result[0] is None or len(result[0]) == 0:
-            return None
+            if result is None or result[0] is None or len(result[0]) == 0:
+                return None
 
-        return bytes(result[0])
+            return bytes(result[0])
+
+        return await asyncio.to_thread(_blocking_db_call)

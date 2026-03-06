@@ -1,7 +1,7 @@
 ﻿from contextlib import asynccontextmanager
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import FastAPI, HTTPException, Response, logger
+from fastapi import FastAPI, HTTPException, Response
 from starlette.middleware.cors import CORSMiddleware
 
 from src.application.contracts import IMVTService
@@ -10,8 +10,8 @@ from src.presentation.configuration import initialize_dependencies
 
 
 @inject
-def _db_call(z: int, x: int, y: int, mvt_service: IMVTService = Provide[Containers.mvt_service]):
-    return mvt_service.get_mvt_tiles(z=z, x=x, y=y)
+async def _db_call(z: int, x: int, y: int, mvt_service: IMVTService = Provide[Containers.mvt_service]):
+    return await mvt_service.get_mvt_tiles(z=z, x=x, y=y)
 
 
 @asynccontextmanager
@@ -35,7 +35,7 @@ async def get_tiles(z: int, x: int, y: int):
     if z < 0 or z > 22:
         raise HTTPException(status_code=400, detail="Invalid zoom")
 
-    tile = _db_call(z, x, y)
+    tile = await _db_call(z, x, y)
     if not tile:
         raise HTTPException(status_code=404, detail="Tile not found")
 
