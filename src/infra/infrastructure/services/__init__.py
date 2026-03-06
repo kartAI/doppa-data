@@ -13,3 +13,4 @@ from .fkb_file_service import FKBFileService
 from .fkb_service import FKBService
 from .conflation_service import ConflationService
 from .monitoring_storage_service import MonitoringStorageService
+from .mvt_service import MVTService

@@ -9,5 +9,3 @@ RUN apt-get update && \
 
 COPY . .
 RUN pip install -r requirements.txt
-
-ENTRYPOINT ["python", "-m", "main"]

@@ -4,7 +4,7 @@ from pystac import StacIO
 from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
-    MonitoringStorageService
+    MonitoringStorageService, MVTService
 )
 from src.infra.infrastructure.services.benchmark_service import BenchmarkService
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
@@ -105,6 +105,11 @@ class Containers(containers.DeclarativeContainer):
     benchmark_service = providers.Singleton(
         BenchmarkService,
         duckdb_context=duckdb_context
+    )
+
+    mvt_service = providers.Singleton(
+        MVTService,
+        db_context=postgres_context
     )
 
     StacIO.set_default(stac_io_service)

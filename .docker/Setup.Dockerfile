@@ -19,5 +19,3 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
-
-CMD ["python", "benchmark_runner.py", "--script-id", "setup-framework", "--benchmark-run", "1"]
