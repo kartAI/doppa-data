@@ -67,6 +67,9 @@ jobs:
           - service: vector-tiles-single-tile-pmtiles
             display_name: PMTiles Fetch Single Tile
 
+          - service: vmt-api-server
+            display_name: VMT API Server
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
