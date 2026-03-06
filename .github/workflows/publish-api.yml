@@ -85,15 +85,15 @@ jobs:
             az ssh vm --ip ${{ secrets.AZURE_VMT_VM_IP }} --command "
               docker login ${{ vars.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }} &&
               docker pull ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest &&
-              docker stop ${{ matrix.service }} || true &&
-              docker rm ${{ matrix.service }} || true &&
+              docker stop vmt-api-server || true &&
+              docker rm vmt-api-server || true &&
               docker run -d \
-                --name ${{ matrix.service }} \
+                --name vmt-api-server \
                 -p 8000:8000 \
                 -e AZURE_BLOB_STORAGE_CONNECTION_STRING='${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}' \
                 -e AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER='${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}' \
                 -e AZURE_BLOB_STORAGE_METADATA_CONTAINER='${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}' \
                 -e POSTGRES_USERNAME='${{ secrets.POSTGRES_USERNAME }}' \
                 -e POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
-                ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
+                ${{ vars.ACR_LOGIN_SERVER }}/vmt-api-server:latest
             "
