@@ -83,16 +83,16 @@ jobs:
         uses: azure/cli@v2
         with:
           azcliversion: latest
-          inlineScript: |
-            az webapp config appsettings set \
-              --name "${{ matrix.webapp_name }}" \
-              --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
-              --settings \
-                "POSTGRES_USERNAME=${{ secrets.POSTGRES_USERNAME }}" \
-                "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" \
-                "AZURE_BLOB_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}" \
-                "AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}" \
-                "AZURE_BLOB_STORAGE_METADATA_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}"
+          inlineScript: >
+            az webapp config appsettings set
+            --name "${{ matrix.webapp_name }}"
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}"
+            --settings
+            "POSTGRES_USERNAME=${{ secrets.POSTGRES_USERNAME }}"
+            "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}"
+            "AZURE_BLOB_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}"
+            "AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}"
+            "AZURE_BLOB_STORAGE_METADATA_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}"
 
       - name: Deploy ${{ matrix.display_name }}
         uses: azure/webapps-deploy@v3
