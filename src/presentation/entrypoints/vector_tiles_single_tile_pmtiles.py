@@ -11,6 +11,7 @@ from src.domain.enums import StorageContainer
 from src.infra.infrastructure import Containers
 
 Z, X, Y = 13, 4340, 2382
+session = requests.Session()
 
 
 @inject
@@ -34,8 +35,6 @@ def _benchmark(reader: Reader) -> None:
 
 
 def _http_range_source(url: str) -> Callable:
-    session = requests.Session()
-
     def _get_bytes(offset: int, length: int) -> bytes:
         end = offset + length - 1
         headers = {

@@ -50,6 +50,10 @@ jobs:
             image: vector-tiles-single-tile-pmtiles
             display_name: PMTiles Fetch Single Tile
 
+          - service: vector-tiles-single-tile-vmt
+            image: vector-tiles-single-tile-vmt
+            display_name: VMT Fetch Single Tile
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

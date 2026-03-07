@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: .docker/Setup.Dockerfile
     image: setup-framework:latest
-    command: python benchmark_runner.py --script-id setup-framework --benchmark-run 1
+    command: python benchmark_runner.py --script-id setup-framework --benchmark-run 1 --run-id ABCDEF
 
   container-orchestrator:
     env_file:
@@ -25,7 +25,7 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: db-scan-blob-storage:latest
-    command: python benchmark_runner.py --script-id db-scan-blob-storage
+    command: python benchmark_runner.py --script-id db-scan-blob-storage --benchmark-run 1 --run-id ABCDEF
 
   db-scan-postgis:
     env_file:
@@ -34,7 +34,7 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: db-scan-postgis:latest
-    command: python benchmark_runner.py --script-id db-scan-postgis
+    command: python benchmark_runner.py --script-id db-scan-postgis --benchmark-run 1 --run-id ABCDEF
 
   bbox-filtering-advanced-duckdb:
     env_file:
@@ -43,7 +43,7 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: bbox-filtering-advanced-duckdb:latest
-    command: python benchmark_runner.py --script-id bbox-filtering-advanced-duckdb
+    command: python benchmark_runner.py --script-id bbox-filtering-advanced-duckdb --benchmark-run 1 --run-id ABCDEF
 
   bbox-filtering-advanced-postgis:
     env_file:
@@ -52,7 +52,7 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: bbox-filtering-advanced-postgis:latest
-    command: python benchmark_runner.py --script-id bbox-filtering-advanced-postgis
+    command: python benchmark_runner.py --script-id bbox-filtering-advanced-postgis --benchmark-run 1 --run-id ABCDEF
 
   bbox-filtering-simple-local:
     env_file:
@@ -61,7 +61,7 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: bbox-filtering-simple-local:latest
-    command: python benchmark_runner.py --script-id bbox-filtering-simple-local
+    command: python benchmark_runner.py --script-id bbox-filtering-simple-local --benchmark-run 1 --run-id ABCDEF
 
   bbox-filtering-simple-blob-storage:
     env_file:
@@ -70,7 +70,7 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: bbox-filtering-simple-blob-storage:latest
-    command: python benchmark_runner.py --script-id bbox-filtering-simple-blob-storage
+    command: python benchmark_runner.py --script-id bbox-filtering-simple-blob-storage --benchmark-run 1 --run-id ABCDEF
 
   vector-tiles-single-tile-pmtiles:
     env_file:
@@ -79,7 +79,16 @@ services:
       context: .
       dockerfile: .docker/Query.Dockerfile
     image: vector-tiles-single-tile-pmtiles:latest
-    command: python benchmark_runner.py --script-id vector-tiles-single-tile-pmtiles
+    command: python benchmark_runner.py --script-id vector-tiles-single-tile-pmtiles --benchmark-run 1 --run-id ABCDEF
+
+  vector-tiles-single-tile-vmt:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: vector-tiles-single-tile-vmt:latest
+    command: python benchmark_runner.py --script-id vector-tiles-single-tile-vmt --benchmark-run 1 --run-id ABCDEF
 
   vmt-api-server:
     env_file:
