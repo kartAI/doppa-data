@@ -1,13 +1,13 @@
-﻿from requests import Request, Session, session, RequestException
+﻿from requests import Session, session, RequestException
 
 from src import Config
-from src.application.contracts import ITileApiService
+from src.application.contracts import ITileApiService, ITileService
 
 
 class TileApiService(ITileApiService):
     __session: Session
 
-    def __init__(self):
+    def __init__(self, tile_service: ITileService):
         self.__session = session()
 
     def fetch_vmt_tile(self, z: int, x: int, y: int) -> bytes:

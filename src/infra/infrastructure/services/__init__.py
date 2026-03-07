@@ -13,5 +13,6 @@ from .release_service import ReleaseService
 from .stac_io_service import StacIOService
 from .stac_service import StacService
 from .tile_api_service import TileApiService
+from .tile_service import TileService
 from .vector_service import VectorService
 from .zip_service import ZipService

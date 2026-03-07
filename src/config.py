@@ -50,6 +50,12 @@ class Config:
     # METADATA
     RELEASE_FILE_NAME: str = "releases.parquet"
     COUNTY_FILE_NAME: str = "counties.parquet"
+    BUILDINGS_SPATIAL_EXTENT: tuple[float, float, float, float] = (
+        57.9676151,
+        4.509825,
+        71.17004,
+        31.1565841,
+    )
 
     # STAC
     STAC_LICENSE = "CC-BY-4.0"
