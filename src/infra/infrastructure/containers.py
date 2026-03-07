@@ -4,7 +4,7 @@ from pystac import StacIO
 from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
-    MonitoringStorageService, MVTService
+    MonitoringStorageService, MVTService, TileApiService
 )
 from src.infra.infrastructure.services.benchmark_service import BenchmarkService
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
@@ -110,6 +110,10 @@ class Containers(containers.DeclarativeContainer):
     mvt_service = providers.Singleton(
         MVTService,
         db_context=postgres_context
+    )
+
+    tile_api_service = providers.Singleton(
+        TileApiService
     )
 
     StacIO.set_default(stac_io_service)

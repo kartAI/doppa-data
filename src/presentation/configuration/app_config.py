@@ -20,6 +20,7 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.bbox_filtering_simple_blob_storage",
 
             "src.presentation.entrypoints.vector_tiles_single_tile_pmtiles",
+            "src.presentation.entrypoints.vector_tiles_single_tile_vmt",
 
             "src.presentation.entrypoints.setup_benchmarking_framework",
 
