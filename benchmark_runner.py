@@ -37,6 +37,7 @@ def benchmark_runner() -> None:
             return
         case "vector-tiles-single-tile-vmt":
             vector_tiles_single_tile_vmt()
+            return
         case "setup-framework":
             setup_benchmarking_framework()
             return
