@@ -90,7 +90,7 @@ jobs:
           BLOB_BENCHMARK: ${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}
           BLOB_METADATA: ${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}
         with:
-          azcliversion: 2.63.0
+          azcliversion: latest
           inlineScript: |
             az webapp config appsettings set \
               --name "$WEBAPP_NAME" \
