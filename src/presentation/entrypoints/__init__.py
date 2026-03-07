@@ -7,3 +7,4 @@ from .bbox_filtering_simple_local import bbox_filtering_simple_local
 from .bbox_filtering_simple_blob_storage import bbox_filtering_simple_blob_storage
 from .setup_benchmarking_framework import setup_benchmarking_framework
 from .vector_tiles_single_tile_pmtiles import vector_tiles_single_tile_pmtiles
+from .vector_tiles_single_tile_vmt import vector_tiles_single_tile_vmt

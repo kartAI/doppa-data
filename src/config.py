@@ -21,6 +21,7 @@ class Config:
     AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppablobstorage"
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     AZURE_BLOB_STORAGE_MAX_CONCURRENCY: int = 1
+    AZURE_VMT_SERVER_URL: str = "https://doppa-vmt-fvf9czgsdvhfhvdg.norwayeast-01.azurewebsites.net"
 
     # POSTGRESQL
     POSTGRES_HOST: str = "doppa-db.postgres.database.azure.com"
