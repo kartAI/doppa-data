@@ -15,6 +15,10 @@ class TileApiService(ITileApiService):
             tile_response = self.__session.get(
                 f"{Config.AZURE_VMT_SERVER_URL}/tiles/{z}/{x}/{y}",
                 timeout=10,
+                headers={
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache, no-store, max-age=0"
+                }
             )
             tile_response.raise_for_status()
 
