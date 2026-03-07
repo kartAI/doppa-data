@@ -20,7 +20,7 @@ class Config:
     AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppablobstorage.blob.core.windows.net"
     AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppablobstorage"
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
-    BLOB_STORAGE_MAX_CONCURRENCY: int = 1
+    AZURE_BLOB_STORAGE_MAX_CONCURRENCY: int = 1
 
     # POSTGRESQL
     POSTGRES_HOST: str = "doppa-db.postgres.database.azure.com"

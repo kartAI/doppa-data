@@ -38,7 +38,7 @@ class BlobStorageService(IBlobStorageService):
             name=blob_name,
             data=data,
             overwrite=True,
-            max_concurrency=Config.BLOB_STORAGE_MAX_CONCURRENCY
+            max_concurrency=Config.AZURE_BLOB_STORAGE_MAX_CONCURRENCY
         )
 
         logger.debug(f"Uploaded blob '{blob_name}'. It can be accessed at: {blob_client.url}")
