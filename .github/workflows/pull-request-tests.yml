@@ -21,9 +21,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show Python version
+        run: |
+          python3 --version
+          which python3
+
+      - name: Bootstrap pip
+        run: |
+          python3 -m ensurepip --upgrade || true
+          python3 -m pip --version
+
       - name: Install dependencies
         run: |
-          if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+          if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
 
       - name: Compile all Python files
         run: python3 -m compileall src main.py benchmark_runner.py
