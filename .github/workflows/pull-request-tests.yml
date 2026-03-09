@@ -16,7 +16,7 @@ on:
 jobs:
   compile:
     name: Check Python syntax
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
 
   build-docker-images:
     name: Build ${{ matrix.display_name }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     needs:
       - compile

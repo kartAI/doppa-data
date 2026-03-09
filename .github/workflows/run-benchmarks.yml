@@ -16,7 +16,7 @@ permissions:
 jobs:
   run-benchmarks:
     name: Run Benchmarks via Orchestrator
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
     steps:

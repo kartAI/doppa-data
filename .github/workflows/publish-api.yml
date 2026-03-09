@@ -20,7 +20,7 @@ jobs:
   build-and-push-api-images-to-acr:
     name: Build & Push API Images to ACR
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         include:
@@ -62,7 +62,7 @@ jobs:
 
   deploy-vmt-api:
     name: Deploy VMT API to Azure Web App
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build-and-push-api-images-to-acr
     strategy:
       matrix:
