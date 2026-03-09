@@ -21,11 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show Python version
-        run: |
-          python3 --version
-          which python3
-
       - name: Create virtual environment
         run: |
           python3 -m venv .venv
