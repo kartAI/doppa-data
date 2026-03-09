@@ -21,21 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show Python version
-        run: |
-          python3 --version
-          which python3
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12.13"
-
       - name: Install dependencies
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Compile all Python files
-        run: python -m compileall src main.py benchmark_runner.py
+        run: python3 -m compileall src main.py benchmark_runner.py
 
   build-docker-images:
     name: Build ${{ matrix.display_name }}
