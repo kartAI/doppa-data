@@ -16,7 +16,7 @@ on:
 jobs:
   compile:
     name: Check Python syntax
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
