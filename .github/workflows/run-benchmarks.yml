@@ -16,7 +16,12 @@ permissions:
 jobs:
   run-benchmarks:
     name: Run Benchmarks via Orchestrator
-    runs-on: ubuntu-latest
+    runs-on:
+      - self-hosted
+      - Linux
+      - ARM64
+      - raspberrypi5
+
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
     steps:
