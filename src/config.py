@@ -39,6 +39,7 @@ class Config:
     BUILDINGS_GEOJSONL_FILE: Path = ROOT_DIR / "resources" / "buildings.geojsonl"
     BUILDINGS_PMTILES_FILE: Path = ROOT_DIR / "resources" / "buildings.pmtiles"
     BUILDINGS_MVT_DIR: Path = ROOT_DIR / "resources" / "buildings_mvt"
+    MVT_TILES_PATH: Path = ROOT_DIR / "resources" / "tiles.json"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO

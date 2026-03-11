@@ -1,4 +1,5 @@
-﻿import subprocess
+﻿import json
+import subprocess
 
 import geopandas as gpd
 from dependency_injector.wiring import Provide, inject
@@ -8,7 +9,8 @@ from sqlalchemy import Engine
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IFilePathService, IBlobStorageService, IBytesService
+from src.application.contracts import IFilePathService, IBlobStorageService, IBytesService, ITileService, \
+    ITileApiService
 from src.domain.enums import StorageContainer, Theme, EPSGCode
 from src.infra.infrastructure import Containers
 
@@ -17,6 +19,7 @@ def setup_benchmarking_framework() -> None:
     _postgres_buildings_seed()
     _create_pmtiles()
     _create_mvt()
+    _generate_tiles_file()
 
 
 @inject
@@ -240,3 +243,31 @@ def _create_mvt(
 
     logger.info(f"Uploaded {tile_count} MVT tiles to container '{StorageContainer.TILES.value}' under 'mvt/' prefix.")
 
+
+@inject
+def _generate_tiles_file(
+        tile_service: ITileService = Provide[Containers.tile_service],
+        tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
+) -> None:
+    TILE_ZOOM: int = 13
+
+    min_lat, min_lon, max_lat, max_lon = Config.BUILDINGS_SPATIAL_EXTENT
+    candidate_tiles = tile_service.build_candidate_tiles(
+        min_lat=min_lat,
+        min_lon=min_lon,
+        max_lat=max_lat,
+        max_lon=max_lon,
+        zoom=TILE_ZOOM
+    )
+
+    logger.info(f"Created {len(candidate_tiles)} candidate tiles")
+    logger.info("Finding candidate tiles with data...")
+
+    existing_tiles: list[tuple[int, int, int]] = []
+    for candidate_tile in candidate_tiles:
+        z, x, y = candidate_tile
+        if tile_api_service.fetch_vmt_tile(z=z, x=x, y=y) is not None:
+            existing_tiles.append(candidate_tile)
+
+    with open(Config.MVT_TILES_PATH, 'w', encoding='utf-8') as f:
+        json.dump([list(tile) for tile in existing_tiles], f)
