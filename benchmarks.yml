@@ -38,3 +38,12 @@ experiments:
     image: doppaacr.azurecr.io/vector-tiles-single-tile-vmt:latest
     cpu: 4
     memory_gb: 16
+
+  - id: vector-tiles-100k-pmtiles
+    image: doppaacr.azurecr.io/vector-tiles-100k-pmtiles:latest
+    cpu: 4
+    memory_gb: 16
+  - id: vector-tiles-100k-vmt
+    image: doppaacr.azurecr.io/vector-tiles-100k-vmt:latest
+    cpu: 4
+    memory_gb: 16

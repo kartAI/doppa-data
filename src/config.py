@@ -39,6 +39,7 @@ class Config:
     BUILDINGS_GEOJSONL_FILE: Path = ROOT_DIR / "resources" / "buildings.geojsonl"
     BUILDINGS_PMTILES_FILE: Path = ROOT_DIR / "resources" / "buildings.pmtiles"
     BUILDINGS_MVT_DIR: Path = ROOT_DIR / "resources" / "buildings_mvt"
+    MVT_TILES_PATH: Path = ROOT_DIR / "resources" / "tiles.json"
 
     # LOGGING
     LOGGING_LEVEL: int = logging.INFO
@@ -50,6 +51,12 @@ class Config:
     # METADATA
     RELEASE_FILE_NAME: str = "releases.parquet"
     COUNTY_FILE_NAME: str = "counties.parquet"
+    BUILDINGS_SPATIAL_EXTENT: tuple[float, float, float, float] = (
+        57.9676151,
+        4.509825,
+        71.17004,
+        31.1565841,
+    )
 
     # STAC
     STAC_LICENSE = "CC-BY-4.0"
