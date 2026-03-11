@@ -54,6 +54,10 @@ jobs:
             image: vector-tiles-single-tile-vmt
             display_name: VMT Fetch Single Tile
 
+          - service: vector-tiles-100k-pmtiles
+            image: vector-tiles-100k-pmtiles
+            display_name: PMTiles Fetch 100 000 Tiles
+
           - service: vector-tiles-100k-vmt
             image: vector-tiles-100k-vmt
             display_name: VMT Fetch 100 000 Tiles

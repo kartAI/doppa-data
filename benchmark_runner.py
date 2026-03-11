@@ -5,7 +5,7 @@ from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import (
     db_scan_blob_storage, db_scan_postgis, setup_benchmarking_framework, bbox_filtering_advanced_postgis,
     bbox_filtering_advanced_duckdb, bbox_filtering_simple_local, bbox_filtering_simple_blob_storage,
-    vector_tiles_single_tile_pmtiles, vector_tiles_single_tile_vmt, vector_tiles_100k_vmt
+    vector_tiles_single_tile_pmtiles, vector_tiles_single_tile_vmt, vector_tiles_100k_vmt, vector_tiles_100k_pmtiles
 )
 
 
@@ -37,6 +37,9 @@ def benchmark_runner() -> None:
             return
         case "vector-tiles-single-tile-vmt":
             vector_tiles_single_tile_vmt()
+            return
+        case "vector-tiles-100k-pmtiles":
+            vector_tiles_100k_pmtiles()
             return
         case "vector-tiles-100k-vmt":
             vector_tiles_100k_vmt()
