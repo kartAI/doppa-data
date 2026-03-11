@@ -1,0 +1,42 @@
+﻿from typing import Callable
+
+import requests
+from dependency_injector.wiring import inject, Provide
+from pmtiles.reader import Reader
+
+from src import Config
+from src.application.common.monitor_network import monitor_network
+from src.application.contracts import IFilePathService, ITileApiService, ITileService
+from src.domain.enums import StorageContainer
+from src.infra.infrastructure import Containers
+
+TOTAL_REQUESTS: int = 100_000
+
+
+@inject
+def vector_tiles_single_tile_pmtiles(
+        file_path_service: IFilePathService = Provide[Containers.file_path_service],
+        tile_service: ITileService = Provide[Containers.tile_service],
+        tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
+) -> None:
+    pmtiles_azure_url = file_path_service.create_url_to_blob_resource(
+        container=StorageContainer.TILES,
+        blob_path=Config.BUILDINGS_PMTILES_FILE.name
+    )
+
+    reader = tile_api_service.create_pmtiles_reader(pmtiles_url=pmtiles_azure_url)
+    _benchmark(reader=reader)
+
+    tiles = tile_service.load_tiles(number_of_tiles=TOTAL_REQUESTS)
+    _benchmark(reader=reader, tiles=tiles)
+
+
+@monitor_network(query_id="vector-tiles-single-tile-pmtiles")
+def _benchmark(
+        reader: Reader,
+        tiles: list[tuple[int, int, int]],
+        tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
+) -> None:
+    for tile in tiles:
+        z, x, y = tile
+        tile_api_service.fetch_pmtiles_tile(reader=reader, z=z, x=x, y=y)
