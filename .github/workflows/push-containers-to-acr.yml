@@ -54,6 +54,11 @@ jobs:
             image: vector-tiles-single-tile-vmt
             display_name: VMT Fetch Single Tile
 
+          - service: vector-tiles-100k-vmt
+            image: vector-tiles-100k-vmt
+            display_name: VMT Fetch 100 000 Tiles
+
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
