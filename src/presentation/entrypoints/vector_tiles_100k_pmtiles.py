@@ -1,7 +1,4 @@
-﻿from typing import Callable
-
-import requests
-from dependency_injector.wiring import inject, Provide
+﻿from dependency_injector.wiring import inject, Provide
 from pmtiles.reader import Reader
 
 from src import Config
@@ -14,7 +11,7 @@ TOTAL_REQUESTS: int = 100_000
 
 
 @inject
-def vector_tiles_single_tile_pmtiles(
+def vector_tiles_100k_pmtiles(
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
         tile_service: ITileService = Provide[Containers.tile_service],
         tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
@@ -31,7 +28,7 @@ def vector_tiles_single_tile_pmtiles(
     _benchmark(reader=reader, tiles=tiles)
 
 
-@monitor_network(query_id="vector-tiles-single-tile-pmtiles")
+@monitor_network(query_id="vector-tiles-100k-pmtiles")
 def _benchmark(
         reader: Reader,
         tiles: list[tuple[int, int, int]],
