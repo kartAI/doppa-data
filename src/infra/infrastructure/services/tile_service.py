@@ -1,5 +1,7 @@
-﻿import math
+﻿import json
+import math
 
+from src import Config
 from src.application.contracts import ITileService
 
 
@@ -59,3 +61,36 @@ class TileService(ITileService):
             for x in range(min_x, max_x + 1)
             for y in range(min_y, max_y + 1)
         ]
+
+    def load_tiles(self, number_of_tiles: int) -> list[tuple[int, int, int]]:
+        with Config.MVT_TILES_PATH.open("r", encoding="utf-8") as f:
+            raw = f.read()
+
+        if not raw or not raw.strip():
+            raise ValueError(f"Tiles JSON at {Config.MVT_TILES_PATH} is empty")
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            preview = repr(raw[:200])
+            raise ValueError(
+                f"Failed to parse tiles JSON at {Config.MVT_TILES_PATH}: {exc}.\n"
+                f"File start preview (first 200 chars): {preview}\n"
+                "Common causes: file saved with wrong encoding/BOM (we use utf-8-sig),"
+                " extra characters before JSON (e.g. stray comma), or invalid JSON syntax."
+            ) from exc
+
+        if not isinstance(data, list):
+            raise ValueError(f"Tiles JSON must be a list, got {type(data).__name__}")
+
+        tiles: list[tuple[int, int, int]] = []
+        for idx, item in enumerate(data):
+            if not isinstance(item, (list, tuple)) or len(item) != 3:
+                raise ValueError(f"Tile at index {idx} must be a 3-element list/tuple, got: {item}")
+            try:
+                z, x, y = int(item[0]), int(item[1]), int(item[2])
+            except Exception as exc:
+                raise ValueError(f"Tile at index {idx} contains non-integer values: {item}") from exc
+            tiles.append((z, x, y))
+
+        return (tiles * ((number_of_tiles // len(tiles)) + 1))[:number_of_tiles]

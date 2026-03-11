@@ -1,5 +1,6 @@
 ﻿from abc import abstractmethod, ABC
 
+from pmtiles.reader import Reader
 from requests import RequestException, Request
 
 
@@ -13,4 +14,12 @@ class ITileApiService(ABC):
         :param y: Y coordinate of the tile
         :return:
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def fetch_pmtiles_tile(self, reader: Reader, z: int, x: int, y: int) -> bytes | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def create_pmtiles_reader(self, pmtiles_url: str) -> Reader:
         raise NotImplementedError

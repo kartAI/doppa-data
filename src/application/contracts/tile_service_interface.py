@@ -39,3 +39,11 @@ class ITileService(ABC):
         :return: List of tile coordinates (x, y) that cover the bounding box
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def load_tiles(self, number_of_tiles: int) -> list[tuple[int, int, int]]:
+        """
+        Loads valid VMT tile coordinates (z, x, y) from a predefined source, such as a file or database. The implementation should ensure that only valid tile coordinates are returned, filtering out any invalid entries.
+        :return: List of valid tile coordinates (z, x, y) that can be used for benchmarking or other purposes
+        """
+        raise NotImplementedError
