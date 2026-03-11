@@ -23,6 +23,7 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.vector_tiles_single_tile_vmt",
 
             "src.presentation.entrypoints.vector_tiles_100k_vmt",
+            "src.presentation.entrypoints.vector_tiles_100k_pmtiles",
 
             "src.presentation.entrypoints.setup_benchmarking_framework",
 
