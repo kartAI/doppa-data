@@ -1,7 +1,6 @@
 ﻿from abc import abstractmethod, ABC
 
 from pmtiles.reader import Reader
-from requests import RequestException, Request
 
 
 class ITileApiService(ABC):
