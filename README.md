@@ -10,6 +10,9 @@ This project utilizes several Azure resources. Some are created and deleted duri
 created manually. This section will give a brief walkthrough on the resources that have to be configured and how to do
 so.
 
+> [!NOTE]
+> To ensure fair benchmarks set up all resources in Norway East
+
 #### Resource group
 
 Start by creating a resource group named `doppa`. Ensure that you can configure Kubernetes and Databricks with your
