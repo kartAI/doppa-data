@@ -2,6 +2,18 @@
 
 [![Build and Push Query- and Orchestration-containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
 
+## Table of contents
+- [Setup](#setup)
+  - [Azure Resources](#azure-resources)
+    - [Resource group](#resource-group)
+    - [Blob storage](#blob-storage)
+    - [User-Assigned Managed Identity (UAMI)](#user-assigned-managed-identity-uami)
+    - [Container registry](#container-registry)
+    - [PostgreSQL database](#postgresql-database)
+  - [Web app for containers](#web-app-for-containers)
+  - [GitHub Actions](#github-actions)
+  - [Local development](#local-development)
+
 ## Setup
 
 ### Azure Resources
