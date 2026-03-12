@@ -1,26 +1,114 @@
-# doppa: A Framework for Comparing Traditional & Cloud-Native Geospatial Queries
+# doppa: A Framework for Comparing Traditional & CNG Queries
 
 [![Build and Push Query- and Orchestration-containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
 
 ## Setup
 
-Create a virtual environment and install the dependencies in the [requirements-file](./requirements.txt).
+### Azure Resources
 
-Add the following `.env` file in the root
+This project utilizes several Azure resources. Some are created and deleted during runtime, whilst others have to be
+created manually. This section will give a brief walkthrough on the resources that have to be configured and how to do
+so.
+
+#### Resource group
+
+Start by creating a resource group named `doppa`. Ensure that you can configure Kubernetes and Databricks with your
+current subscription and roles.
+
+#### Blob storage
+
+Blob storage is an essential part of this benchmarking framework. Everything from benchmarking results to the actual
+datasets are stored here. Create a storage account named `doppablobstorage`. There is no need to create the containers
+as these are created during runtime. Each container is created with the `Container` access level. If you wish to make
+this stricter make the following changes in the `ensure_container` function in [
+`BlobStorageService`](./src/infra/infrastructure/services/blob_storage_service.py).
+
+```powershell
+self.__blob_storage_context.create_container(container_name.value, public_access = PublicAccess.CONTAINER)    # From this
+self.__blob_storage_context.create_container(container_name.value, public_access = PublicAccess.BLOB)         # To this
+```
+
+#### User-Assigned Managed Identity (UAMI)
+
+To provide the correct access to Azure resources when running the script from GitHub Actions a UAMI have to be
+configured. The Actions will sign in to Azure and executes the scripts using the UAMI. Create a UAMI named
+`github-actions-ci` and navigate to the *Federated credentials* setting. Create two federated credentials with the
+following setup:
+
+<div style="display:flex; justify-content:center; align-items:flex-start; gap:20px;">
+  <img src=".github/docs/img/github-ci-fc-main.png" width="45%" />
+  <img src=".github/docs/img/github-ci-fc-pr.png" width="45%" />
+</div>
+
+Change the fields according to your setup.
+
+#### Container registry
+
+Create a container registry named `doppaacr`. The Docker images will be saved here. To ensure that the Actions are able
+to pull the images give the UAMI created in the last step a `AcrPull` role. In the `doppaacr` resource navigate to
+*Access control (IAM)* and press *Add* > *Add role assignment*. Select the role `AcrPull` and continue. On the next
+screen select *Managed identity* under *Assign access to*, and select the `doppa-github-ci` UAMI under *Members*.
+Navigate to the last step and press *create*.
+
+#### PostgreSQL database
+
+Create
+an [Azure Database for PostgreSQL](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.PostgreSQLServer/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22Microsoft.PostgreSQLServer%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22a28a8a60-8a59-43fd-8def-fc6cba1ca11f%22%7D/searchTelemetryId/0a3db32e-00e8-4ba8-b921-45bc0a7a5a28)
+with the following configuration:
+
+Under *Basics*:
+
+- Server name: `doppa-data`
+- Region: `Norway East`
+- Workload type: `Production`
+- Compute + Storage: Disable `Geo-Redundancy` and leave everything else as is
+- Zonal resiliency: `Disabled`
+- Authentication method: `PostgreSQL authentication only`
+
+Under *Networking*:
+
+- Firewall rules: Check the box *Allow public access from any Azure service within Azure to this server*.
+- Add current IP address to Firewall rules
+
+Navigate to *Review and create* and create the resource.
+
+### VMT API Server
+
+### Local development
+
+> [!NOTE]
+> Ensure that the needed Azure Resources have been configured
+> Clone the repository from [GitHub](https://github.com/kartai/doppa-data) and navigate to the project root.
+
+```powershell
+git clone https://github.com/kartAI/doppa-data.git
+cd doppa-data
+```
+
+Create a virtual environment and install the dependencies in the [requirements](./requirements.txt)-file.
+
+```powershell
+python -m venv venv             # Create virtual enviornment
+venv/Scripts/activate           # Activate venv
+pip freeze > requirements.txt   # Install dependencies
+```
+
+Add the following `.env` file to the project root directory. Swap out the values enclosed by `<>` with the actual
+secrets. The containers `dev-benchmakrs` and `dev-metadata` ensure that results from the test runs do not disrupt
+results from actual runs.
 
 ```dotenv
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
 AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
 AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
+
 ACR_LOGIN_SERVER=<azure-container-registry-login-server>
 ACR_USERNAME=<azure-container-registry-username>
 ACR_PASSWORD=<azure-container-registry-password>
+
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
 ```
-
-> [!NOTE]
-> Ensure that the needed Azure Resources have been configured
 
 To run the entire script simply run `python main.py` or `python -m main` and to run a single benchmark run
 `python benchmark_runner.py --script-id <script-id> --benchmark-run <int >= 1> --run-id <run-id>`. See the table
