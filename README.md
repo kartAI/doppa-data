@@ -53,7 +53,7 @@ Navigate to the last step and press *create*.
 #### PostgreSQL database
 
 Create
-an [Azure Database for PostgreSQL](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.PostgreSQLServer/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22Microsoft.PostgreSQLServer%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22a28a8a60-8a59-43fd-8def-fc6cba1ca11f%22%7D/searchTelemetryId/0a3db32e-00e8-4ba8-b921-45bc0a7a5a28)
+an [Azure database for PostgreSQL](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.PostgreSQLServer/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22Microsoft.PostgreSQLServer%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22a28a8a60-8a59-43fd-8def-fc6cba1ca11f%22%7D/searchTelemetryId/0a3db32e-00e8-4ba8-b921-45bc0a7a5a28)
 with the following configuration:
 
 Under *Basics*:
@@ -72,7 +72,33 @@ Under *Networking*:
 
 Navigate to *Review and create* and create the resource.
 
-### VMT API Server
+### Web app for containers
+
+Create
+a [web app for containers](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.AppSvcLinux/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22Microsoft.AppSvcLinux%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22135c4e97-6a92-446e-aa0a-3f2201ddfdb1%22%7D/searchTelemetryId/c154ee0a-06d6-49e4-a17f-3820937e6335)
+The process is the same for each of the following API servers:
+
+- `doppa-vmt`
+
+Under *Basics*:
+
+- Resource group: `doppa`
+- Name: `<name-from-list-above>`
+- Publish: `Container`
+- Operating system: `Linux`
+- Pricing plan: `Premium V4 P0V4`
+
+Under *Container*:
+
+- Image source: `Azure Container Registry`
+- Registry: `doppaacr`
+- Authentication: `Managed identity`
+- Identity: `doppa-github-ci`
+- Image: `<select the image that matches with the name>`
+- Tag: `latest`
+- Startup command `uvicorn src.presentation.endpoints.<API server script>:app --host 0.0.0.0 --port 8000`
+
+Navigate to *Review + create* and create the resource. Repeat this process for each name in the list.
 
 ### Local development
 
