@@ -10,7 +10,7 @@
     - [User-Assigned Managed Identity (UAMI)](#user-assigned-managed-identity-uami)
     - [Container registry](#container-registry)
     - [PostgreSQL database](#postgresql-database)
-  - [Web app for containers](#web-app-for-containers)
+    - [Web app for containers](#web-app-for-containers)
   - [GitHub Actions](#github-actions)
   - [Local development](#local-development)
 
@@ -91,7 +91,7 @@ Under *Networking*:
 
 Navigate to *Review and create* and create the resource.
 
-### Web app for containers
+#### Web app for containers
 
 Create
 a [web app for containers](https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/Microsoft.AppSvcLinux/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22Microsoft.AppSvcLinux%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22135c4e97-6a92-446e-aa0a-3f2201ddfdb1%22%7D/searchTelemetryId/c154ee0a-06d6-49e4-a17f-3820937e6335)
