@@ -107,11 +107,35 @@ Under *Container*:
 
 Navigate to *Review + create* and create the resource. Repeat this process for each name in the list.
 
+### GitHub Actions
+
+In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
+
+- `ACR_NAME`
+- `ACR_PASSWORD`
+- `ACR_USERNAME`
+- `AZURE_BLOB_STORAGE_CONNECTION_STRING`
+- `POSTGRES_USERNAME`
+- `POSTGRES_PASSWORD`
+
+and add the following **variables**:
+
+- `ACR_LOGIN_SERVER`
+- `AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER`
+- `AZURE_BLOB_STORAGE_METADATA_CONTAINER`
+- `AZURE_CLIENT_ID`
+- `AZURE_RESOURCE_GROUP`
+- `AZURE_SUBSCRIPTION_ID`
+- `AZURE_TENANT_ID`
+
+These values can be found under the Azure resources previously created. The workflows should now work!
+
 ### Local development
 
 > [!NOTE]
-> Ensure that the needed Azure Resources have been configured
-> Clone the repository from [GitHub](https://github.com/kartai/doppa-data) and navigate to the project root.
+> This does not run fully locally, so ensure that all the Azure resources have been configured
+
+Clone the repository from [GitHub](https://github.com/kartai/doppa-data) and navigate to the project root.
 
 ```powershell
 git clone https://github.com/kartAI/doppa-data.git
