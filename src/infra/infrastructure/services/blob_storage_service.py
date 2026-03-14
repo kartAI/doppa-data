@@ -22,7 +22,7 @@ class BlobStorageService(IBlobStorageService):
         container_client = self.__blob_storage_context.get_container_client(container_name.value)
         if not container_client.exists():
             logger.info(f"Blob storage container '{container_name.value}' does not exist. Creating...")
-            self.__blob_storage_context.create_container(container_name.value, public_access=PublicAccess.BLOB)
+            self.__blob_storage_context.create_container(container_name.value, public_access=PublicAccess.CONTAINER)
             logger.info(f"Created blob storage container: {container_name.value}")
 
     def get_container(self, container_name: StorageContainer) -> ContainerClient:

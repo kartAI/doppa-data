@@ -1,4 +1,4 @@
-name: Build and Push Query- and Orchestration-containers to Azure Container Registry
+name: Build & Push Benchmarking Containers to ACR
 
 on:
   pull_request:
