@@ -147,7 +147,7 @@ These values can be found under the Azure resources previously created. The work
 > [!NOTE]
 > This does not run fully locally, so ensure that all the Azure resources have been configured
 
-Clone the repository from [GitHub](https://github.com/kartai/doppa-data) and navigate to the project root.
+Clone the repository from [GitHub](https://github.com/kartAI/doppa-data) and navigate to the project root.
 
 ```powershell
 git clone https://github.com/kartAI/doppa-data.git
