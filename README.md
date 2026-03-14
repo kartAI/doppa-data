@@ -1,18 +1,19 @@
 # doppa: A Framework for Comparing Traditional & CNG Queries
 
-[![Build and Push Query- and Orchestration-containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
+[![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
 
 ## Table of contents
+
 - [Setup](#setup)
-  - [Azure Resources](#azure-resources)
-    - [Resource group](#resource-group)
-    - [Blob storage](#blob-storage)
-    - [User-Assigned Managed Identity (UAMI)](#user-assigned-managed-identity-uami)
-    - [Container registry](#container-registry)
-    - [PostgreSQL database](#postgresql-database)
-    - [Web app for containers](#web-app-for-containers)
-  - [GitHub Actions](#github-actions)
-  - [Local development](#local-development)
+    - [Azure Resources](#azure-resources)
+        - [Resource group](#resource-group)
+        - [Blob storage](#blob-storage)
+        - [User-Assigned Managed Identity (UAMI)](#user-assigned-managed-identity-uami)
+        - [Container registry](#container-registry)
+        - [PostgreSQL database](#postgresql-database)
+        - [Web app for containers](#web-app-for-containers)
+    - [GitHub Actions](#github-actions)
+    - [Local development](#local-development)
 
 ## Setup
 
@@ -38,9 +39,14 @@ as these are created during runtime. Each container is created with the `Contain
 this stricter make the following changes in the `ensure_container` function in [
 `BlobStorageService`](./src/infra/infrastructure/services/blob_storage_service.py).
 
-```powershell
-self.__blob_storage_context.create_container(container_name.value, public_access = PublicAccess.CONTAINER)    # From this
-self.__blob_storage_context.create_container(container_name.value, public_access = PublicAccess.BLOB)         # To this
+```python
+# Public container access
+self.__blob_storage_context.create_container(container_name.value, public_access=PublicAccess.CONTAINER)  
+```
+
+```python
+# Private container access
+self.__blob_storage_context.create_container(container_name.value, public_access=PublicAccess.BLOB)
 ```
 
 #### User-Assigned Managed Identity (UAMI)
@@ -66,7 +72,7 @@ role `Contributor` and press *Save*.
 Create a container registry named `doppaacr`. The Docker images will be saved here. To ensure that the Actions are able
 to pull the images give the UAMI created in the last step a `AcrPull` role. In the `doppaacr` resource navigate to
 *Access control (IAM)* and press *Add* > *Add role assignment*. Select the role `AcrPull` and continue. On the next
-screen select *Managed identity* under *Assign access to*, and select the `doppa-github-ci` UAMI under *Members*.
+screen select *Managed identity* under *Assign access to*, and select the `github-actions-ci` UAMI under *Members*.
 Navigate to the last step and press *create*.
 
 #### PostgreSQL database
@@ -112,7 +118,7 @@ Under *Container*:
 - Image source: `Azure Container Registry`
 - Registry: `doppaacr`
 - Authentication: `Managed identity`
-- Identity: `doppa-github-ci`
+- Identity: `github-actions-ci`
 - Image: `<select the image that matches with the name>`
 - Tag: `latest`
 - Startup command `uvicorn src.presentation.endpoints.<API server script>:app --host 0.0.0.0 --port 8000`
@@ -157,13 +163,13 @@ cd doppa-data
 Create a virtual environment and install the dependencies in the [requirements](./requirements.txt)-file.
 
 ```powershell
-python -m venv venv             # Create virtual enviornment
-venv/Scripts/activate           # Activate venv
-pip freeze > requirements.txt   # Install dependencies
+python -m venv venv                 # Create virtual environment
+./venv/Scripts/activate             # Activate venv
+pip install -r requirements.txt     # Install dependencies
 ```
 
 Add the following `.env` file to the project root directory. Swap out the values enclosed by `<>` with the actual
-secrets. The containers `dev-benchmakrs` and `dev-metadata` ensure that results from the test runs do not disrupt
+secrets. The containers `dev-benchmarks` and `dev-metadata` ensure that results from the test runs do not disrupt
 results from actual runs.
 
 ```dotenv
