@@ -22,12 +22,12 @@ def vector_tiles_100k_pmtiles(
     )
 
     reader = tile_api_service.create_pmtiles_reader(pmtiles_url=pmtiles_azure_url)
-    _benchmark(reader=reader)
 
     tiles = tile_service.load_tiles(number_of_tiles=TOTAL_REQUESTS)
     _benchmark(reader=reader, tiles=tiles)
 
 
+@inject
 @monitor_network(query_id="vector-tiles-100k-pmtiles")
 def _benchmark(
         reader: Reader,
