@@ -145,6 +145,7 @@ and add the following **variables**:
 - `AZURE_RESOURCE_GROUP`
 - `AZURE_SUBSCRIPTION_ID`
 - `AZURE_TENANT_ID`
+- `POSTGRES_SERVER_NAME`
 
 These values can be found under the Azure resources previously created. The workflows should now work!
 
@@ -183,6 +184,7 @@ ACR_LOGIN_SERVER=<azure-container-registry-login-server>
 ACR_USERNAME=<azure-container-registry-username>
 ACR_PASSWORD=<azure-container-registry-password>
 
+POSTGRES_SERVER_NAME=doppa-db
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
 ```
