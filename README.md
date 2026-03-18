@@ -173,6 +173,8 @@ secrets. The containers `dev-benchmarks` and `dev-metadata` ensure that results 
 results from actual runs.
 
 ```dotenv
+AZURE_SUBSCRIPTION_ID=<azure-subscription-id>
+
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
 AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
 AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
