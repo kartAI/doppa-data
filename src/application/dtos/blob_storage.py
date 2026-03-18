@@ -1,4 +1,5 @@
-﻿from dataclasses import dataclass
+﻿import json
+from dataclasses import asdict, dataclass
 
 
 @dataclass
@@ -10,6 +11,12 @@ class BlobStorageUsage:
     bytes_ingress: int
     bytes_egress: int
 
+    def to_dict(self) -> dict[str, int]:
+        return asdict(self)
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
 
 @dataclass(frozen=True)
 class BlobStoragePricing:
@@ -19,3 +26,10 @@ class BlobStoragePricing:
     storage_gb_per_month: float
     ingress_per_gb: float = 0.0
     egress_per_gb: float = 0.0
+
+    def to_dict(self) -> dict[str, float]:
+        return asdict(self)
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
