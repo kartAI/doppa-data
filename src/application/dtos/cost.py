@@ -1,11 +1,25 @@
 ﻿from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Cost:
+    compute_cost: float
+    storage_cost: float
+    network_cost: float
+    operations_cost: float
     total_cost: float
-    compute_cost: float = 0.0
-    memory_cost: float = 0.0
-    storage_cost: float = 0.0
-    operation_cost: float = 0.0
-    network_cost: float = 0.0
+
+    @staticmethod
+    def from_components(
+            compute: float = 0.0,
+            storage: float = 0.0,
+            network: float = 0.0,
+            operations: float = 0.0,
+    ) -> "Cost":
+        return Cost(
+            compute_cost=compute,
+            storage_cost=storage,
+            network_cost=network,
+            operations_cost=operations,
+            total_cost=compute + storage + network + operations,
+        )

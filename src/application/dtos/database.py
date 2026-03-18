@@ -6,6 +6,10 @@ class DatabaseUsage:
     duration_seconds: float
     compute_units: float
     storage_gb_avg: float
+    network_bytes_ingress: int = 0
+    network_bytes_egress: int = 0
+    read_iops_avg: float = 0.0
+    read_throughput_bytes: int = 0
 
 
 @dataclass(frozen=True)

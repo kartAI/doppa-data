@@ -18,6 +18,8 @@ azure-datalake-store==0.0.53
 azure-identity==1.25.1
 azure-mgmt-core==1.6.0
 azure-mgmt-costmanagement==4.0.1
+azure-monitor-query==2.0.0
+azure-monitor-querymetrics==1.0.0
 azure-storage-blob==12.27.0
 babel==2.17.0
 beautifulsoup4==4.14.2
@@ -135,6 +137,7 @@ pywin32==311; sys_platform == "win32"
 pywinpty==3.0.0; sys_platform == "win32"
 PyYAML==6.0.3
 pyzmq==27.1.0
+query==0.1.4
 rasterio==1.4.3
 referencing==0.36.2
 requests==2.32.5
