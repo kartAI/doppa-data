@@ -2,6 +2,7 @@ from dependency_injector.wiring import inject, Provide
 
 from src.application.common.monitor_network import monitor_network
 from src.application.contracts import ITileApiService, ITileService
+from src.domain.enums import BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 TOTAL_REQUESTS: int = 100_000
@@ -14,7 +15,7 @@ def vector_tiles_100k_vmt(tile_service: ITileService = Provide[Containers.tile_s
 
 
 @inject
-@monitor_network(query_id="vector-tiles-100k-vmt")
+@monitor_network(query_id="vector-tiles-100k-vmt", benchmark_iteration=BenchmarkIteration.VECTOR_TILE_100K)
 def _benchmark(
         tiles: list[tuple[int, int, int]],
         tile_api_service: ITileApiService = Provide[Containers.tile_api_service]

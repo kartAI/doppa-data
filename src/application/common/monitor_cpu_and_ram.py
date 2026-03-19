@@ -8,9 +8,14 @@ import psutil
 from src import Config
 from src.application.common import logger
 from src.application.common.monitor_utils import _get_run_id, _get_benchmark_run, _save_run_metadata, _save_run
+from src.domain.enums import BenchmarkIteration
 
 
-def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_TIMEOUT):
+def monitor_cpu_and_ram(
+        query_id: str,
+        benchmark_iteration: BenchmarkIteration,
+        interval: float = Config.DEFAULT_SAMPLE_TIMEOUT
+):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -26,9 +31,9 @@ def monitor_cpu_and_ram(query_id: str, interval: float = Config.DEFAULT_SAMPLE_T
             for _ in range(Config.BENCHMARK_WARMUP_ITERATIONS):
                 func(*args, **kwargs)
 
-            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_ITERATIONS} benchmark runs.")
+            logger.info(f"Warmup runs completed. Starting {benchmark_iteration.value} benchmark runs.")
             logger.info(f"Benchmarking started with sampling interval of {interval} seconds.")
-            for i in range(Config.BENCHMARK_ITERATIONS):
+            for i in range(benchmark_iteration.value):
                 iteration = i + 1
                 samples: list[dict[str, Any]] = []
 

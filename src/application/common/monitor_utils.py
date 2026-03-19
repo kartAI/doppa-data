@@ -9,7 +9,7 @@ from dependency_injector.wiring import inject, Provide
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IMonitoringStorageService
+from src.application.contracts import IMonitoringStorageService, IAzureCostService
 from src.infra.infrastructure import Containers
 
 
@@ -55,7 +55,7 @@ def _save_run(
 def _save_run_metadata(
         query_id: str,
         run_id: str,
-        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
+        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
     logger.info("Saving benchmark metadata to blob storage.")
     metadata_id = str(uuid.uuid4())

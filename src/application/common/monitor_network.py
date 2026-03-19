@@ -1,15 +1,20 @@
-﻿import functools
+﻿import datetime
+import functools
 import time
 from typing import Any
 
 import psutil
+from dependency_injector.wiring import Provide, inject
 
 from src import Config
 from src.application.common import logger
 from src.application.common.monitor_utils import _get_run_id, _get_benchmark_run, _save_run, _save_run_metadata
+from src.application.contracts import IAzureMetricService
+from src.domain.enums import BenchmarkIteration
+from src.infra.infrastructure import Containers
 
 
-def monitor_network(query_id: str):
+def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -24,11 +29,18 @@ def monitor_network(query_id: str):
             for _ in range(Config.BENCHMARK_WARMUP_ITERATIONS):
                 func(*args, **kwargs)
 
-            logger.info(f"Warmup runs completed. Starting {Config.BENCHMARK_ITERATIONS} benchmark runs.")
+            logger.info(f"Warmup runs completed. Starting {benchmark_iteration.value} benchmark runs.")
 
-            for i in range(Config.BENCHMARK_ITERATIONS):
+            ingress_sum: int = 0
+            egress_sum: int = 0
+            start_time = datetime.datetime.now(datetime.UTC)
+
+            for i in range(benchmark_iteration.value):
                 iteration = i + 1
                 result, elapsed_time, net_bytes_sent, net_bytes_received = _benchmark(func, *args, **kwargs)
+                ingress_sum += net_bytes_sent
+                egress_sum += net_bytes_received
+
                 _save_run(
                     run_id=run_id,
                     benchmark_run=benchmark_run,
@@ -43,7 +55,17 @@ def monitor_network(query_id: str):
                     ],
                 )
 
+            end_time = datetime.datetime.now(datetime.UTC)
+            logger.info(f"Benchmark runs completed in {round((end_time - start_time).total_seconds(), 2)} seconds.")
+
             _save_run_metadata(query_id=query_id, run_id=run_id)
+            _cost_analysis(
+                start_time=start_time,
+                end_time=end_time,
+                query_id=query_id,
+                ingress=ingress_sum, egress=egress_sum
+            )
+
             logger.info(f"Benchmark run {benchmark_run} completed.")
             return result
 
@@ -66,3 +88,27 @@ def _benchmark(func, *args, **kwargs) -> tuple[Any, float, int, int]:
     network_bytes_received = after.bytes_recv - before.bytes_recv
 
     return result, elapsed_time, network_bytes_sent, network_bytes_received
+
+
+@inject
+def _cost_analysis(
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        query_id: str,
+        ingress: int,
+        egress: int,
+        azure_metric_service: IAzureMetricService = Provide[Containers.azure_metric_service],
+) -> None:
+    aci_usage = azure_metric_service.get_aci_usage(script_id=query_id, start_time=start_time, end_time=end_time)
+    print(aci_usage.to_dict())
+
+    storage_usage = azure_metric_service.get_blob_storage_usage(
+        start_time=start_time,
+        end_time=end_time,
+        bytes_ingress=ingress,
+        bytes_egress=egress
+    )
+    print(storage_usage.to_dict())
+
+    database_usage = azure_metric_service.get_database_usage(start_time=start_time, end_time=end_time)
+    print(database_usage.to_dict())
