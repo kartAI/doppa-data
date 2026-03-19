@@ -5,21 +5,7 @@ from typing import Literal
 from azure.monitor.querymetrics import MetricAggregationType, MetricsQueryResult
 
 from src.application.dtos import AciUsage, BlobStorageUsage, DatabaseUsage
-from src.domain.enums import AzureMetricNamespace
-
-BlobMetric = Literal[
-    "Transactions", "Ingress", "Egress", "BlobCapacity", "BlobCount"
-]
-AciMetric = Literal[
-    "CpuUsage", "MemoryUsage",
-    "NetworkBytesReceivedPerSecond", "NetworkBytesTransmittedPerSecond"
-]
-PostgresMetric = Literal[
-    "cpu_percent", "memory_percent", "storage_used",
-    "network_bytes_ingress", "network_bytes_egress", "iops"
-]
-
-AzureMetric = BlobMetric | AciMetric | PostgresMetric
+from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics
 
 
 class IAzureMetricService(ABC):
@@ -28,7 +14,7 @@ class IAzureMetricService(ABC):
             self,
             resource_name: str,
             metric_namespace: AzureMetricNamespace,
-            metric_names: list[AzureMetric],
+            metric_names: AzureResourceMetrics,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
             aggregations: list[MetricAggregationType]
@@ -38,7 +24,7 @@ class IAzureMetricService(ABC):
     @abstractmethod
     def get_aci_usage(
             self,
-            experiment_id: str,
+            script_id: str,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
     ) -> AciUsage:

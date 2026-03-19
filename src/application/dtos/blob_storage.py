@@ -4,14 +4,11 @@ from dataclasses import asdict, dataclass
 
 @dataclass
 class BlobStorageUsage:
-    read_operations: int
-    write_operations: int
-    list_operations: int
-    bytes_stored_avg: int
-    bytes_ingress: int
-    bytes_egress: int
+    transactions: float
+    bytes_ingress: float
+    bytes_egress: float
 
-    def to_dict(self) -> dict[str, int]:
+    def to_dict(self) -> dict[str, float]:
         return asdict(self)
 
     def to_json(self) -> str:
@@ -32,4 +29,3 @@ class BlobStoragePricing:
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict())
-
