@@ -5,7 +5,7 @@ from typing import Literal
 from azure.monitor.querymetrics import MetricAggregationType, MetricsQueryResult
 
 from src.application.dtos import AciUsage, BlobStorageUsage, DatabaseUsage
-from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics
+from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, BlobOperationType
 
 
 class IAzureMetricService(ABC):
@@ -37,7 +37,8 @@ class IAzureMetricService(ABC):
             start_time: datetime.datetime,
             end_time: datetime.datetime,
             bytes_ingress: float,
-            bytes_egress: float
+            bytes_egress: float,
+            operation_type: BlobOperationType
     ) -> BlobStorageUsage:
         raise NotImplementedError
 

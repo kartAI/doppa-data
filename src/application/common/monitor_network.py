@@ -9,8 +9,8 @@ from dependency_injector.wiring import Provide, inject
 from src import Config
 from src.application.common import logger
 from src.application.common.monitor_utils import _get_run_id, _get_benchmark_run, _save_run, _save_run_metadata
-from src.application.contracts import IAzureMetricService
-from src.domain.enums import BenchmarkIteration
+from src.application.contracts import IAzureMetricService, IAzureCostService
+from src.domain.enums import BenchmarkIteration, BlobOperationType
 from src.infra.infrastructure import Containers
 
 
@@ -97,18 +97,18 @@ def _cost_analysis(
         query_id: str,
         ingress: int,
         egress: int,
-        azure_metric_service: IAzureMetricService = Provide[Containers.azure_metric_service],
+        azure_cost_service: IAzureCostService = Provide[Containers.azure_cost_service]
 ) -> None:
-    aci_usage = azure_metric_service.get_aci_usage(script_id=query_id, start_time=start_time, end_time=end_time)
-    print(aci_usage.to_dict())
-
-    storage_usage = azure_metric_service.get_blob_storage_usage(
+    database_cost = azure_cost_service.compute_database_cost(start_time=start_time, end_time=end_time)
+    aci_cost = azure_cost_service.compute_aci_cost(experiment_id=query_id, start_time=start_time, end_time=end_time)
+    storage_cost = azure_cost_service.compute_blob_storage_cost(
         start_time=start_time,
         end_time=end_time,
         bytes_ingress=ingress,
-        bytes_egress=egress
+        bytes_egress=egress,
+        operation_type=BlobOperationType.READ
     )
-    print(storage_usage.to_dict())
 
-    database_usage = azure_metric_service.get_database_usage(start_time=start_time, end_time=end_time)
-    print(database_usage.to_dict())
+    print("Database cost:", database_cost.to_dict())
+    print("Storage cost", storage_cost.to_dict())
+    print("ACI cost:", aci_cost.to_dict())

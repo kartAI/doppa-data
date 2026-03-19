@@ -9,7 +9,7 @@ from src.application.common import logger
 from src.application.contracts import IAzureMetricService, IBenchmarkConfigurationService, IBlobStorageService, \
     IFilePathService
 from src.application.dtos import DatabaseUsage, BlobStorageUsage, AciUsage
-from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, Theme, StorageContainer
+from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, Theme, StorageContainer, BlobOperationType
 
 
 class AzureMetricService(IAzureMetricService):
@@ -55,16 +55,35 @@ class AzureMetricService(IAzureMetricService):
             aggregations=aggregations,
         )
 
-    def get_aci_usage(self, script_id: str, start_time: datetime.datetime, end_time: datetime.datetime) -> AciUsage:
+    def get_aci_usage(
+            self,
+            script_id: str,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+    ) -> AciUsage:
         duration_seconds = (end_time - start_time).total_seconds()
         benchmark_configuration = self.__benchmark_configuration_service.get_experiment_configuration(
             script_id=script_id
         )
 
+        results = self.query_metrics(
+            resource_name=f"benchmark-{script_id}",
+            metric_namespace=AzureMetricNamespace.CONTAINER_INSTANCES,
+            metric_names=AzureResourceMetrics.ACI,
+            start_time=start_time,
+            end_time=end_time,
+            aggregations=[MetricAggregationType.AVERAGE],
+        )
+
+        bytes_ingress = self.__sum_rate_metric(results, "NetworkBytesReceivedPerSecond", granularity_seconds=60)
+        bytes_egress = self.__sum_rate_metric(results, "NetworkBytesTransmittedPerSecond", granularity_seconds=60)
+
         return AciUsage(
             duration_seconds=duration_seconds,
             vcpu_count=benchmark_configuration.cpu,
-            memory_gb=benchmark_configuration.memory_gb
+            memory_gb=benchmark_configuration.memory_gb,
+            bytes_ingress=bytes_ingress,
+            bytes_egress=bytes_egress,
         )
 
     def get_blob_storage_usage(
@@ -72,7 +91,8 @@ class AzureMetricService(IAzureMetricService):
             start_time: datetime.datetime,
             end_time: datetime.datetime,
             bytes_ingress: float,
-            bytes_egress: float
+            bytes_egress: float,
+            operation_type: BlobOperationType,
     ) -> BlobStorageUsage:
         path = self.__file_path_service.create_dataset_blob_path(
             release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
@@ -81,11 +101,25 @@ class AzureMetricService(IAzureMetricService):
             file_name="*.parquet"
         )
 
-        transactions = self.__blob_storage_service.get_file_count(container=StorageContainer.DATA, path=path)
+        blob_count, storage_size = self.__blob_storage_service.get_blob_summary(
+            container=StorageContainer.DATA,
+            path=path
+        )
+
+        if operation_type == BlobOperationType.READ:
+            read_transactions = blob_count
+            write_transactions = 0
+        else:
+            read_transactions = 0
+            write_transactions = blob_count
+
         return BlobStorageUsage(
-            transactions=transactions,
+            read_transactions=read_transactions,
+            write_transactions=write_transactions,
+            list_transactions=1,  # the glob/list call itself
             bytes_ingress=bytes_ingress,
             bytes_egress=bytes_egress,
+            storage_bytes=storage_size
         )
 
     def get_database_usage(self, start_time, end_time) -> DatabaseUsage:
@@ -205,3 +239,20 @@ class AzureMetricService(IAzureMetricService):
                         if data_point.minimum is not None:
                             min_value = min(min_value, data_point.minimum)
         return min_value if min_value != float("inf") else 0.0
+
+    @staticmethod
+    def __sum_rate_metric(
+            results: list[MetricsQueryResult],
+            metric_name: str,
+            granularity_seconds: int = 60
+    ) -> float:
+        total = 0.0
+        for result in results:
+            for metric in result.metrics:
+                if metric.name != metric_name:
+                    continue
+                for timeseries in metric.timeseries:
+                    for data_point in timeseries.data:
+                        if data_point.average is not None:
+                            total += data_point.average * granularity_seconds
+        return total

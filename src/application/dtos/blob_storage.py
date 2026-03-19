@@ -4,9 +4,12 @@ from dataclasses import asdict, dataclass
 
 @dataclass
 class BlobStorageUsage:
-    transactions: float
+    read_transactions: int
+    write_transactions: int
+    list_transactions: int
     bytes_ingress: float
     bytes_egress: float
+    storage_bytes: float
 
     def to_dict(self) -> dict[str, float]:
         return asdict(self)

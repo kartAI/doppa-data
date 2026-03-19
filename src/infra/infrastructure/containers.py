@@ -139,6 +139,8 @@ class Containers(containers.DeclarativeContainer):
 
     azure_cost_service = providers.Singleton(
         AzureCostService,
+        azure_pricing_service=azure_pricing_service,
+        azure_metric_service=azure_metric_service
     )
 
     StacIO.set_default(stac_io_service)
