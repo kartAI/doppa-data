@@ -6,19 +6,31 @@ from azure.monitor.querymetrics import MetricsClient, MetricAggregationType, Met
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IAzureMetricService, IBenchmarkConfigurationService
+from src.application.contracts import IAzureMetricService, IBenchmarkConfigurationService, IBlobStorageService, \
+    IFilePathService
 from src.application.dtos import DatabaseUsage, BlobStorageUsage, AciUsage
-from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics
+from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, Theme, StorageContainer
 
 
 class AzureMetricService(IAzureMetricService):
     __metrics_client: MetricsClient
     __benchmark_configuration_service: IBenchmarkConfigurationService
+    __blob_storage_service: IBlobStorageService
+    __file_path_service: IFilePathService
 
-    def __init__(self, benchmark_configuration_service: IBenchmarkConfigurationService):
+    def __init__(
+            self,
+            benchmark_configuration_service: IBenchmarkConfigurationService,
+            blob_storage_service: IBlobStorageService,
+            file_path_service: IFilePathService
+    ):
         credential = DefaultAzureCredential()
+
+        # noinspection PyTypeChecker
         self.__metrics_client = MetricsClient(Config.AZURE_METRICS_REGIONAL_ENDPOINT, credential)
         self.__benchmark_configuration_service = benchmark_configuration_service
+        self.__blob_storage_service = blob_storage_service
+        self.__file_path_service = file_path_service
 
     def query_metrics(
             self,
@@ -27,15 +39,19 @@ class AzureMetricService(IAzureMetricService):
             metric_names: AzureResourceMetrics,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
-            aggregations: list[MetricAggregationType]
+            aggregations: list[MetricAggregationType],
+            granularity: datetime.timedelta = datetime.timedelta(minutes=1),
+            is_waiting_for_ingestion: bool = True
     ) -> list[MetricsQueryResult]:
-        self.__wait_for_ingestion(end_time=end_time)
+        if is_waiting_for_ingestion:
+            self.__wait_for_ingestion(end_time=end_time)
+
         return self.__metrics_client.query_resources(
             resource_ids=[self.__create_resource_ids(metric_namespace, resource_name)],
             metric_namespace=metric_namespace.value,
             metric_names=metric_names.value,
             timespan=(start_time, end_time),
-            granularity=datetime.timedelta(minutes=1),
+            granularity=granularity,
             aggregations=aggregations,
         )
 
@@ -55,27 +71,24 @@ class AzureMetricService(IAzureMetricService):
             self,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
+            bytes_ingress: float,
+            bytes_egress: float
     ) -> BlobStorageUsage:
-        results = self.query_metrics(
-            resource_name=Config.AZURE_BLOB_STORAGE_ACCOUNT_NAME,
-            metric_namespace=AzureMetricNamespace.BLOB_STORAGE,
-            metric_names=AzureResourceMetrics.BLOB,
-            start_time=start_time,
-            end_time=end_time,
-            aggregations=[MetricAggregationType.TOTAL],
+        path = self.__file_path_service.create_dataset_blob_path(
+            release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
+            theme=Theme.BUILDINGS,
+            region="*",
+            file_name="*.parquet"
         )
 
+        transactions = self.__blob_storage_service.get_file_count(container=StorageContainer.DATA, path=path)
         return BlobStorageUsage(
-            transactions=self.__extract_metric_total(results, "Transactions"),
-            bytes_ingress=self.__extract_metric_total(results, "Ingress"),
-            bytes_egress=self.__extract_metric_total(results, "Egress"),
+            transactions=transactions,
+            bytes_ingress=bytes_ingress,
+            bytes_egress=bytes_egress,
         )
 
-    def get_database_usage(
-            self,
-            start_time: datetime.datetime,
-            end_time: datetime.datetime
-    ) -> DatabaseUsage:
+    def get_database_usage(self, start_time, end_time) -> DatabaseUsage:
         results = self.query_metrics(
             resource_name=Config.POSTGRES_SERVER_NAME,
             metric_namespace=AzureMetricNamespace.POSTGRESQL_FLEXIBLE,
@@ -84,6 +97,8 @@ class AzureMetricService(IAzureMetricService):
             end_time=end_time,
             aggregations=[
                 MetricAggregationType.AVERAGE,
+                MetricAggregationType.MINIMUM,
+                MetricAggregationType.MAXIMUM,
                 MetricAggregationType.TOTAL,
             ],
         )
@@ -91,7 +106,11 @@ class AzureMetricService(IAzureMetricService):
         return DatabaseUsage(
             duration_seconds=(end_time - start_time).total_seconds(),
             avg_cpu_percent=self.__extract_metric_average(results, "cpu_percent"),
+            max_cpu_percent=self.__extract_metric_max(results, "cpu_percent"),
+            min_cpu_percent=self.__extract_metric_min(results, "cpu_percent"),
             avg_memory_percent=self.__extract_metric_average(results, "memory_percent"),
+            max_memory_percent=self.__extract_metric_max(results, "memory_percent"),
+            min_memory_percent=self.__extract_metric_min(results, "memory_percent"),
             network_ingress_bytes=self.__extract_metric_total(results, "network_bytes_ingress"),
             network_egress_bytes=self.__extract_metric_total(results, "network_bytes_egress"),
             storage_used_bytes=self.__extract_metric_last(results, "storage_used"),
@@ -132,7 +151,6 @@ class AzureMetricService(IAzureMetricService):
             results: list[MetricsQueryResult],
             metric_name: str,
     ) -> float:
-        """Compute the average across all non-null time buckets."""
         values = []
         for result in results:
             for metric in result.metrics:
@@ -150,7 +168,6 @@ class AzureMetricService(IAzureMetricService):
             results: list[MetricsQueryResult],
             metric_name: str,
     ) -> float:
-        """Get the last non-null value (useful for gauges like storage_used)."""
         last_value = 0.0
         for result in results:
             for metric in result.metrics:
@@ -162,3 +179,29 @@ class AzureMetricService(IAzureMetricService):
                             last_value = data_point.average
 
         return last_value
+
+    @staticmethod
+    def __extract_metric_max(results: list[MetricsQueryResult], metric_name: str) -> float:
+        max_value = 0.0
+        for result in results:
+            for metric in result.metrics:
+                if metric.name != metric_name:
+                    continue
+                for timeseries in metric.timeseries:
+                    for data_point in timeseries.data:
+                        if data_point.maximum is not None:
+                            max_value = max(max_value, data_point.maximum)
+        return max_value
+
+    @staticmethod
+    def __extract_metric_min(results: list[MetricsQueryResult], metric_name: str) -> float:
+        min_value = float("inf")
+        for result in results:
+            for metric in result.metrics:
+                if metric.name != metric_name:
+                    continue
+                for timeseries in metric.timeseries:
+                    for data_point in timeseries.data:
+                        if data_point.minimum is not None:
+                            min_value = min(min_value, data_point.minimum)
+        return min_value if min_value != float("inf") else 0.0

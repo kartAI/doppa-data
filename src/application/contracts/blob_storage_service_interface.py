@@ -103,7 +103,12 @@ class IBlobStorageService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_file_count(self, container: StorageContainer, path: str, suffix_to_remove: str = "*.parquet") -> int:
+    def get_file_count(
+            self,
+            container: StorageContainer,
+            path: str,
+            suffix_to_remove: str = "region=*/*.parquet"
+    ) -> int:
         """
         Get the count of blobs under the specified base path in the given container.
         :param container: Storage container enum to count blobs from.

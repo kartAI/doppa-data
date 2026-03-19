@@ -115,7 +115,12 @@ class BlobStorageService(IBlobStorageService):
         blobs = list(container_client.list_blob_names(name_starts_with=path))
         return len(blobs) > 0
 
-    def get_file_count(self, container: StorageContainer, path: str, suffix_to_remove: str = "*.parquet") -> int:
+    def get_file_count(
+            self,
+            container: StorageContainer,
+            path: str,
+            suffix_to_remove: str = "region=*/*.parquet"
+    ) -> int:
         base_path = self.__file_path_service.remove_blob_file_name_from_path(file_path=path, file_name=suffix_to_remove)
         return sum(1 for _ in self.__blob_storage_context.get_container_client(
             container=container.value).list_blobs(

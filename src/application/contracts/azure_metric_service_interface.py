@@ -17,7 +17,8 @@ class IAzureMetricService(ABC):
             metric_names: AzureResourceMetrics,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
-            aggregations: list[MetricAggregationType]
+            aggregations: list[MetricAggregationType],
+            granularity: datetime.timedelta = datetime.timedelta(minutes=1)
     ) -> list[MetricsQueryResult]:
         raise NotImplementedError
 
@@ -35,6 +36,8 @@ class IAzureMetricService(ABC):
             self,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
+            bytes_ingress: float,
+            bytes_egress: float
     ) -> BlobStorageUsage:
         raise NotImplementedError
 
