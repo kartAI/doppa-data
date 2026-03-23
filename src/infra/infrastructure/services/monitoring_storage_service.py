@@ -5,6 +5,7 @@ import pandas as pd
 
 from src import Config
 from src.application.contracts import IMonitoringStorageService, IBlobStorageService, IBytesService, IFilePathService
+from src.application.dtos import Cost
 from src.domain.enums import StorageContainer
 
 
@@ -75,6 +76,28 @@ class MonitoringStorageService(IMonitoringStorageService):
         )
 
         df = pd.DataFrame(samples)
+        df_bytes = self.__bytes_service.convert_df_to_parquet_bytes(df)
+        self.__blob_storage_service.upload_file(
+            container_name=StorageContainer.BENCHMARKS,
+            blob_name=blob_name,
+            data=df_bytes
+        )
+
+    def write_cost_analytics_to_blob_storage(
+            self,
+            cost: Cost,
+            query_id: str,
+            run_id: str,
+            benchmark_run: int
+    ) -> None:
+        blob_name = self.__file_path_service.create_hive_blob_path(
+            file_name="cost.parquet",
+            query_id=query_id,
+            run_id=run_id,
+            benchmark_run=benchmark_run,
+        )
+
+        df = pd.DataFrame(cost.to_dict())
         df_bytes = self.__bytes_service.convert_df_to_parquet_bytes(df)
         self.__blob_storage_service.upload_file(
             container_name=StorageContainer.BENCHMARKS,
