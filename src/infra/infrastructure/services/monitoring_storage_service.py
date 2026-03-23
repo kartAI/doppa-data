@@ -98,7 +98,7 @@ class MonitoringStorageService(IMonitoringStorageService):
             benchmark_run=benchmark_run,
         )
 
-        df = pd.DataFrame(cost.to_dict())
+        df = pd.DataFrame([cost.to_dict()])
         df_bytes = self.__bytes_service.convert_df_to_parquet_bytes(df)
         self.__blob_storage_service.upload_file(
             container_name=StorageContainer.BENCHMARKS,

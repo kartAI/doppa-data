@@ -60,6 +60,7 @@ def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration, cost
             _save_run_metadata(query_id=query_id, run_id=run_id)
             _save_run_cost_analytics(
                 run_id=run_id,
+                cost_configuration=cost_configuration,
                 query_id=query_id,
                 start_time=start_time,
                 end_time=end_time,

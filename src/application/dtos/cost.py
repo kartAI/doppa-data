@@ -17,8 +17,8 @@ class Cost:
         return json.dumps(self.to_dict())
 
 
-@dataclass
-class CostConfiguration(frozen=True):
-    include_aci: bool
-    include_blob_storage: bool
-    include_postgres: bool
+@dataclass(frozen=True)
+class CostConfiguration:
+    include_aci: bool = False
+    include_blob_storage: bool = False
+    include_postgres: bool = False
