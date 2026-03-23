@@ -4,6 +4,7 @@ from pmtiles.reader import Reader
 from src import Config
 from src.application.common.monitor_network import monitor_network
 from src.application.contracts import IFilePathService, ITileApiService, ITileService
+from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, BenchmarkIteration
 from src.infra.infrastructure import Containers
 
@@ -28,7 +29,11 @@ def vector_tiles_100k_pmtiles(
 
 
 @inject
-@monitor_network(query_id="vector-tiles-100k-pmtiles", benchmark_iteration=BenchmarkIteration.VECTOR_TILE_100K)
+@monitor_network(
+    query_id="vector-tiles-100k-pmtiles",
+    benchmark_iteration=BenchmarkIteration.VECTOR_TILE_100K,
+    cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True)
+)
 def _benchmark(
         reader: Reader,
         tiles: list[tuple[int, int, int]],

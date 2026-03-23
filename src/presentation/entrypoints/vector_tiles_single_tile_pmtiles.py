@@ -4,6 +4,7 @@ from pmtiles.reader import Reader
 from src import Config
 from src.application.common.monitor_network import monitor_network
 from src.application.contracts import IFilePathService, ITileApiService
+from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, BenchmarkIteration
 from src.infra.infrastructure import Containers
 
@@ -24,7 +25,11 @@ def vector_tiles_single_tile_pmtiles(
     _benchmark(reader=reader)
 
 
-@monitor_network(query_id="vector-tiles-single-tile-pmtiles", benchmark_iteration=BenchmarkIteration.VECTOR_TILE_SINGLE_TILE)
+@monitor_network(
+    query_id="vector-tiles-single-tile-pmtiles",
+    benchmark_iteration=BenchmarkIteration.VECTOR_TILE_SINGLE_TILE,
+    cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)
+)
 def _benchmark(reader: Reader, tile_api_service: ITileApiService = Provide[Containers.tile_api_service]) -> None:
     tile_bytes = tile_api_service.fetch_pmtiles_tile(reader=reader, z=Z, x=X, y=Y)
     if tile_bytes is None:

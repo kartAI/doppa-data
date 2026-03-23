@@ -4,12 +4,17 @@ from duckdb import DuckDBPyConnection
 from src import Config
 from src.application.common.monitor_network import monitor_network
 from src.application.contracts import IFilePathService
+from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, Theme, BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_network(query_id="db-scan-blob-storage", benchmark_iteration=BenchmarkIteration.DB_SCAN)
+@monitor_network(
+    query_id="db-scan-blob-storage",
+    benchmark_iteration=BenchmarkIteration.DB_SCAN,
+    cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True)
+)
 def db_scan_blob_storage(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]
