@@ -58,7 +58,8 @@ class IMonitoringStorageService(ABC):
             cost: Cost,
             query_id: str,
             run_id: str,
-            benchmark_run: int
+            benchmark_run: int,
+            file_name: str
     ) -> None:
         """
         Save the cost analytics to blob storage. The cost analytics includes the cost of the resources used during the
@@ -71,6 +72,12 @@ class IMonitoringStorageService(ABC):
         :param run_id: A unique identifier for the run which is passed from the main method
         :param benchmark_run: Benchmark iteration number which is passed from the main method. This is used to
         differentiate between multiple benchmark iterations of the same query.
+        :param file_name: File name must end with `.parquet` and is used to differentiate between different types of
+        cost analytics. For example, if there are multiple cost analytics collected during the execution of the query,
+        such as ACI cost and Blob Storage cost, the file name can be used to differentiate between them. The file name
+        is passed from the main method and can be defined as follows: `cost_analytics_<cost_type>.parquet`, where
+        `<cost_type>` is a string that describes the type of cost analytics being saved (e.g., `aci`, `blob_storage`,
+        etc.).
         :return:
         """
         raise NotImplementedError

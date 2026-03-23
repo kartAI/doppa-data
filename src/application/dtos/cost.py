@@ -15,3 +15,10 @@ class Cost:
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict())
+
+
+@dataclass
+class CostConfiguration(frozen=True):
+    include_aci: bool
+    include_blob_storage: bool
+    include_postgres: bool

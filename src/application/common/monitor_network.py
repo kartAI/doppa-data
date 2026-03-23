@@ -4,17 +4,16 @@ import time
 from typing import Any
 
 import psutil
-from dependency_injector.wiring import Provide, inject
 
 from src import Config
 from src.application.common import logger
-from src.application.common.monitor_utils import _get_run_id, _get_benchmark_run, _save_run, _save_run_metadata
-from src.application.contracts import IAzureMetricService, IAzureCostService
+from src.application.common.monitor_utils import _get_run_id, _get_benchmark_run, _save_run, _save_run_metadata, \
+    _save_run_cost_analytics
+from src.application.dtos import CostConfiguration
 from src.domain.enums import BenchmarkIteration, BlobOperationType
-from src.infra.infrastructure import Containers
 
 
-def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration):
+def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration, cost_configuration: CostConfiguration):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -59,11 +58,14 @@ def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration):
             logger.info(f"Benchmark runs completed in {round((end_time - start_time).total_seconds(), 2)} seconds.")
 
             _save_run_metadata(query_id=query_id, run_id=run_id)
-            _cost_analysis(
+            _save_run_cost_analytics(
+                run_id=run_id,
+                query_id=query_id,
                 start_time=start_time,
                 end_time=end_time,
-                query_id=query_id,
-                ingress=ingress_sum, egress=egress_sum
+                bytes_ingress=ingress_sum,
+                bytes_egress=egress_sum,
+                operation_type=BlobOperationType.READ
             )
 
             logger.info(f"Benchmark run {benchmark_run} completed.")
@@ -88,27 +90,3 @@ def _benchmark(func, *args, **kwargs) -> tuple[Any, float, int, int]:
     network_bytes_received = after.bytes_recv - before.bytes_recv
 
     return result, elapsed_time, network_bytes_sent, network_bytes_received
-
-
-@inject
-def _cost_analysis(
-        start_time: datetime.datetime,
-        end_time: datetime.datetime,
-        query_id: str,
-        ingress: int,
-        egress: int,
-        azure_cost_service: IAzureCostService = Provide[Containers.azure_cost_service]
-) -> None:
-    database_cost = azure_cost_service.compute_database_cost(start_time=start_time, end_time=end_time)
-    aci_cost = azure_cost_service.compute_aci_cost(experiment_id=query_id, start_time=start_time, end_time=end_time)
-    storage_cost = azure_cost_service.compute_blob_storage_cost(
-        start_time=start_time,
-        end_time=end_time,
-        bytes_ingress=ingress,
-        bytes_egress=egress,
-        operation_type=BlobOperationType.READ
-    )
-
-    print("Database cost:", database_cost.to_dict())
-    print("Storage cost", storage_cost.to_dict())
-    print("ACI cost:", aci_cost.to_dict())

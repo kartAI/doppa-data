@@ -88,10 +88,11 @@ class MonitoringStorageService(IMonitoringStorageService):
             cost: Cost,
             query_id: str,
             run_id: str,
-            benchmark_run: int
+            benchmark_run: int,
+            file_name: str
     ) -> None:
         blob_name = self.__file_path_service.create_hive_blob_path(
-            file_name="cost.parquet",
+            file_name=file_name,
             query_id=query_id,
             run_id=run_id,
             benchmark_run=benchmark_run,
