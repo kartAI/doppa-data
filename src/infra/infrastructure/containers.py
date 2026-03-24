@@ -5,9 +5,8 @@ from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
     TestDatasetService, MonitoringStorageService, MVTService, TileApiService, TileService, AzureCostService,
-    BenchmarkConfigurationService, AzureMetricService
+    BenchmarkConfigurationService, AzureMetricService, AzurePricingService, BenchmarkService
 )
-from src.infra.infrastructure.services.benchmark_service import BenchmarkService
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
 
 
