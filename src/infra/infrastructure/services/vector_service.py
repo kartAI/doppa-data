@@ -18,7 +18,7 @@ class VectorService(IVectorService):
         dataframe = dataframe.copy()
         centroids = (
             dataframe.geometry
-            .to_crs(epsg=EPSGCode.UTM32N.value)
+            .to_crs(epsg=EPSGCode.LAEA_EUROPE.value)
             .centroid
             .to_crs(epsg=EPSGCode.WGS84.value)
         )
