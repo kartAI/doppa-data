@@ -1,6 +1,5 @@
 ﻿import datetime
 from abc import ABC, abstractmethod
-from typing import Literal
 
 from azure.monitor.querymetrics import MetricAggregationType, MetricsQueryResult
 
