@@ -40,10 +40,16 @@ def _save_run(
         benchmark_run: int,
         query_id: str,
         iteration: int,
+        total_iterations: int,
         samples: list[dict[str, Any]],
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
-    iteration = _create_global_iteration(iteration=iteration, benchmark_run=benchmark_run)
+    iteration = _create_global_iteration(
+        iteration=iteration,
+        total_iterations=total_iterations,
+        benchmark_run=benchmark_run
+    )
+
     monitoring_storage_service.write_run_to_blob_storage(
         samples=samples,
         query_id=query_id,
@@ -129,5 +135,5 @@ def _save_run_cost_analytics(
         logger.info("Saved PostgreSQL cost data to .")
 
 
-def _create_global_iteration(iteration: int, benchmark_run: int) -> int:
-    return iteration + Config.BENCHMARK_ITERATIONS * (benchmark_run - 1)
+def _create_global_iteration(iteration: int, total_iterations: int, benchmark_run: int) -> int:
+    return iteration + total_iterations * (benchmark_run - 1)

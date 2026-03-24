@@ -58,6 +58,7 @@ def monitor_cpu_and_ram(
                     query_id=query_id,
                     benchmark_run=benchmark_run,
                     iteration=iteration,
+                    total_iterations=benchmark_iteration.value,
                     samples=samples
                 )
 

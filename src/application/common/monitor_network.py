@@ -45,6 +45,7 @@ def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration, cost
                     benchmark_run=benchmark_run,
                     query_id=query_id,
                     iteration=iteration,
+                    total_iterations=benchmark_iteration.value,
                     samples=[
                         {
                             "elapsed_time": elapsed_time,
