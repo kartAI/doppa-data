@@ -9,7 +9,9 @@ from dependency_injector.wiring import inject, Provide
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IMonitoringStorageService
+from src.application.contracts import IMonitoringStorageService, IAzureCostService
+from src.application.dtos import CostConfiguration
+from src.domain.enums import BlobOperationType
 from src.infra.infrastructure import Containers
 
 
@@ -38,10 +40,16 @@ def _save_run(
         benchmark_run: int,
         query_id: str,
         iteration: int,
+        total_iterations: int,
         samples: list[dict[str, Any]],
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
-    iteration = _create_global_iteration(iteration=iteration, benchmark_run=benchmark_run)
+    iteration = _create_global_iteration(
+        iteration=iteration,
+        total_iterations=total_iterations,
+        benchmark_run=benchmark_run
+    )
+
     monitoring_storage_service.write_run_to_blob_storage(
         samples=samples,
         query_id=query_id,
@@ -55,7 +63,7 @@ def _save_run(
 def _save_run_metadata(
         query_id: str,
         run_id: str,
-        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
+        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
 ) -> None:
     logger.info("Saving benchmark metadata to blob storage.")
     metadata_id = str(uuid.uuid4())
@@ -70,5 +78,60 @@ def _save_run_metadata(
     logger.info(f"Benchmark metadata saved with ID '{metadata_id}'.")
 
 
-def _create_global_iteration(iteration: int, benchmark_run: int) -> int:
-    return iteration + Config.BENCHMARK_ITERATIONS * (benchmark_run - 1)
+@inject
+def _save_run_cost_analytics(
+        query_id: str,
+        run_id: str,
+        cost_configuration: CostConfiguration,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        bytes_ingress: float | None = None,
+        bytes_egress: float | None = None,
+        operation_type: BlobOperationType | None = None,
+        azure_cost_service: IAzureCostService = Provide[Containers.azure_cost_service],
+        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
+) -> None:
+    benchmark_run = _get_benchmark_run()
+    if cost_configuration.include_aci:
+        aci_cost = azure_cost_service.compute_aci_cost(query_id, start_time, end_time)
+        logger.info(f"Computed ACI cost: {aci_cost.to_dict()}")
+        monitoring_storage_service.write_cost_analytics_to_blob_storage(
+            query_id=query_id,
+            run_id=run_id,
+            benchmark_run=benchmark_run,
+            file_name="aci_cost.parquet",
+            cost=aci_cost
+        )
+
+    is_blob_params_present = bytes_ingress is not None and bytes_egress is not None and operation_type is not None
+    if cost_configuration.include_blob_storage and is_blob_params_present:
+        blob_cost = azure_cost_service.compute_blob_storage_cost(
+            start_time,
+            end_time,
+            bytes_ingress,
+            bytes_egress,
+            operation_type
+        )
+        logger.info(f"Computed Blob Storage cost: {blob_cost.to_dict()}")
+        monitoring_storage_service.write_cost_analytics_to_blob_storage(
+            query_id=query_id,
+            run_id=run_id,
+            benchmark_run=benchmark_run,
+            file_name="blob_cost.parquet",
+            cost=blob_cost
+        )
+
+    if cost_configuration.include_postgres:
+        postgres_cost = azure_cost_service.compute_database_cost(start_time, end_time)
+        logger.info(f"Computed PostgreSQL cost: {postgres_cost.to_dict()}")
+        monitoring_storage_service.write_cost_analytics_to_blob_storage(
+            query_id=query_id,
+            run_id=run_id,
+            benchmark_run=benchmark_run,
+            file_name="postgres_cost.parquet",
+            cost=postgres_cost,
+        )
+
+
+def _create_global_iteration(iteration: int, total_iterations: int, benchmark_run: int) -> int:
+    return iteration + total_iterations * (benchmark_run - 1)

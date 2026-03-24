@@ -114,3 +114,16 @@ class BlobStorageService(IBlobStorageService):
         container_client = self.__blob_storage_context.get_container_client(container.value)
         blobs = list(container_client.list_blob_names(name_starts_with=path))
         return len(blobs) > 0
+
+    def get_blob_summary(self, container: StorageContainer, path: str) -> tuple[int, int]:
+        base_path = self.__file_path_service.remove_blob_file_name_from_path(
+            file_path=path, file_name="region=*/*.parquet"
+        )
+        count = 0
+        total_size = 0
+        for blob in self.__blob_storage_context.get_container_client(
+                container=container.value
+        ).list_blobs(name_starts_with=base_path):
+            count += 1
+            total_size += blob.size
+        return count, total_size

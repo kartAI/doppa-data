@@ -3,12 +3,17 @@ from duckdb import DuckDBPyConnection
 
 from src.application.common.monitor_network import monitor_network
 from src.application.contracts import IFilePathService
-from src.domain.enums import StorageContainer, Theme
+from src.application.dtos import CostConfiguration
+from src.domain.enums import StorageContainer, Theme, BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_network(query_id="bbox-filtering-advanced-duckdb")
+@monitor_network(
+    query_id="bbox-filtering-advanced-duckdb",
+    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_ADVANCED,
+    cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True)
+)
 def bbox_filtering_advanced_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],

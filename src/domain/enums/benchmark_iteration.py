@@ -1,0 +1,13 @@
+﻿from enum import Enum
+
+from src import Config
+
+
+class BenchmarkIteration(Enum):
+    DB_SCAN = 1_000
+    VECTOR_TILE_SINGLE_TILE = 600
+    VECTOR_TILE_100K = 2
+    BBOX_FILTERING_SIMPLE = 1000
+    BBOX_FILTERING_ADVANCED = 100
+
+    FALLBACK = Config.BENCHMARK_ITERATIONS
