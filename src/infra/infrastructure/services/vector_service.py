@@ -16,7 +16,13 @@ class VectorService(IVectorService):
 
     def partition_dataframe(self, dataframe: gpd.GeoDataFrame) -> list[gpd.GeoDataFrame]:
         dataframe = dataframe.copy()
-        centroids = dataframe.geometry.centroid
+        centroids = (
+            dataframe.geometry
+            .to_crs(epsg=EPSGCode.UTM32N.value)
+            .centroid
+            .to_crs(epsg=EPSGCode.WGS84.value)
+        )
+
         dataframe["partition_key"] = [
             phg.encode(lat, lon, precision=Config.PARTITION_RESOLUTION)
             for lat, lon in zip(centroids.y.values, centroids.x.values)
