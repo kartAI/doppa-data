@@ -21,23 +21,26 @@ def setup_benchmarking_framework(
 ) -> None:
     logger.info("Starting benchmarking framework setup...")
 
-    logger.info("Step 1/4: Running test dataset pipeline...")
+    logger.info("Step 1/5: Running test dataset pipeline...")
     release = test_dataset_service.run_pipeline()
     logger.info(f"Test dataset pipeline complete. Release: '{release}'")
 
-    logger.info("Step 2/4: Seeding Postgres with buildings...")
+    logger.info("Step 2/5: Seeding Postgres with buildings...")
     _postgres_buildings_seed(release=release)
     logger.info("Postgres seed complete.")
 
-    logger.info("Step 3/4: Creating PMTiles...")
+    logger.info("Step 3/5: Creating PMTiles...")
     _create_pmtiles(release=release)
     logger.info("PMTiles complete.")
 
-    logger.info("Step 4/4: Creating MVT tiles...")
+    logger.info("Step 4/5: Creating MVT tiles...")
     _create_mvt(release=release)
     logger.info("MVT tiles complete.")
 
-    _generate_tiles_file()
+    logger.info("Step 5/5: Creating MVT tiles...")
+    _create_mvt(release=release)
+    logger.info("MVT tiles complete.")
+
     logger.info("Benchmarking framework setup complete.")
 
 
