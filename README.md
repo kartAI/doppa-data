@@ -145,6 +145,7 @@ and add the following **variables**:
 - `AZURE_RESOURCE_GROUP`
 - `AZURE_SUBSCRIPTION_ID`
 - `AZURE_TENANT_ID`
+- `POSTGRES_SERVER_NAME`
 
 These values can be found under the Azure resources previously created. The workflows should now work!
 
@@ -173,6 +174,8 @@ secrets. The containers `dev-benchmarks` and `dev-metadata` ensure that results 
 results from actual runs.
 
 ```dotenv
+AZURE_SUBSCRIPTION_ID=<azure-subscription-id>
+
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
 AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
 AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
@@ -181,6 +184,7 @@ ACR_LOGIN_SERVER=<azure-container-registry-login-server>
 ACR_USERNAME=<azure-container-registry-username>
 ACR_PASSWORD=<azure-container-registry-password>
 
+POSTGRES_SERVER_NAME=doppa-db
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
 ```

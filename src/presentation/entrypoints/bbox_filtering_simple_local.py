@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from src import Config
 from src.application.common.monitor_cpu_and_ram import monitor_cpu_and_ram
 from src.application.contracts import IFilePathService, IBenchmarkService
-from src.domain.enums import StorageContainer, Theme
+from src.domain.enums import StorageContainer, Theme, BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 
@@ -14,7 +14,10 @@ def bbox_filtering_simple_local() -> None:
 
 
 @inject
-@monitor_cpu_and_ram(query_id="bbox-filtering-simple-local")
+@monitor_cpu_and_ram(
+    query_id="bbox-filtering-simple-local",
+    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_SIMPLE
+)
 def _benchmark(db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb_context]) -> None:
     min_lon = 10.40
     max_lon = 10.95
