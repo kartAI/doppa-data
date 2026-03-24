@@ -10,27 +10,47 @@ from sqlalchemy import Engine
 from src import Config
 from src.application.common import logger
 from src.application.contracts import IFilePathService, IBlobStorageService, IBytesService, ITileService, \
-    ITileApiService
+    ITileApiService, ITestDatasetService
 from src.domain.enums import StorageContainer, Theme, EPSGCode
 from src.infra.infrastructure import Containers
 
 
-def setup_benchmarking_framework() -> None:
-    _postgres_buildings_seed()
-    _create_pmtiles()
-    _create_mvt()
+@inject
+def setup_benchmarking_framework(
+        test_dataset_service: ITestDatasetService = Provide[Containers.test_dataset_service]
+) -> None:
+    logger.info("Starting benchmarking framework setup...")
+
+    logger.info("Step 1/4: Running test dataset pipeline...")
+    release = test_dataset_service.run_pipeline()
+    logger.info(f"Test dataset pipeline complete. Release: '{release}'")
+
+    logger.info("Step 2/4: Seeding Postgres with buildings...")
+    _postgres_buildings_seed(release=release)
+    logger.info("Postgres seed complete.")
+
+    logger.info("Step 3/4: Creating PMTiles...")
+    _create_pmtiles(release=release)
+    logger.info("PMTiles complete.")
+
+    logger.info("Step 4/4: Creating MVT tiles...")
+    _create_mvt(release=release)
+    logger.info("MVT tiles complete.")
+
     _generate_tiles_file()
+    logger.info("Benchmarking framework setup complete.")
 
 
 @inject
 def _postgres_buildings_seed(
+        release: str = None,
         duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         postgres_db_context: Engine = Provide[Containers.postgres_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> None:
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
+        release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",
@@ -76,6 +96,7 @@ def _postgres_buildings_seed(
 
 @inject
 def _create_pmtiles(
+        release: str = None,
         duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
         blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
@@ -84,7 +105,7 @@ def _create_pmtiles(
 ) -> None:
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
+        release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",
@@ -131,8 +152,7 @@ def _create_pmtiles(
         Config.BUILDINGS_GEOJSONL_FILE.as_posix(),
     ]
 
-    cmd_str = " ".join(cmd)
-    logger.info(f"Creating PMTiles with command:\t{cmd_str}")
+    logger.info("Running tippecanoe to generate PMTiles (this may take a while)...")
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode != 0:
@@ -156,13 +176,14 @@ def _create_pmtiles(
 
 @inject
 def _create_mvt(
+        release: str = None,
         duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
         blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
 ) -> None:
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
+        release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",
@@ -213,8 +234,7 @@ def _create_mvt(
         Config.BUILDINGS_GEOJSONL_FILE.as_posix(),
     ]
 
-    cmd_str = " ".join(cmd)
-    logger.info(f"Creating MVT tiles with command:\t{cmd_str}")
+    logger.info("Running tippecanoe to generate MVT tiles (this may take a while)...")
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode != 0:
@@ -269,5 +289,9 @@ def _generate_tiles_file(
         if tile_api_service.fetch_vmt_tile(z=z, x=x, y=y) is not None:
             existing_tiles.append(candidate_tile)
 
+    logger.info(f"Found {len(existing_tiles)} tiles with data out of {len(candidate_tiles)} candidates")
+
     with open(Config.MVT_TILES_PATH, 'w', encoding='utf-8') as f:
         json.dump([list(tile) for tile in existing_tiles], f)
+
+    logger.info(f"Tiles file saved to '{Config.MVT_TILES_PATH}'")
