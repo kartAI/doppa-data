@@ -101,3 +101,11 @@ class IBlobStorageService(ABC):
         :rtype: bool
         """
         raise NotImplementedError
+
+    def get_blob_summary(self, container: StorageContainer, path: str) -> tuple[int, int]:
+        """
+        Get a summary of blobs under the specified base path in the given container, including total count and total size in bytes.
+        :param container: Container enum to summarize blobs from.
+        :param path: Base path to summarize blobs from.
+        :return: Tuple containing total count of blobs and total size in bytes.
+        """
