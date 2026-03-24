@@ -132,8 +132,6 @@ def _save_run_cost_analytics(
             cost=postgres_cost,
         )
 
-        logger.info("Saved PostgreSQL cost data to .")
-
 
 def _create_global_iteration(iteration: int, total_iterations: int, benchmark_run: int) -> int:
     return iteration + total_iterations * (benchmark_run - 1)
