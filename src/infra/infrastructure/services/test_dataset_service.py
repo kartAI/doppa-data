@@ -137,7 +137,6 @@ class TestDatasetService(ITestDatasetService):
         return self.__county_service.get_county_ids()
 
     def __download_and_format_osm_dataset(self) -> list[gpd.GeoDataFrame]:
-        # osm_file_service.download_pbf()
         return self.__osm_service.create_building_batches()
 
     def __create_theme_collection(
@@ -157,7 +156,6 @@ class TestDatasetService(ITestDatasetService):
 
     def __download_and_format_fkb_dataset(self) -> list[gpd.GeoDataFrame]:
         fkb_dataset = self.__fkb_service.extract_fkb_data()
-        # building_polygons = fkb_service.create_building_polygons(gdf=fkb_dataset, crs=EPSGCode.WGS84)
         return [fkb_dataset]
 
     def __clip_and_partition_dataset_to_region(
