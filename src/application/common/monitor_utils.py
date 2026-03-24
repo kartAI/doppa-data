@@ -88,6 +88,7 @@ def _save_run_cost_analytics(
     benchmark_run = _get_benchmark_run()
     if cost_configuration.include_aci:
         aci_cost = azure_cost_service.compute_aci_cost(query_id, start_time, end_time)
+        logger.info(f"Computed ACI cost: {aci_cost.to_dict()}")
         monitoring_storage_service.write_cost_analytics_to_blob_storage(
             query_id=query_id,
             run_id=run_id,
@@ -105,7 +106,7 @@ def _save_run_cost_analytics(
             bytes_egress,
             operation_type
         )
-
+        logger.info(f"Computed Blob Storage cost: {blob_cost.to_dict()}")
         monitoring_storage_service.write_cost_analytics_to_blob_storage(
             query_id=query_id,
             run_id=run_id,
@@ -116,6 +117,7 @@ def _save_run_cost_analytics(
 
     if cost_configuration.include_postgres:
         postgres_cost = azure_cost_service.compute_database_cost(start_time, end_time)
+        logger.info(f"Computed PostgreSQL cost: {postgres_cost.to_dict()}")
         monitoring_storage_service.write_cost_analytics_to_blob_storage(
             query_id=query_id,
             run_id=run_id,
@@ -123,6 +125,8 @@ def _save_run_cost_analytics(
             file_name="postgres_cost.parquet",
             cost=postgres_cost,
         )
+
+        logger.info("Saved PostgreSQL cost data to .")
 
 
 def _create_global_iteration(iteration: int, benchmark_run: int) -> int:

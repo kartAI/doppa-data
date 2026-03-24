@@ -4,6 +4,7 @@ from typing import Any
 import pandas as pd
 
 from src import Config
+from src.application.common import logger
 from src.application.contracts import IMonitoringStorageService, IBlobStorageService, IBytesService, IFilePathService
 from src.application.dtos import Cost
 from src.domain.enums import StorageContainer
