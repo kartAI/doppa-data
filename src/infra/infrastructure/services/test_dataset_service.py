@@ -48,7 +48,7 @@ class TestDatasetService(ITestDatasetService):
         self.__osm_service = osm_service
         self.__osm_file_service = osm_file_service
 
-    def run_pipeline(self) -> None:
+    def run_pipeline(self) -> str:
         latest_release, root_catalog, release_catalog = self.__create_release()
         regions = self.__get_county_ids()
 
@@ -128,6 +128,7 @@ class TestDatasetService(ITestDatasetService):
             self.__add_assets_to_item(conflated_region_item, conflated_blob_paths)
 
         self.__save_catalog(catalog=root_catalog, release=latest_release)
+        return latest_release
 
     def __create_release(self) -> tuple[str, Catalog, Catalog]:
         root_catalog = self.__stac_service.get_catalog_root()
