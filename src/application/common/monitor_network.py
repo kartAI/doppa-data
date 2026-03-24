@@ -37,8 +37,8 @@ def monitor_network(query_id: str, benchmark_iteration: BenchmarkIteration, cost
             for i in range(benchmark_iteration.value):
                 iteration = i + 1
                 result, elapsed_time, net_bytes_sent, net_bytes_received = _benchmark(func, *args, **kwargs)
-                ingress_sum += net_bytes_sent
-                egress_sum += net_bytes_received
+                ingress_sum += net_bytes_received
+                egress_sum += net_bytes_sent
 
                 _save_run(
                     run_id=run_id,
