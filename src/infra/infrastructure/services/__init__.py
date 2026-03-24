@@ -12,6 +12,7 @@ from .open_street_map_service import OpenStreetMapService
 from .release_service import ReleaseService
 from .stac_io_service import StacIOService
 from .stac_service import StacService
+from .test_dataset_service import TestDatasetService
 from .tile_api_service import TileApiService
 from .tile_service import TileService
 from .vector_service import VectorService

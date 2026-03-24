@@ -13,6 +13,7 @@ from .open_street_map_service_interface import IOpenStreetMapService
 from .release_service_interface import IReleaseService
 from .stac_io_service_interface import IStacIOService
 from .stac_service_interface import IStacService
+from .test_dataset_service_interface import ITestDatasetService
 from .tile_api_service_interface import ITileApiService
 from .tile_service_interface import ITileService
 from .vector_service_interface import IVectorService
