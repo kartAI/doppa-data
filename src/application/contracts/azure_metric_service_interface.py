@@ -17,7 +17,8 @@ class IAzureMetricService(ABC):
             start_time: datetime.datetime,
             end_time: datetime.datetime,
             aggregations: list[MetricAggregationType],
-            granularity: datetime.timedelta = datetime.timedelta(minutes=1)
+            granularity: datetime.timedelta = datetime.timedelta(minutes=1),
+            is_waiting_for_ingestion: bool = True
     ) -> list[MetricsQueryResult]:
         raise NotImplementedError
 
