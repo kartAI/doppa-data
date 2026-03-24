@@ -79,9 +79,9 @@ def _save_run_cost_analytics(
         cost_configuration: CostConfiguration,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
-        bytes_ingress: float = None,
-        bytes_egress: float = None,
-        operation_type: BlobOperationType = None,
+        bytes_ingress: float | None = None,
+        bytes_egress: float | None = None,
+        operation_type: BlobOperationType | None = None,
         azure_cost_service: IAzureCostService = Provide[Containers.azure_cost_service],
         monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
 ) -> None:
