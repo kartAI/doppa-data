@@ -152,7 +152,6 @@ class Containers(containers.DeclarativeContainer):
         county_service=county_service,
         fkb_service=fkb_service,
         osm_service=open_street_map_service,
-        osm_file_service=osm_file_service,
     )
 
     StacIO.set_default(stac_io_service)

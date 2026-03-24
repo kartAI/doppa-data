@@ -22,7 +22,6 @@ class TestDatasetService(ITestDatasetService):
     __county_service: ICountyService
     __fkb_service: IFKBService
     __osm_service: IOpenStreetMapService
-    __osm_file_service: IOpenStreetMapFileService
 
     def __init__(
             self,
@@ -35,7 +34,6 @@ class TestDatasetService(ITestDatasetService):
             county_service: ICountyService,
             fkb_service: IFKBService,
             osm_service: IOpenStreetMapService,
-            osm_file_service: IOpenStreetMapFileService
     ):
         self.__stac_service = stac_service
         self.__release_service = release_service
@@ -46,7 +44,6 @@ class TestDatasetService(ITestDatasetService):
         self.__county_service = county_service
         self.__fkb_service = fkb_service
         self.__osm_service = osm_service
-        self.__osm_file_service = osm_file_service
 
     def run_pipeline(self) -> str:
         latest_release, root_catalog, release_catalog = self.__create_release()
