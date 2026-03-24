@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from src.application.dtos import Cost
+
 
 class IMonitoringStorageService(ABC):
     @abstractmethod
@@ -39,13 +41,43 @@ class IMonitoringStorageService(ABC):
         """
         Save the run to blob storage. A run includes the samples collected during the execution of the query.
         The run is saved with a Hive compatible partition structure to allow for efficient querying and analysis of the data.
-        The partition structure is defined as follows: `query_id=<query_id>/run_id=<run_id>/iteration=<iteration>/<filename>.parquet`.
+        The partition structure is defined as follows: `query_id=<query_id>/run_id=<run_id>/benchmark_run=<benchmark_run>/iteration=<iteration>/<filename>.parquet`.
         This structure allows for easy retrieval of runs based on query ID, run ID, and iteration number.
         :param samples: Samples collected during the execution of the query which is passed from the main method. Each sample is a dictionary containing information about the system metrics at a specific point in time.
         :param query_id: Query ID associated with the run which is passed from the main method
         :param run_id: A unique identifier for the run which is passed from the main method.
         :param benchmark_run: Benchmark iteration number which is passed from the main method. This is used to differentiate between multiple benchmark iterations of the same query.
         :param iteration: Iteration number of the run which is passed from the main method. This is used to differentiate between multiple runs of the same query.
+        :return:
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def write_cost_analytics_to_blob_storage(
+            self,
+            cost: Cost,
+            query_id: str,
+            run_id: str,
+            benchmark_run: int,
+            file_name: str
+    ) -> None:
+        """
+        Save the cost analytics to blob storage. The cost analytics includes the cost of the resources used during the
+        execution of the query. The cost analytics is saved with a Hive partition with the run information.
+        The partition structure is defined as follows: `query_id=<query_id>/run_id=<run_id>/benchmark_run=<benchmark_run>/cost_analytics.parquet`.
+        This structure allows for easy retrieval of cost analytics based on query ID and run ID.
+        :param cost: Cost analytics collected during the execution of the query which is passed from the main method.
+        The Cost object contains information about the cost of the resources used during the execution of the query.
+        :param query_id: Query ID associated with the run which is passed from the main method
+        :param run_id: A unique identifier for the run which is passed from the main method
+        :param benchmark_run: Benchmark iteration number which is passed from the main method. This is used to
+        differentiate between multiple benchmark iterations of the same query.
+        :param file_name: File name must end with `.parquet` and is used to differentiate between different types of
+        cost analytics. For example, if there are multiple cost analytics collected during the execution of the query,
+        such as ACI cost and Blob Storage cost, the file name can be used to differentiate between them. The file name
+        is passed from the main method and can be defined as follows: `cost_analytics_<cost_type>.parquet`, where
+        `<cost_type>` is a string that describes the type of cost analytics being saved (e.g., `aci`, `blob_storage`,
+        etc.).
         :return:
         """
         raise NotImplementedError

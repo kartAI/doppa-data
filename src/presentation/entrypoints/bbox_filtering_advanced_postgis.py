@@ -2,11 +2,17 @@
 from sqlalchemy import Engine, text
 
 from src.application.common.monitor_network import monitor_network
+from src.application.dtos import CostConfiguration
+from src.domain.enums import BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_network(query_id="bbox-filtering-advanced-postgis")
+@monitor_network(
+    query_id="bbox-filtering-advanced-postgis",
+    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_ADVANCED,
+    cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)
+)
 def bbox_filtering_advanced_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
 ) -> None:
