@@ -213,7 +213,7 @@ class TestDatasetService(ITestDatasetService):
             region: str,
             data_source: DataSource,
             geometry: dict[str, Any],
-            bbox: str | None,
+            bbox: list[float] | None,
             epsg_code: EPSGCode,
     ) -> Item:
         region_item = self.__stac_service.create_item(

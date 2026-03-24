@@ -43,7 +43,7 @@ def setup_benchmarking_framework(
 
 @inject
 def _postgres_buildings_seed(
-        release: str = None,
+        release: str | None = None,
         duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         postgres_db_context: Engine = Provide[Containers.postgres_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
@@ -96,7 +96,7 @@ def _postgres_buildings_seed(
 
 @inject
 def _create_pmtiles(
-        release: str = None,
+        release: str | None = None,
         duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
         blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
@@ -176,7 +176,7 @@ def _create_pmtiles(
 
 @inject
 def _create_mvt(
-        release: str = None,
+        release: str | None = None,
         duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
         blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
