@@ -11,7 +11,8 @@ def create_duckdb_context() -> duckdb.DuckDBPyConnection:
     db_context.load_extension("spatial")
     db_context.install_extension("azure")
     db_context.load_extension("azure")
-    db_context.execute("INSTALL h3 FROM community; LOAD h3;")
+    db_context.install_extension("h3")
+    db_context.load_extension("h3")
 
     db_context.execute("""
     CREATE OR REPLACE SECRET azure_secret(
