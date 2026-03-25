@@ -31,15 +31,19 @@ def spatial_aggregation_h3_duckdb(
     h3_resolution = 7
 
     query = f"""
+        WITH buildings AS (
+            SELECT ST_Centroid(geometry) AS centroid
+            FROM read_parquet('{path}')
+            WHERE ST_IsValid(geometry)
+        )
         SELECT
             h3_latlng_to_cell(
-                ST_Y(ST_Centroid(geometry)),
-                ST_X(ST_Centroid(geometry)),
+                ST_Y(centroid),
+                ST_X(centroid),
                 ?
             ) AS h3_cell,
             COUNT(*) AS building_count
-        FROM read_parquet('{path}')
-        WHERE ST_IsValid(geometry)
+        FROM buildings
         GROUP BY h3_cell
         ORDER BY building_count DESC;
     """

@@ -18,14 +18,18 @@ def spatial_aggregation_h3_postgis(
 ) -> None:
     sql = text(
         """
+        WITH building_centroids AS (
+            SELECT ST_Centroid(geometry) AS centroid
+            FROM buildings
+            WHERE ST_IsValid(geometry)
+        )
         SELECT h3_latlng_to_cell(
-                       ST_Y(ST_Centroid(geometry)),
-                       ST_X(ST_Centroid(geometry)),
+                       ST_Y(centroid),
+                       ST_X(centroid),
                        7
                )        AS h3_cell,
                COUNT(*) AS building_count
-        FROM buildings
-        WHERE ST_IsValid(geometry)
+        FROM building_centroids
         GROUP BY h3_cell
         ORDER BY building_count DESC;
         """
