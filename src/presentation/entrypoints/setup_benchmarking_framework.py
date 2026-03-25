@@ -232,6 +232,7 @@ def _create_mvt(
         "--coalesce",
         "--read-parallel",
         "--no-tile-compression",
+        "--force",
         "-l",
         "buildings",
         Config.BUILDINGS_GEOJSONL_FILE.as_posix(),
