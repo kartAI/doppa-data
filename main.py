@@ -156,6 +156,8 @@ def _create_container_instance(
 
         "--command-line", startup_command,
 
+        "--assign-identity", Config.AZURE_UAMI_RESOURCE_ID,
+
         "--registry-login-server", acr_login_server,
         "--registry-username", acr_username,
         "--registry-password", acr_password,
