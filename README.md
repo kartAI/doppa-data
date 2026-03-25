@@ -67,6 +67,12 @@ The next step is to give the UAMI a `Contributor` in the resource group. Navigat
 setting and press *Add role assignment*. Select the scope `Resource group` and then the resource group `doppa`. Pick the
 role `Contributor` and press *Save*.
 
+To view the `AZURE_UAMI_RESOURCE_ID` (needed for later) run the following command: 
+
+```powershell
+az identity show -g doppa -n doppa-github-ci --query id -o tsv
+```
+
 #### Container registry
 
 Create a container registry named `doppaacr`. The Docker images will be saved here. To ensure that the Actions are able
@@ -129,6 +135,7 @@ Navigate to *Review + create* and create the resource. Repeat this process for e
 
 In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
 
+- `AZURE_UAMI_RESOURCE_ID`
 - `ACR_NAME`
 - `ACR_PASSWORD`
 - `ACR_USERNAME`
@@ -175,6 +182,7 @@ results from actual runs.
 
 ```dotenv
 AZURE_SUBSCRIPTION_ID=<azure-subscription-id>
+AZURE_UAMI_RESOURCE_ID=<azure-user-assigned-managed-identity-resource-id>
 
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
 AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
