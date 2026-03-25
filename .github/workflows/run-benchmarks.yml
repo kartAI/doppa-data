@@ -41,7 +41,7 @@ jobs:
       - name: Run Orchestrator Container
         env:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          AZURE_UAMI_RESROUCE_ID: ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
+          AZURE_UAMI_RESOURCE_ID: ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
           ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
           ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
@@ -56,7 +56,7 @@ jobs:
           docker run --rm
           -v "$HOME/.azure:/root/.azure"
           -e AZURE_SUBSCRIPTION_ID
-          -e AZURE_UAMI_RESROUCE_ID
+          -e AZURE_UAMI_RESOURCE_ID
           -e ACR_LOGIN_SERVER
           -e ACR_USERNAME
           -e ACR_PASSWORD
