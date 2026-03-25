@@ -108,23 +108,23 @@ services:
     image: vector-tiles-100k-vmt:latest
     command: python benchmark_runner.py --script-id vector-tiles-100k-vmt --benchmark-run 1 --run-id ABCDEF
 
-  spatial-aggregation-h3-duckdb:
+  spatial-aggregation-grid-duckdb:
     env_file:
       - .env
     build:
       context: .
       dockerfile: .docker/Query.Dockerfile
-    image: spatial-aggregation-h3-duckdb:latest
-    command: python benchmark_runner.py --script-id spatial-aggregation-h3-duckdb --benchmark-run 1 --run-id ABCDEF
+    image: spatial-aggregation-grid-duckdb:latest
+    command: python benchmark_runner.py --script-id spatial-aggregation-grid-duckdb --benchmark-run 1 --run-id ABCDEF
 
-  spatial-aggregation-h3-postgis:
+  spatial-aggregation-grid-postgis:
     env_file:
       - .env
     build:
       context: .
       dockerfile: .docker/Query.Dockerfile
-    image: spatial-aggregation-h3-postgis:latest
-    command: python benchmark_runner.py --script-id spatial-aggregation-h3-postgis --benchmark-run 1 --run-id ABCDEF
+    image: spatial-aggregation-grid-postgis:latest
+    command: python benchmark_runner.py --script-id spatial-aggregation-grid-postgis --benchmark-run 1 --run-id ABCDEF
 
   vmt-api-server:
     env_file:
