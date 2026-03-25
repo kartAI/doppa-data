@@ -18,6 +18,7 @@ def create_postgres_db_context() -> Engine:
 
     with engine.connect() as conn:
         conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS postgis;")
+        conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS h3;")
         conn.commit()
 
     return engine
