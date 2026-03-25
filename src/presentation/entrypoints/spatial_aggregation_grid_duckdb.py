@@ -11,11 +11,11 @@ from src.infra.infrastructure import Containers
 
 @inject
 @monitor_network(
-    query_id="spatial-aggregation-h3-duckdb",
-    benchmark_iteration=BenchmarkIteration.SPATIAL_AGGREGATION_H3,
+    query_id="spatial-aggregation-grid-duckdb",
+    benchmark_iteration=BenchmarkIteration.SPATIAL_AGGREGATION_GRID,
     cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True)
 )
-def spatial_aggregation_h3_duckdb(
+def spatial_aggregation_grid_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> None:
@@ -28,7 +28,7 @@ def spatial_aggregation_h3_duckdb(
         file_name="*.parquet",
     )
 
-    h3_resolution = 7
+    cell_size = 0.01
 
     query = f"""
         WITH buildings AS (
@@ -37,15 +37,12 @@ def spatial_aggregation_h3_duckdb(
             WHERE ST_IsValid(geometry)
         )
         SELECT
-            h3_latlng_to_cell(
-                ST_Y(centroid),
-                ST_X(centroid),
-                ?
-            ) AS h3_cell,
+            FLOOR(ST_Y(centroid) / ?) AS lat_cell,
+            FLOOR(ST_X(centroid) / ?) AS lng_cell,
             COUNT(*) AS building_count
         FROM buildings
-        GROUP BY h3_cell
+        GROUP BY lat_cell, lng_cell
         ORDER BY building_count DESC;
     """
 
-    db_context.execute(query, [h3_resolution])
+    db_context.execute(query, [cell_size, cell_size])

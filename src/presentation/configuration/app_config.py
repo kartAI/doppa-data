@@ -27,8 +27,8 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.vector_tiles_100k_vmt",
             "src.presentation.entrypoints.vector_tiles_100k_pmtiles",
 
-            "src.presentation.entrypoints.spatial_aggregation_h3_duckdb",
-            "src.presentation.entrypoints.spatial_aggregation_h3_postgis",
+            "src.presentation.entrypoints.spatial_aggregation_grid_duckdb",
+            "src.presentation.entrypoints.spatial_aggregation_grid_postgis",
 
             "src.presentation.entrypoints.setup_benchmarking_framework",
 

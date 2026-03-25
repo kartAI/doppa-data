@@ -62,13 +62,13 @@ jobs:
             image: vector-tiles-100k-vmt
             display_name: VMT Fetch 100 000 Tiles
 
-          - service: spatial-aggregation-h3-duckdb
-            image: spatial-aggregation-h3-duckdb
-            display_name: DuckDB Spatial Aggregation by H3 Cell
+          - service: spatial-aggregation-grid-duckdb
+            image: spatial-aggregation-grid-duckdb
+            display_name: DuckDB Spatial Aggregation by Grid Cell
 
-          - service: spatial-aggregation-h3-postgis
-            image: spatial-aggregation-h3-postgis
-            display_name: PostGIS Spatial Aggregation by H3 Cell
+          - service: spatial-aggregation-grid-postgis
+            image: spatial-aggregation-grid-postgis
+            display_name: PostGIS Spatial Aggregation by Grid Cell
 
 
     steps:

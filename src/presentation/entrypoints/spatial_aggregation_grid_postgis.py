@@ -9,11 +9,11 @@ from src.infra.infrastructure import Containers
 
 @inject
 @monitor_network(
-    query_id="spatial-aggregation-h3-postgis",
-    benchmark_iteration=BenchmarkIteration.SPATIAL_AGGREGATION_H3,
+    query_id="spatial-aggregation-grid-postgis",
+    benchmark_iteration=BenchmarkIteration.SPATIAL_AGGREGATION_GRID,
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)
 )
-def spatial_aggregation_h3_postgis(
+def spatial_aggregation_grid_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
 ) -> None:
     sql = text(
@@ -23,14 +23,12 @@ def spatial_aggregation_h3_postgis(
             FROM buildings
             WHERE ST_IsValid(geometry)
         )
-        SELECT h3_latlng_to_cell(
-                       ST_Y(centroid),
-                       ST_X(centroid),
-                       7
-               )        AS h3_cell,
-               COUNT(*) AS building_count
+        SELECT
+            FLOOR(ST_Y(centroid) / 0.01) AS lat_cell,
+            FLOOR(ST_X(centroid) / 0.01) AS lng_cell,
+            COUNT(*) AS building_count
         FROM building_centroids
-        GROUP BY h3_cell
+        GROUP BY lat_cell, lng_cell
         ORDER BY building_count DESC;
         """
     )
