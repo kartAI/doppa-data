@@ -18,6 +18,7 @@ class Config:
     AZURE_RESOURCE_GROUP: str = "doppa"
     AZURE_RESOURCE_LOCATION: str = "norwayeast"
     AZURE_SUBSCRIPTION_ID: str = os.getenv("AZURE_SUBSCRIPTION_ID")
+    AZURE_UAMI_RESOURCE_ID: str = os.getenv("AZURE_UAMI_RESOURCE_ID")
 
     AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppablobstorage.blob.core.windows.net"
     AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppablobstorage"
