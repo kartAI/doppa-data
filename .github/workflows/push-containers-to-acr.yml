@@ -46,6 +46,42 @@ jobs:
             image: bbox-filtering-simple-blob-storage
             display_name: Simple GeoParquet Bounding Box Filtering
 
+          - service: bbox-filtering-result-set-sizes-neighborhood-duckdb
+            image: bbox-filtering-result-set-sizes-neighborhood-duckdb
+            display_name: DuckDB Bounding Box Filtering - Neighborhood
+
+          - service: bbox-filtering-result-set-sizes-municipality-duckdb
+            image: bbox-filtering-result-set-sizes-municipality-duckdb
+            display_name: DuckDB Bounding Box Filtering - Municipality
+
+          - service: bbox-filtering-result-set-sizes-county-duckdb
+            image: bbox-filtering-result-set-sizes-county-duckdb
+            display_name: DuckDB Bounding Box Filtering - County
+
+          - service: bbox-filtering-result-set-sizes-neighborhood-postgis
+            image: bbox-filtering-result-set-sizes-neighborhood-postgis
+            display_name: PostGIS Bounding Box Filtering - Neighborhood
+
+          - service: bbox-filtering-result-set-sizes-municipality-postgis
+            image: bbox-filtering-result-set-sizes-municipality-postgis
+            display_name: PostGIS Bounding Box Filtering - Municipality
+
+          - service: bbox-filtering-result-set-sizes-county-postgis
+            image: bbox-filtering-result-set-sizes-county-postgis
+            display_name: PostGIS Bounding Box Filtering - County
+
+          - service: bbox-filtering-result-set-sizes-neighborhood-local
+            image: bbox-filtering-result-set-sizes-neighborhood-local
+            display_name: Shapefile Bounding Box Filtering - Neighborhood
+
+          - service: bbox-filtering-result-set-sizes-municipality-local
+            image: bbox-filtering-result-set-sizes-municipality-local
+            display_name: Shapefile Bounding Box Filtering - Municipality
+
+          - service: bbox-filtering-result-set-sizes-county-local
+            image: bbox-filtering-result-set-sizes-county-local
+            display_name: Shapefile Bounding Box Filtering - County
+
           - service: vector-tiles-single-tile-pmtiles
             image: vector-tiles-single-tile-pmtiles
             display_name: PMTiles Fetch Single Tile

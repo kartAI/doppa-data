@@ -108,6 +108,87 @@ services:
     image: vector-tiles-100k-vmt:latest
     command: python benchmark_runner.py --script-id vector-tiles-100k-vmt --benchmark-run 1 --run-id ABCDEF
 
+  bbox-filtering-result-set-sizes-neighborhood-duckdb:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-neighborhood-duckdb:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-neighborhood-duckdb --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-municipality-duckdb:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-municipality-duckdb:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-municipality-duckdb --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-county-duckdb:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-county-duckdb:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-county-duckdb --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-neighborhood-postgis:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-neighborhood-postgis:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-neighborhood-postgis --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-municipality-postgis:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-municipality-postgis:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-municipality-postgis --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-county-postgis:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-county-postgis:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-county-postgis --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-neighborhood-local:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-neighborhood-local:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-neighborhood-local --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-municipality-local:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-municipality-local:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-municipality-local --benchmark-run 1 --run-id ABCDEF
+
+  bbox-filtering-result-set-sizes-county-local:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: bbox-filtering-result-set-sizes-county-local:latest
+    command: python benchmark_runner.py --script-id bbox-filtering-result-set-sizes-county-local --benchmark-run 1 --run-id ABCDEF
+
   spatial-aggregation-grid-duckdb:
     env_file:
       - .env
