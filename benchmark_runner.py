@@ -5,6 +5,11 @@ from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import (
     db_scan_blob_storage, db_scan_postgis, setup_benchmarking_framework, bbox_filtering_advanced_postgis,
     bbox_filtering_advanced_duckdb, bbox_filtering_simple_local, bbox_filtering_simple_blob_storage,
+    bbox_filtering_result_set_sizes_neighborhood_duckdb, bbox_filtering_result_set_sizes_municipality_duckdb,
+    bbox_filtering_result_set_sizes_county_duckdb, bbox_filtering_result_set_sizes_neighborhood_postgis,
+    bbox_filtering_result_set_sizes_municipality_postgis, bbox_filtering_result_set_sizes_county_postgis,
+    bbox_filtering_result_set_sizes_neighborhood_local, bbox_filtering_result_set_sizes_municipality_local,
+    bbox_filtering_result_set_sizes_county_local,
     vector_tiles_single_tile_pmtiles, vector_tiles_single_tile_vmt, vector_tiles_100k_vmt, vector_tiles_100k_pmtiles,
     spatial_aggregation_grid_duckdb, spatial_aggregation_grid_postgis,
 )
@@ -32,6 +37,33 @@ def benchmark_runner() -> None:
             return
         case "bbox-filtering-simple-blob-storage":
             bbox_filtering_simple_blob_storage()
+            return
+        case "bbox-filtering-result-set-sizes-neighborhood-duckdb":
+            bbox_filtering_result_set_sizes_neighborhood_duckdb()
+            return
+        case "bbox-filtering-result-set-sizes-municipality-duckdb":
+            bbox_filtering_result_set_sizes_municipality_duckdb()
+            return
+        case "bbox-filtering-result-set-sizes-county-duckdb":
+            bbox_filtering_result_set_sizes_county_duckdb()
+            return
+        case "bbox-filtering-result-set-sizes-neighborhood-postgis":
+            bbox_filtering_result_set_sizes_neighborhood_postgis()
+            return
+        case "bbox-filtering-result-set-sizes-municipality-postgis":
+            bbox_filtering_result_set_sizes_municipality_postgis()
+            return
+        case "bbox-filtering-result-set-sizes-county-postgis":
+            bbox_filtering_result_set_sizes_county_postgis()
+            return
+        case "bbox-filtering-result-set-sizes-neighborhood-local":
+            bbox_filtering_result_set_sizes_neighborhood_local()
+            return
+        case "bbox-filtering-result-set-sizes-municipality-local":
+            bbox_filtering_result_set_sizes_municipality_local()
+            return
+        case "bbox-filtering-result-set-sizes-county-local":
+            bbox_filtering_result_set_sizes_county_local()
             return
         case "vector-tiles-single-tile-pmtiles":
             vector_tiles_single_tile_pmtiles()

@@ -21,6 +21,18 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.bbox_filtering_simple_local",
             "src.presentation.entrypoints.bbox_filtering_simple_blob_storage",
 
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_neighborhood_duckdb",
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_municipality_duckdb",
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_county_duckdb",
+
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_neighborhood_postgis",
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_municipality_postgis",
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_county_postgis",
+
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_neighborhood_local",
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_municipality_local",
+            "src.presentation.entrypoints.bbox_filtering_result_set_sizes_county_local",
+
             "src.presentation.entrypoints.vector_tiles_single_tile_pmtiles",
             "src.presentation.entrypoints.vector_tiles_single_tile_vmt",
 
