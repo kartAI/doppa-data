@@ -1,6 +1,7 @@
 ﻿from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
+from src import Config
 from src.application.common.monitor_network import monitor_network
 from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
@@ -20,7 +21,7 @@ def bbox_filtering_advanced_duckdb(
 ) -> None:
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release="2026-02-16.3",
+        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",
