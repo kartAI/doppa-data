@@ -106,6 +106,14 @@ jobs:
             image: spatial-aggregation-grid-postgis
             display_name: PostGIS Spatial Aggregation by Grid Cell
 
+          - service: ordered-range-query-duckdb
+            image: ordered-range-query-duckdb
+            display_name: DuckDB Ordered Range Query with LIMIT
+
+          - service: ordered-range-query-postgis
+            image: ordered-range-query-postgis
+            display_name: PostGIS Ordered Range Query with LIMIT
+
 
     steps:
       - name: Checkout code
