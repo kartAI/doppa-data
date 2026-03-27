@@ -64,6 +64,33 @@ jobs:
           - service: bbox-filtering-simple-blob-storage
             display_name: Simple GeoParquet Bounding Box Filtering
 
+          - service: bbox-filtering-result-set-sizes-neighborhood-duckdb
+            display_name: Neighborhood DuckDB Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-municipality-duckdb
+            display_name: Municipality DuckDB Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-county-duckdb
+            display_name: County DuckDB Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-neighborhood-postgis
+            display_name: Neighborhood PostGIS Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-municipality-postgis
+            display_name: Municipality PostGIS Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-county-postgis
+            display_name: County PostGIS Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-neighborhood-local
+            display_name: Neighborhood Local Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-municipality-local
+            display_name: Municipality Local Bounding Box Filtering Result Set Sizes
+
+          - service: bbox-filtering-result-set-sizes-county-local
+            display_name: County Local Bounding Box Filtering Result Set Sizes
+
           - service: vector-tiles-single-tile-pmtiles
             display_name: PMTiles Fetch Single Tile
 
