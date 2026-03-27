@@ -106,6 +106,14 @@ jobs:
             image: spatial-aggregation-grid-postgis
             display_name: PostGIS Spatial Aggregation by Grid Cell
 
+          - service: attribute-spatial-compound-filter-duckdb
+            image: attribute-spatial-compound-filter-duckdb
+            display_name: DuckDB Attribute + Spatial Compound Filter
+
+          - service: attribute-spatial-compound-filter-postgis
+            image: attribute-spatial-compound-filter-postgis
+            display_name: PostGIS Attribute + Spatial Compound Filter
+
           - service: ordered-range-query-duckdb
             image: ordered-range-query-duckdb
             display_name: DuckDB Ordered Range Query with LIMIT

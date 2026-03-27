@@ -12,6 +12,7 @@ from src.presentation.entrypoints import (
     bbox_filtering_result_set_sizes_county_local,
     vector_tiles_single_tile_pmtiles, vector_tiles_single_tile_vmt, vector_tiles_100k_vmt, vector_tiles_100k_pmtiles,
     spatial_aggregation_grid_duckdb, spatial_aggregation_grid_postgis,
+    attribute_spatial_compound_filter_duckdb, attribute_spatial_compound_filter_postgis,
     ordered_range_query_duckdb, ordered_range_query_postgis,
 )
 
@@ -83,6 +84,12 @@ def benchmark_runner() -> None:
             return
         case "spatial-aggregation-grid-postgis":
             spatial_aggregation_grid_postgis()
+            return
+        case "attribute-spatial-compound-filter-duckdb":
+            attribute_spatial_compound_filter_duckdb()
+            return
+        case "attribute-spatial-compound-filter-postgis":
+            attribute_spatial_compound_filter_postgis()
             return
         case "ordered-range-query-duckdb":
             ordered_range_query_duckdb()
