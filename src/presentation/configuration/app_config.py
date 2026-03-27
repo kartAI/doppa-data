@@ -42,6 +42,9 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.spatial_aggregation_grid_duckdb",
             "src.presentation.entrypoints.spatial_aggregation_grid_postgis",
 
+            "src.presentation.entrypoints.attribute_spatial_compound_filter_duckdb",
+            "src.presentation.entrypoints.attribute_spatial_compound_filter_postgis",
+
             "src.presentation.entrypoints.setup_benchmarking_framework",
 
             "src.presentation.endpoints.tile_server"
