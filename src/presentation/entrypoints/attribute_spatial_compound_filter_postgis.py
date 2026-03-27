@@ -20,18 +20,21 @@ def attribute_spatial_compound_filter_postgis(
 
     sql = text(
         """
-        SELECT * FROM buildings
+        SELECT *
+        FROM buildings
         WHERE source = :source
-        AND ST_Intersects(
-            geometry,
-            ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-        );
+          AND ST_Intersects(
+                geometry,
+                ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+              );
         """
     )
 
     with db_context.connect() as conn:
-        conn.execute(sql, {
+        result = conn.execute(sql, {
             "source": DataSource.OSM.value,
             "min_lon": min_lon, "min_lat": min_lat,
             "max_lon": max_lon, "max_lat": max_lat,
         })
+
+        result.fetchall()
