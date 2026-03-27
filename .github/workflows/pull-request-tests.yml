@@ -109,6 +109,12 @@ jobs:
           - service: spatial-aggregation-grid-postgis
             display_name: PostGIS Spatial Aggregation by Grid Cell
 
+          - service: ordered-range-query-duckdb
+            display_name: DuckDB Ordered Range Query with LIMIT
+
+          - service: ordered-range-query-postgis
+            display_name: PostGIS Ordered Range Query with LIMIT
+
           - service: vmt-api-server
             display_name: VMT API Server
 
