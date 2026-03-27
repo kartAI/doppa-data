@@ -32,7 +32,9 @@ def ordered_range_query_postgis(
     )
 
     with db_context.connect() as conn:
-        conn.execute(sql, {
+        result = conn.execute(sql, {
             "min_lon": min_lon, "min_lat": min_lat,
             "max_lon": max_lon, "max_lat": max_lat,
         })
+
+        result.fetchall()
