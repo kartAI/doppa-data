@@ -187,7 +187,35 @@ def _create_container_instance(
     )
 
 
-def _check_container_state(container_group_name: str, poll_interval_seconds: float = 20) -> None:
+def _stream_container_logs(container_group_name: str, lines_seen: int) -> int:
+    logs_command = [
+        "az", "container", "logs",
+        "--resource-group", Config.AZURE_RESOURCE_GROUP,
+        "--name", container_group_name,
+    ]
+
+    try:
+        output = _run_cmd(logs_command, suppress_error_log=True)
+    except RuntimeError:
+        return lines_seen
+
+    lines = [line for line in output.splitlines() if line.strip()]
+    for line in lines[lines_seen:]:
+        parts = line.split(" - ", 2)
+        if len(parts) == 3:
+            level, message = parts[1].strip().lower(), parts[2]
+        else:
+            level, message = "info", line
+
+        log_fn = getattr(logger, level, logger.info)
+        log_fn("[%s] %s", container_group_name, message)
+
+    return len(lines)
+
+
+def _check_container_state(container_group_name: str, poll_interval_seconds: float = 5) -> None:
+    lines_seen = 0
+
     while True:
         show_command = [
             "az", "container", "show",
@@ -201,19 +229,18 @@ def _check_container_state(container_group_name: str, poll_interval_seconds: flo
 
         match state:
             case "Succeeded":
+                time.sleep(5)
+                lines_seen = _stream_container_logs(container_group_name, lines_seen)
                 logger.info(f"Container '{container_group_name}' | State: '{state}' | Benchmark run completed.")
                 break
             case "Failed":
-                logger.error(
-                    f"Container '{container_group_name}' failed. Please check the logs for more information."
-                )
-                raise RuntimeError(
-                    f"Container '{container_group_name}' failed. Please check the logs for more information."
-                )
+                time.sleep(5)
+                _stream_container_logs(container_group_name, lines_seen)
+                error_message = f"Container '{container_group_name}' failed. Please check the logs for more information."
+                logger.error(error_message)
+                raise RuntimeError(error_message)
             case _:
-                logger.info(
-                    f"Container '{container_group_name}' | State: '{state}' | Checking again in {poll_interval_seconds} seconds..."
-                )
+                lines_seen = _stream_container_logs(container_group_name, lines_seen)
                 time.sleep(poll_interval_seconds)
 
 
