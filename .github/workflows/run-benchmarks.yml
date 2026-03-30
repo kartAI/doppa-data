@@ -29,10 +29,10 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        run: az acr login --name ${{ vars.ACR_NAME }}
+        run: az acr login --name ${{ vars.ACR_LOGIN_SERVER }}
 
       - name: Pull Orchestrator from ACR
-        run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+        run: docker pull ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest
 
       - name: Run Orchestrator Container
         env:
@@ -58,4 +58,4 @@ jobs:
           -e POSTGRES_SERVER_NAME
           -e POSTGRES_USERNAME
           -e POSTGRES_PASSWORD
-          ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+          ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest

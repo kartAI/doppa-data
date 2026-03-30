@@ -135,22 +135,22 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        run: az acr login --name ${{ vars.ACR_NAME }}
+        run: az acr login --name ${{ vars.ACR_LOGIN_SERVER }}
 
       - name: Build ${{ matrix.display_name }} from docker-compose
         run: docker compose build ${{ matrix.service }}
 
       - name: Tag ${{ matrix.display_name }} as latest
-        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
+        run: docker tag ${{ matrix.service }}:latest ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:latest
 
       - name: Tag ${{ matrix.display_name }} with commit SHA
-        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
+        run: docker tag ${{ matrix.service }}:latest ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }}
 
       - name: Push ${{ matrix.display_name }} (latest)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:latest
+        run: docker push ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:latest
 
       - name: Push ${{ matrix.display_name }} (commit SHA)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.image }}:${{ github.sha }}
+        run: docker push ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }}
 
   build-and-push-container-orchestrator:
     name: Build & Push Container Orchestrator
@@ -170,19 +170,19 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        run: az acr login --name ${{ vars.ACR_NAME }}
+        run: az acr login --name ${{ vars.ACR_LOGIN_SERVER }}
 
       - name: Build Container Orchestrator from docker-compose
         run: docker compose build container-orchestrator
 
       - name: Tag Container Orchestrator as latest
-        run: docker tag container-orchestrator:latest ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+        run: docker tag container-orchestrator:latest ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest
 
       - name: Tag Container Orchestrator with commit SHA
-        run: docker tag container-orchestrator:latest ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:${{ github.sha }}
+        run: docker tag container-orchestrator:latest ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:${{ github.sha }}
 
       - name: Push Container Orchestrator (latest)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
+        run: docker push ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest
 
       - name: Push Container Orchestrator (commit SHA)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:${{ github.sha }}
+        run: docker push ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:${{ github.sha }}

@@ -152,7 +152,6 @@ Navigate to *Review + create* and create the resource. Repeat this process for e
 In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
 
 - `AZURE_UAMI_RESOURCE_ID`
-- `ACR_NAME`
 - `AZURE_BLOB_STORAGE_CONNECTION_STRING`
 - `POSTGRES_USERNAME`
 - `POSTGRES_PASSWORD`
