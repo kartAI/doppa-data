@@ -132,8 +132,6 @@ def _create_container_instance(
         memory_gb: str,
 ) -> None:
     acr_login_server = os.getenv("ACR_LOGIN_SERVER")
-    acr_username = os.getenv("ACR_USERNAME")
-    acr_password = os.getenv("ACR_PASSWORD")
 
     startup_command = (
         f"python benchmark_runner.py "
@@ -159,8 +157,7 @@ def _create_container_instance(
         "--assign-identity", Config.AZURE_UAMI_RESOURCE_ID,
 
         "--registry-login-server", acr_login_server,
-        "--registry-username", acr_username,
-        "--registry-password", acr_password,
+        "--acr-identity", Config.AZURE_UAMI_RESOURCE_ID,
 
         "--environment-variables",
         f"AZURE_SUBSCRIPTION_ID={Config.AZURE_SUBSCRIPTION_ID}",

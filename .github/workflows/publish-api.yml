@@ -39,26 +39,22 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        uses: azure/docker-login@v2
-        with:
-          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build ${{ matrix.display_name }} from docker-compose
         run: docker compose build ${{ matrix.service }}
 
       - name: Tag ${{ matrix.display_name }} as latest
-        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+        run: docker tag ${{ matrix.service }}:latest ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
 
       - name: Tag ${{ matrix.display_name }} with commit SHA
-        run: docker tag ${{ matrix.service }}:latest ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+        run: docker tag ${{ matrix.service }}:latest ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
 
       - name: Push ${{ matrix.display_name }} (latest)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:latest
+        run: docker push ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:latest
 
       - name: Push ${{ matrix.display_name }} (commit SHA)
-        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+        run: docker push ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
 
   deploy-vmt-api:
     name: Deploy VMT API to Azure Web App
