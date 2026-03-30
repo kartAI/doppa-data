@@ -160,6 +160,7 @@ In your repository navigate to *Secrets and variables* under *Settings*. Add the
 
 and add the following **variables**:
 
+- `ACR_NAME`
 - `ACR_LOGIN_SERVER`
 - `AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER`
 - `AZURE_BLOB_STORAGE_METADATA_CONTAINER`

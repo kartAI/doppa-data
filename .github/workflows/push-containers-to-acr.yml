@@ -135,7 +135,7 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        run: az acr login --name ${{ vars.ACR_LOGIN_SERVER }}
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build ${{ matrix.display_name }} from docker-compose
         run: docker compose build ${{ matrix.service }}
@@ -170,7 +170,7 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        run: az acr login --name ${{ vars.ACR_LOGIN_SERVER }}
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build Container Orchestrator from docker-compose
         run: docker compose build container-orchestrator
