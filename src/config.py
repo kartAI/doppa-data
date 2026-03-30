@@ -20,8 +20,8 @@ class Config:
     AZURE_SUBSCRIPTION_ID: str = os.getenv("AZURE_SUBSCRIPTION_ID")
     AZURE_UAMI_RESOURCE_ID: str = os.getenv("AZURE_UAMI_RESOURCE_ID")
 
-    AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppablobstorage.blob.core.windows.net"
-    AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppablobstorage"
+    AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppabs.blob.core.windows.net"
+    AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppabs"
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     AZURE_BLOB_STORAGE_MAX_CONCURRENCY: int = 1
     AZURE_VMT_SERVER_URL: str = "https://doppa-vmt-fvf9czgsdvhfhvdg.norwayeast-01.azurewebsites.net"

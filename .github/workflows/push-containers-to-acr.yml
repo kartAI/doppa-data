@@ -127,12 +127,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to ACR
-        uses: azure/docker-login@v2
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build ${{ matrix.display_name }} from docker-compose
         run: docker compose build ${{ matrix.service }}
@@ -159,12 +162,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to ACR
-        uses: azure/docker-login@v2
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build Container Orchestrator from docker-compose
         run: docker compose build container-orchestrator

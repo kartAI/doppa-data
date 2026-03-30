@@ -29,11 +29,7 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        uses: azure/docker-login@v2
-        with:
-          login-server: ${{ secrets.ACR_NAME }}.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Pull Orchestrator from ACR
         run: docker pull ${{ secrets.ACR_NAME }}.azurecr.io/container-orchestrator:latest
@@ -43,8 +39,6 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           AZURE_UAMI_RESOURCE_ID: ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
           ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER }}
-          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
           AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
           AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER: ${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}
           AZURE_BLOB_STORAGE_METADATA_CONTAINER: ${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}
@@ -58,8 +52,6 @@ jobs:
           -e AZURE_SUBSCRIPTION_ID
           -e AZURE_UAMI_RESOURCE_ID
           -e ACR_LOGIN_SERVER
-          -e ACR_USERNAME
-          -e ACR_PASSWORD
           -e AZURE_BLOB_STORAGE_CONNECTION_STRING
           -e AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER
           -e AZURE_BLOB_STORAGE_METADATA_CONTAINER
