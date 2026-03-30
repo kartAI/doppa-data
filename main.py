@@ -157,6 +157,7 @@ def _create_container_instance(
         "--assign-identity", Config.AZURE_UAMI_RESOURCE_ID,
 
         "--registry-login-server", acr_login_server,
+        "--acr-identity", Config.AZURE_UAMI_RESOURCE_ID,
 
         "--environment-variables",
         f"AZURE_SUBSCRIPTION_ID={Config.AZURE_SUBSCRIPTION_ID}",

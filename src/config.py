@@ -24,7 +24,7 @@ class Config:
     AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppabs"
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
     AZURE_BLOB_STORAGE_MAX_CONCURRENCY: int = 1
-    AZURE_VMT_SERVER_URL: str = "https://doppa-vmt-fvf9czgsdvhfhvdg.norwayeast-01.azurewebsites.net"
+    AZURE_VMT_SERVER_URL: str = "https://doppa-vmt.azurewebsites.net"
     AZURE_METRICS_REGIONAL_ENDPOINT: str = f"https://{AZURE_RESOURCE_LOCATION}.metrics.monitor.azure.com"
 
     AZURE_ACI_VCPU_PRICE_PER_SECOND: float = 0.0002
@@ -41,10 +41,10 @@ class Config:
     AZURE_DATABASE_STORAGE_GB_PER_MONTH_COST: float = 0
 
     # POSTGRESQL
-    POSTGRES_HOST: str = "doppa-db.postgres.database.azure.com"
     POSTGRES_USERNAME: str = os.getenv("POSTGRES_USERNAME")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_SERVER_NAME: str = os.getenv("POSTGRES_SERVER_NAME")
+    POSTGRES_HOST: str = f"{os.getenv('POSTGRES_SERVER_NAME')}.postgres.database.azure.com"
     POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
     POSTGRES_PAGE_SIZE: int = 10_000
@@ -78,7 +78,7 @@ class Config:
 
     # STAC
     STAC_LICENSE = "CC-BY-4.0"
-    STAC_STORAGE_CONTAINER = "https://doppablobstorage.blob.core.windows.net/stac"
+    STAC_STORAGE_CONTAINER = "https://doppabs.blob.core.windows.net/stac"
 
     # FKB
     HUGGING_FACE_API_TOKEN: str = os.getenv("HUGGING_FACE_API_TOKEN")

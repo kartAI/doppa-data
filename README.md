@@ -54,8 +54,8 @@ self.__blob_storage_context.create_container(container_name.value, public_access
 
 #### User-Assigned Managed Identity (UAMI)
 
-To provide the correct access to Azure resources when running the script from GitHub Actions a UAMI have to be
-configured. The Actions will sign in to Azure and executes the scripts using the UAMI. Create a UAMI named
+To provide the correct access to Azure resources when running the script from GitHub Actions a UAMI has to be
+configured. The Actions will sign in to Azure and execute the scripts using the UAMI. Create a UAMI named
 `doppa-uami` and navigate to the *Federated credentials* setting. Create two federated credentials with the
 following setup:
 
@@ -84,7 +84,9 @@ navigate to
 
 *Access control (IAM)* and press *Add* > *Add role assignment*. Select the role `AcrPull` and continue. On the next
 screen select *Managed identity* under *Assign access to*, and select the `doppa-uami` UAMI under *Members*.
-Navigate to the last step and press *create*.
+Navigate to the last step and press *Create*.
+
+Repeat the same steps for the `AcrPush` role.
 
 #### PostgreSQL database
 
@@ -94,7 +96,7 @@ with the following configuration:
 
 Under *Basics*:
 
-- Server name: `doppa-data`
+- Server name: `doppa-db`
 - Region: `Norway East`
 - Workload type: `Production`
 - Compute + Storage: Disable `Geo-Redundancy`
@@ -111,7 +113,7 @@ Under *Networking*:
 
 Navigate to *Review and create* and create the resource.
 
-After the database have been deployed navigate to the setting *Server parameters* and search for `azure.extensions`. In
+After the database has been deployed navigate to the setting *Server parameters* and search for `azure.extensions`. In
 the drop-down menu select `POSTGIS`. This enables the script to install PostGIS automatically during run-time. Under the
 same setting change the following:
 
