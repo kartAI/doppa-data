@@ -71,7 +71,7 @@ Change the fields according to your setup.
 
 The next step is to give the UAMI a `Contributor` in the resource group. Navigate to the *Azure role assignments*
 setting and press *Add role assignment*. Select the scope `Resource group` and then the resource group `doppa`. Pick the
-role `Contributor` and press *Save*.
+roles `Contributor` and `Reader` and press *Save*.
 
 To view the `AZURE_UAMI_RESOURCE_ID` (needed for later) run the following command:
 
