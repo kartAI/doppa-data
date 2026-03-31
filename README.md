@@ -7,7 +7,7 @@ geospatial (CNG) alternatives across a range of real-world spatial query pattern
 
 ## Table of contents
 
-- [Setu](#setup)
+- [Setup](#setup)
     - [Azure Resources](#azure-resources)
         - [Resource group](#resource-group)
         - [Blob storage](#blob-storage)
