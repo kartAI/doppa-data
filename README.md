@@ -61,7 +61,7 @@ To provide the correct access to Azure resources when running the script from Gi
 configured. The Actions will sign in to Azure and execute the scripts using the UAMI. Create a UAMI named
 `doppa-uami` and navigate to the *Federated credentials* setting. Create two federated credentials with the
 following setup:
-atus
+
 <div style="display:flex; justify-content:center; align-items:flex-start; gap:20px;">
   <img src=".github/docs/img/github-ci-fc-main.png" width="45%" />
   <img src=".github/docs/img/github-ci-fc-pr.png" width="45%" />
