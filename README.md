@@ -209,7 +209,7 @@ AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
 
 ACR_LOGIN_SERVER=<azure-container-registry-login-server>
 
-POSTGRES_SERVER_NAME=doppa-db
+POSTGRES_SERVER_NAME=<postgres-server-name>
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
 ```
