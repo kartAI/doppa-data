@@ -21,11 +21,17 @@ class Config:
     AZURE_UAMI_RESOURCE_ID: str = os.getenv("AZURE_UAMI_RESOURCE_ID")
 
     AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppablobstorage.blob.core.windows.net"
-    AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppablobstorage"
-    AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
+    AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppabs"
+    AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv(
+        "AZURE_BLOB_STORAGE_CONNECTION_STRING"
+    )
     AZURE_BLOB_STORAGE_MAX_CONCURRENCY: int = 1
-    AZURE_VMT_SERVER_URL: str = "https://doppa-vmt-fvf9czgsdvhfhvdg.norwayeast-01.azurewebsites.net"
-    AZURE_METRICS_REGIONAL_ENDPOINT: str = f"https://{AZURE_RESOURCE_LOCATION}.metrics.monitor.azure.com"
+    AZURE_VMT_SERVER_URL: str = (
+        "https://doppa-vmt-fvf9czgsdvhfhvdg.norwayeast-01.azurewebsites.net"
+    )
+    AZURE_METRICS_REGIONAL_ENDPOINT: str = (
+        f"https://{AZURE_RESOURCE_LOCATION}.metrics.monitor.azure.com"
+    )
 
     AZURE_ACI_VCPU_PRICE_PER_SECOND: float = 0.0002
     AZURE_ACI_MEMORY_GB_PRICE_PER_SECOND: float = 0.0002
@@ -41,7 +47,9 @@ class Config:
     AZURE_DATABASE_STORAGE_GB_PER_MONTH_COST: float = 0
 
     # POSTGRESQL
-    POSTGRES_HOST: str = "doppa-db.postgres.database.azure.com"
+    POSTGRES_HOST: str = (
+        f"{os.getenv('POSTGRES_SERVER_NAME')}.postgres.database.azure.com"
+    )
     POSTGRES_USERNAME: str = os.getenv("POSTGRES_USERNAME")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_SERVER_NAME: str = os.getenv("POSTGRES_SERVER_NAME")
@@ -86,14 +94,18 @@ class Config:
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Bergen.zip",
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Kristiansand.zip",
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Sandvika.zip",
-        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Verdal.zip"
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Verdal.zip",
     )
     HUGGING_FACE_UTM33N_PATHS: tuple[str, ...] = (
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Mo_i_Rana.zip",
-        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Tromsdalen.zip"
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Tromsdalen.zip",
     )
     FKB_LAYERS: tuple[str, ...] = (
-        "Bygning", "AnnenBygning", "Takkant", "Bygningsdelelinje", "FiktivBygningsavgrensning"
+        "Bygning",
+        "AnnenBygning",
+        "Takkant",
+        "Bygningsdelelinje",
+        "FiktivBygningsavgrensning",
     )
 
     # PARTITIONING
@@ -108,6 +120,6 @@ class Config:
     BENCHMARK_WARMUP_ITERATIONS: int = 5
     BENCHMARK_ITERATIONS: int = 100
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"
-    BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-03-25.0"
+    BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-04-02.0"
 
     INGESTION_DELAY_SECONDS: int = 600
