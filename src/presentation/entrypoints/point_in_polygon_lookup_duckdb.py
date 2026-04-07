@@ -41,6 +41,7 @@ def _generate_points(
         file_name="*.parquet",
     )
 
+    # TODO: See if this query can be improved in terms of efficiency
     rows = db_context.execute(
         f"""
         WITH buildings_with_point_on_surface AS (
@@ -64,6 +65,7 @@ def _generate_points(
 
     inside_points = [(row[0], row[1]) for row in rows]
 
+    # TODO: Explore comments from https://github.com/kartAI/doppa/pull/196
     rng = random.Random(SEED)
     outside_points = [
         (rng.uniform(min_lon, max_lon), rng.uniform(min_lat, max_lat))
