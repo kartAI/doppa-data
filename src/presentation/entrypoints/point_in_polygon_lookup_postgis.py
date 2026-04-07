@@ -26,6 +26,7 @@ def _generate_points(db_context: Engine) -> list[tuple[float, float]]:
     n_inside = int(TOTAL_POINTS * INSIDE_RATIO)
     n_outside = TOTAL_POINTS - n_inside
 
+    # TODO: See if this query can be improved in terms of efficiency
     sql = text("""
         WITH buildings_with_point_on_surface AS (
             SELECT *, ST_PointOnSurface(geometry) AS point_on_surface FROM buildings
@@ -58,6 +59,7 @@ def _generate_points(db_context: Engine) -> list[tuple[float, float]]:
 
     inside_points = [(row[0], row[1]) for row in rows]
 
+    # TODO: Explore comments from https://github.com/kartAI/doppa/pull/196
     rng = random.Random(SEED)
     outside_points = [
         (rng.uniform(min_lon, max_lon), rng.uniform(min_lat, max_lat))
