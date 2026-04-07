@@ -6,7 +6,7 @@ import string
 import subprocess
 import time
 from datetime import date
-from typing import Any
+from concurrent.futures import ThreadPoolExecutor
 
 import yaml
 
@@ -31,35 +31,62 @@ def main() -> None:
 
 
 def _run_benchmarks(
-    run_id: str, benchmark_run: int, benchmark_configuration: Any
+    run_id: str,
+    benchmark_run: int,
+    benchmark_configuration: dict[str, list[dict[str, str | int | list[str]]]],
 ) -> None:
-    for experiment in benchmark_configuration["experiments"]:
+    experiments = benchmark_configuration["experiments"]
+    completed_experiments: list[str] = []
+
+    _clear_all_container_instances(experiments)
+
+    for experiment in experiments:
         experiment_id = experiment["id"]
-        container_group_name = f"benchmark-{experiment_id}"
+        if experiment_id in completed_experiments:
+            continue
 
-        docker_image = experiment["image"]
+        related_experiment_ids = experiment["related_script_ids"]
+        experiments_to_run: list[dict[str, int | str | list[str]]] = [experiment]
 
-        cpu = str(experiment["cpu"])
-        memory_gb = str(experiment["memory_gb"])
+        for related_experiment_id in related_experiment_ids:  # type: ignore
+            related_experiment = _get_experiment_from_id(
+                related_experiment_id, experiments
+            )
 
-        logger.info(
-            f"Run {benchmark_run}/{Config.BENCHMARK_RUNS} - Experiment '{experiment_id}' | cpu={cpu} | memory={memory_gb} | run_id='{run_id}'"
-        )
+            experiments_to_run.append(related_experiment)
 
-        _delete_container_instance(container_group_name=container_group_name)
-        _create_container_instance(
-            run_id=run_id,
-            benchmark_run=benchmark_run,
-            experiment_id=experiment_id,
-            container_group_name=container_group_name,
-            docker_image=docker_image,
-            cpu=cpu,
-            memory_gb=memory_gb,
-        )
-        _check_container_state(container_group_name=container_group_name)
-        _delete_container_instance(container_group_name=container_group_name)
+        with ThreadPoolExecutor(max_workers=10) as pool:
+            pool.map(
+                lambda exp: _run_container_benchmark(
+                    experiment=exp, run_id=run_id, benchmark_run=benchmark_run
+                ),
+                experiments_to_run,
+            )
 
+    _clear_all_container_instances(experiments)
     logger.info(f"Completed benchmark run '{run_id}' - iteration {benchmark_run}")
+
+
+def _run_container_benchmark(
+    experiment: dict[str, str | int | list[str]], benchmark_run: int, run_id: str
+) -> None:
+    experiment_id = str(experiment["id"])
+    docker_image = str(experiment["image"])
+    cpu = str(experiment["cpu"])
+    memory_gb = str(experiment["memory_gb"])
+
+    container_group_name = f"benchmark-{experiment_id}"
+    _delete_container_instance(container_group_name=container_group_name)
+    _create_container_instance(
+        run_id=run_id,
+        benchmark_run=benchmark_run,
+        experiment_id=experiment_id,
+        container_group_name=container_group_name,
+        docker_image=docker_image,
+        cpu=cpu,
+        memory_gb=memory_gb,
+    )
+    _check_container_state(container_group_name=container_group_name)
 
 
 def _create_run_id() -> str:
@@ -207,11 +234,14 @@ def _create_container_instance(
     logger.info(f"Creating container group '{container_group_name}'...")
     _run_cmd(create_command)
     logger.info(
-        "Created container group '%s' (experiment=%s, CPU=%s cores, RAM=%s GB) - startup: %s",
+        "Run %s/%s - Created container group '%s' (experiment=%s, CPU=%s cores, RAM=%s GB, run_id=%s) - startup: %s",
+        benchmark_run,
+        Config.BENCHMARK_RUNS,
         container_group_name,
         experiment_id,
         cpu,
         memory_gb,
+        run_id,
         startup_command,
     )
 
@@ -284,6 +314,25 @@ def _check_container_state(
             case _:
                 lines_seen = _stream_container_logs(container_group_name, lines_seen)
                 time.sleep(poll_interval_seconds)
+
+
+def _get_experiment_from_id(
+    script_id: str,
+    experiments: list[dict[str, str | int | list[str]]],
+) -> dict[str, str | int | list[str]]:
+    for experiment in experiments:
+        if experiment["id"] == script_id:
+            return experiment
+
+    raise ValueError("Script ID not found")
+
+
+def _clear_all_container_instances(
+    experiments: list[dict[str, str | int | list[str]]],
+) -> None:
+    experiment_ids = [exp["id"] for exp in experiments]
+    for experiment_id in experiment_ids:
+        _delete_container_instance(f"benchmark-{experiment_id}")
 
 
 if __name__ == "__main__":
