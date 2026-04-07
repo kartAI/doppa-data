@@ -23,10 +23,16 @@ def main() -> None:
     logger.info(f"Starting benchmark run '{run_id}'")
 
     for benchmark_run in range(1, Config.BENCHMARK_RUNS + 1):
-        _run_benchmarks(run_id=run_id, benchmark_run=benchmark_run, benchmark_configuration=benchmark_configuration)
+        _run_benchmarks(
+            run_id=run_id,
+            benchmark_run=benchmark_run,
+            benchmark_configuration=benchmark_configuration,
+        )
 
 
-def _run_benchmarks(run_id: str, benchmark_run: int, benchmark_configuration: Any) -> None:
+def _run_benchmarks(
+    run_id: str, benchmark_run: int, benchmark_configuration: Any
+) -> None:
     for experiment in benchmark_configuration["experiments"]:
         experiment_id = experiment["id"]
         container_group_name = f"benchmark-{experiment_id}"
@@ -48,7 +54,7 @@ def _run_benchmarks(run_id: str, benchmark_run: int, benchmark_configuration: An
             container_group_name=container_group_name,
             docker_image=docker_image,
             cpu=cpu,
-            memory_gb=memory_gb
+            memory_gb=memory_gb,
         )
         _check_container_state(container_group_name=container_group_name)
         _delete_container_instance(container_group_name=container_group_name)
@@ -58,7 +64,9 @@ def _run_benchmarks(run_id: str, benchmark_run: int, benchmark_configuration: An
 
 def _create_run_id() -> str:
     date_prefix = date.today().isoformat()
-    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH))
+    suffix = "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH)
+    )
 
     return f"{date_prefix}-{suffix}"
 
@@ -69,7 +77,9 @@ def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
     if az_path is not None:
         cmd[0] = az_path
 
-    result = subprocess.run(cmd, capture_output=True, text=True, check=False, shell=False)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, check=False, shell=False
+    )
 
     if result.returncode != 0:
         cmd_str = " ".join(cmd)
@@ -81,10 +91,14 @@ def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
                 result.returncode,
                 cmd_str,
                 stderr,
-                f" | stdout: {stdout}" if stdout else ""
+                f" | stdout: {stdout}" if stdout else "",
             )
         else:
-            logger.debug("Soft-check command failure: %s | stderr: %s", cmd_str, result.stderr.strip())
+            logger.debug(
+                "Soft-check command failure: %s | stderr: %s",
+                cmd_str,
+                result.stderr.strip(),
+            )
 
         raise RuntimeError(f"Command failed with exit code {result.returncode}")
 
@@ -93,9 +107,13 @@ def _run_cmd(cmd: list[str], suppress_error_log: bool = False) -> str:
 
 def _container_exists(container_group_name: str) -> bool:
     check_cmd = [
-        "az", "container", "show",
-        "--resource-group", Config.AZURE_RESOURCE_GROUP,
-        "--name", container_group_name
+        "az",
+        "container",
+        "show",
+        "--resource-group",
+        Config.AZURE_RESOURCE_GROUP,
+        "--name",
+        container_group_name,
     ]
 
     try:
@@ -107,14 +125,20 @@ def _container_exists(container_group_name: str) -> bool:
 
 def _delete_container_instance(container_group_name: str) -> None:
     if not _container_exists(container_group_name):
-        logger.info(f"Container group '{container_group_name}' does not exist. Skipping deletion.")
+        logger.info(
+            f"Container group '{container_group_name}' does not exist. Skipping deletion."
+        )
         return
 
     delete_command = [
-        "az", "container", "delete",
-        "--resource-group", Config.AZURE_RESOURCE_GROUP,
-        "--name", container_group_name,
-        "--yes"
+        "az",
+        "container",
+        "delete",
+        "--resource-group",
+        Config.AZURE_RESOURCE_GROUP,
+        "--name",
+        container_group_name,
+        "--yes",
     ]
 
     logger.info(f"Deleting container group '{container_group_name}'...")
@@ -123,13 +147,13 @@ def _delete_container_instance(container_group_name: str) -> None:
 
 
 def _create_container_instance(
-        run_id: str,
-        benchmark_run: int,
-        experiment_id: str,
-        container_group_name: str,
-        docker_image: str,
-        cpu: str,
-        memory_gb: str,
+    run_id: str,
+    benchmark_run: int,
+    experiment_id: str,
+    container_group_name: str,
+    docker_image: str,
+    cpu: str,
+    memory_gb: str,
 ) -> None:
     acr_login_server = os.getenv("ACR_LOGIN_SERVER")
 
@@ -141,35 +165,43 @@ def _create_container_instance(
     )
 
     create_command = [
-        "az", "container", "create",
-        "--resource-group", Config.AZURE_RESOURCE_GROUP,
-        "--name", container_group_name,
-        "--image", docker_image,
-        "--location", Config.AZURE_RESOURCE_LOCATION,
-        "--restart-policy", "Never",
-
-        "--os-type", "Linux",
-        "--cpu", cpu,
-        "--memory", memory_gb,
-
-        "--command-line", startup_command,
-
-        "--assign-identity", Config.AZURE_UAMI_RESOURCE_ID,
-
-        "--registry-login-server", acr_login_server,
-        "--acr-identity", Config.AZURE_UAMI_RESOURCE_ID,
-
+        "az",
+        "container",
+        "create",
+        "--resource-group",
+        Config.AZURE_RESOURCE_GROUP,
+        "--name",
+        container_group_name,
+        "--image",
+        docker_image,
+        "--location",
+        Config.AZURE_RESOURCE_LOCATION,
+        "--restart-policy",
+        "Never",
+        "--os-type",
+        "Linux",
+        "--cpu",
+        cpu,
+        "--memory",
+        memory_gb,
+        "--command-line",
+        startup_command,
+        "--assign-identity",
+        Config.AZURE_UAMI_RESOURCE_ID,
+        "--registry-login-server",
+        acr_login_server,
+        "--acr-identity",
+        Config.AZURE_UAMI_RESOURCE_ID,
         "--environment-variables",
         f"AZURE_SUBSCRIPTION_ID={Config.AZURE_SUBSCRIPTION_ID}",
         f"AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER={StorageContainer.BENCHMARKS.value}",
         f"AZURE_BLOB_STORAGE_METADATA_CONTAINER={StorageContainer.METADATA.value}",
-
+        f"POSTGRES_SERVER_NAME={Config.POSTGRES_SERVER_NAME}",
         "--secure-environment-variables",
         f"AZURE_BLOB_STORAGE_CONNECTION_STRING={Config.AZURE_BLOB_STORAGE_CONNECTION_STRING}",
         f"POSTGRES_USERNAME={Config.POSTGRES_USERNAME}",
         f"POSTGRES_PASSWORD={Config.POSTGRES_PASSWORD}",
-
-        "--no-wait"
+        "--no-wait",
     ]
 
     logger.info(f"Creating container group '{container_group_name}'...")
@@ -180,15 +212,19 @@ def _create_container_instance(
         experiment_id,
         cpu,
         memory_gb,
-        startup_command
+        startup_command,
     )
 
 
 def _stream_container_logs(container_group_name: str, lines_seen: int) -> int:
     logs_command = [
-        "az", "container", "logs",
-        "--resource-group", Config.AZURE_RESOURCE_GROUP,
-        "--name", container_group_name,
+        "az",
+        "container",
+        "logs",
+        "--resource-group",
+        Config.AZURE_RESOURCE_GROUP,
+        "--name",
+        container_group_name,
     ]
 
     try:
@@ -210,15 +246,22 @@ def _stream_container_logs(container_group_name: str, lines_seen: int) -> int:
     return len(lines)
 
 
-def _check_container_state(container_group_name: str, poll_interval_seconds: float = 5) -> None:
+def _check_container_state(
+    container_group_name: str, poll_interval_seconds: float = 5
+) -> None:
     lines_seen = 0
 
     while True:
         show_command = [
-            "az", "container", "show",
-            "--resource-group", Config.AZURE_RESOURCE_GROUP,
-            "--name", container_group_name,
-            "--output", "json"
+            "az",
+            "container",
+            "show",
+            "--resource-group",
+            Config.AZURE_RESOURCE_GROUP,
+            "--name",
+            container_group_name,
+            "--output",
+            "json",
         ]
 
         data = json.loads(_run_cmd(show_command))
@@ -228,7 +271,9 @@ def _check_container_state(container_group_name: str, poll_interval_seconds: flo
             case "Succeeded":
                 time.sleep(5)
                 lines_seen = _stream_container_logs(container_group_name, lines_seen)
-                logger.info(f"Container '{container_group_name}' | State: '{state}' | Benchmark run completed.")
+                logger.info(
+                    f"Container '{container_group_name}' | State: '{state}' | Benchmark run completed."
+                )
                 break
             case "Failed":
                 time.sleep(5)
@@ -241,5 +286,5 @@ def _check_container_state(container_group_name: str, poll_interval_seconds: flo
                 time.sleep(poll_interval_seconds)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
