@@ -2,6 +2,9 @@
 
 [![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
 
+doppa is a benchmarking framework for comparing traditional geospatial query approaches against cloud-native
+geospatial (CNG) alternatives across a range of real-world spatial query patterns.
+
 ## Table of contents
 
 - [Setup](#setup)
@@ -34,7 +37,10 @@ current subscription and roles.
 #### Blob storage
 
 Blob storage is an essential part of this benchmarking framework. Everything from benchmarking results to the actual
-datasets are stored here. Create a storage account named `doppablobstorage`. There is no need to create the containers
+datasets are stored here. Create a storage account named `doppabs`. Under *Data protection* disable everything.
+All other settings can be left as default.
+
+There is no need to create the containers
 as these are created during runtime. Each container is created with the `Container` access level. If you wish to make
 this stricter make the following changes in the `ensure_container` function in [
 `BlobStorageService`](./src/infra/infrastructure/services/blob_storage_service.py).
@@ -51,9 +57,9 @@ self.__blob_storage_context.create_container(container_name.value, public_access
 
 #### User-Assigned Managed Identity (UAMI)
 
-To provide the correct access to Azure resources when running the script from GitHub Actions a UAMI have to be
-configured. The Actions will sign in to Azure and executes the scripts using the UAMI. Create a UAMI named
-`github-actions-ci` and navigate to the *Federated credentials* setting. Create two federated credentials with the
+To provide the correct access to Azure resources when running the script from GitHub Actions a UAMI has to be
+configured. The Actions will sign in to Azure and execute the scripts using the UAMI. Create a UAMI named
+`doppa-uami` and navigate to the *Federated credentials* setting. Create two federated credentials with the
 following setup:
 
 <div style="display:flex; justify-content:center; align-items:flex-start; gap:20px;">
@@ -67,19 +73,23 @@ The next step is to give the UAMI a `Contributor` in the resource group. Navigat
 setting and press *Add role assignment*. Select the scope `Resource group` and then the resource group `doppa`. Pick the
 role `Contributor` and press *Save*.
 
-To view the `AZURE_UAMI_RESOURCE_ID` (needed for later) run the following command: 
+To view the `AZURE_UAMI_RESOURCE_ID` (needed for later) run the following command:
 
 ```powershell
-az identity show -g doppa -n doppa-github-ci --query id -o tsv
+az identity show -g doppa -n doppa-uami --query id -o tsv
 ```
 
 #### Container registry
 
 Create a container registry named `doppaacr`. The Docker images will be saved here. To ensure that the Actions are able
-to pull the images give the UAMI created in the last step a `AcrPull` role. In the `doppaacr` resource navigate to
+to pull the images give the UAMI created in the last step a `AcrPull` and `AcrPush` role. In the `doppaacr` resource
+navigate to
+
 *Access control (IAM)* and press *Add* > *Add role assignment*. Select the role `AcrPull` and continue. On the next
-screen select *Managed identity* under *Assign access to*, and select the `github-actions-ci` UAMI under *Members*.
-Navigate to the last step and press *create*.
+screen select *Managed identity* under *Assign access to*, and select the `doppa-uami` UAMI under *Members*.
+Navigate to the last step and press *Create*.
+
+Repeat the same steps for the `AcrPush` role.
 
 #### PostgreSQL database
 
@@ -89,11 +99,14 @@ with the following configuration:
 
 Under *Basics*:
 
-- Server name: `doppa-data`
+- Server name: `doppa-db`
 - Region: `Norway East`
 - Workload type: `Production`
-- Compute + Storage: Disable `Geo-Redundancy` and leave everything else as is
-- Zonal resiliency: `Disabled`
+- Compute + Storage: Disable `Geo-Redundancy`
+    - Cluster: Set *Cluster options* to `Server`
+    - Compute: Set *Compute tier* to `Burstable` and set *Compute size* to `Standard_B2ms`
+    - Storage: Set *Storage type* to `Premium SSD`, *Storage size* to `128 GiB` and *Performance tier* to `P10`
+    - Business critical: Set *Zonal resiliency* to `Disabled`
 - Authentication method: `PostgreSQL authentication only`
 
 Under *Networking*:
@@ -102,6 +115,14 @@ Under *Networking*:
 - Add current IP address to Firewall rules
 
 Navigate to *Review and create* and create the resource.
+
+After the database has been deployed navigate to the setting *Server parameters* and search for `azure.extensions`. In
+the drop-down menu select `POSTGIS`. This enables the script to install PostGIS automatically during run-time. Under the
+same setting change the following:
+
+- `shared_buffers`: `2097152`
+- `effective_cache_size`: `6291456`
+- `work_mem`: `65536`
 
 #### Web app for containers
 
@@ -124,7 +145,7 @@ Under *Container*:
 - Image source: `Azure Container Registry`
 - Registry: `doppaacr`
 - Authentication: `Managed identity`
-- Identity: `github-actions-ci`
+- Identity: `doppa-uami`
 - Image: `<select the image that matches with the name>`
 - Tag: `latest`
 - Startup command `uvicorn src.presentation.endpoints.<API server script>:app --host 0.0.0.0 --port 8000`
@@ -136,15 +157,13 @@ Navigate to *Review + create* and create the resource. Repeat this process for e
 In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
 
 - `AZURE_UAMI_RESOURCE_ID`
-- `ACR_NAME`
-- `ACR_PASSWORD`
-- `ACR_USERNAME`
 - `AZURE_BLOB_STORAGE_CONNECTION_STRING`
 - `POSTGRES_USERNAME`
 - `POSTGRES_PASSWORD`
 
 and add the following **variables**:
 
+- `ACR_NAME`
 - `ACR_LOGIN_SERVER`
 - `AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER`
 - `AZURE_BLOB_STORAGE_METADATA_CONTAINER`
@@ -189,10 +208,8 @@ AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
 AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
 
 ACR_LOGIN_SERVER=<azure-container-registry-login-server>
-ACR_USERNAME=<azure-container-registry-username>
-ACR_PASSWORD=<azure-container-registry-password>
 
-POSTGRES_SERVER_NAME=doppa-db
+POSTGRES_SERVER_NAME=<postgres-server-name>
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
 ```
