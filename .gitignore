@@ -169,9 +169,10 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
+# IDE
 .idea/
 .claude/
+pyrightconfig.json
 
 # Abstra
 # Abstra is an AI-powered process automation framework.

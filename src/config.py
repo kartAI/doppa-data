@@ -20,6 +20,7 @@ class Config:
     AZURE_SUBSCRIPTION_ID: str = os.getenv("AZURE_SUBSCRIPTION_ID")
     AZURE_UAMI_RESOURCE_ID: str = os.getenv("AZURE_UAMI_RESOURCE_ID")
 
+
     AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppabs.blob.core.windows.net"
     AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppabs"
     AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
@@ -86,14 +87,18 @@ class Config:
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Bergen.zip",
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Kristiansand.zip",
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Sandvika.zip",
-        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Verdal.zip"
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Verdal.zip",
     )
     HUGGING_FACE_UTM33N_PATHS: tuple[str, ...] = (
         "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Mo_i_Rana.zip",
-        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Tromsdalen.zip"
+        "https://huggingface.co/datasets/kartai/DX_datasett/resolve/main/Geodata/Tromsdalen.zip",
     )
     FKB_LAYERS: tuple[str, ...] = (
-        "Bygning", "AnnenBygning", "Takkant", "Bygningsdelelinje", "FiktivBygningsavgrensning"
+        "Bygning",
+        "AnnenBygning",
+        "Takkant",
+        "Bygningsdelelinje",
+        "FiktivBygningsavgrensning",
     )
 
     # PARTITIONING
@@ -108,6 +113,6 @@ class Config:
     BENCHMARK_WARMUP_ITERATIONS: int = 5
     BENCHMARK_ITERATIONS: int = 100
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"
-    BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-03-30.1"
+    BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-04-02.0"
 
     INGESTION_DELAY_SECONDS: int = 600
