@@ -189,10 +189,10 @@ experiments:
 #    image: doppaacr.azurecr.io/vector-tiles-100k-pmtiles:latest
 #    cpu: 3
 #    memory_gb: 8
-#    related_script_ids: ["100vector-tiles-100k-vmt"]
+#    related_script_ids: ["vector-tiles-100k-vmt"]
 #
 #  - id: vector-tiles-100k-vmt
 #    image: doppaacr.azurecr.io/vector-tiles-100k-vmt:latest
 #    cpu: 3
 #    memory_gb: 8
-#    related_script_ids: ["100vector-tiles-100k-pmtiles"]
+#    related_script_ids: ["vector-tiles-100k-pmtiles"]

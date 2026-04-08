@@ -58,15 +58,17 @@ def _run_benchmarks(
             experiments_to_run.append(related_experiment)
 
         with ThreadPoolExecutor(max_workers=10) as pool:
-            pool.map(
-                lambda exp: _run_container_benchmark(
-                    experiment=exp, run_id=run_id, benchmark_run=benchmark_run
-                ),
-                experiments_to_run,
+            list(
+                pool.map(
+                    lambda exp: _run_container_benchmark(
+                        experiment=exp, run_id=run_id, benchmark_run=benchmark_run
+                    ),
+                    experiments_to_run,
+                )
             )
 
-        for experiment in experiments_to_run:
-            completed_experiments.append(str(experiment["id"]))
+        for exp in experiments_to_run:
+            completed_experiments.append(str(exp["id"]))
 
     _clear_all_container_instances(experiments)
     logger.info(f"Completed benchmark run {benchmark_run}/{Config.BENCHMARK_RUNS}.")
@@ -327,7 +329,7 @@ def _get_experiment_from_id(
         if experiment["id"] == script_id:
             return experiment
 
-    raise ValueError("Script ID not found")
+    raise ValueError(f"Script ID '{script_id}' not found")
 
 
 def _clear_all_container_instances(
