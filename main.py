@@ -20,7 +20,7 @@ def main() -> None:
         benchmark_configuration = yaml.safe_load(f)
 
     run_id = _create_run_id()
-    logger.info(f"Starting benchmark run '{run_id}'")
+    logger.info(f"Started benchmark with run ID '{run_id}'.")
 
     for benchmark_run in range(1, Config.BENCHMARK_RUNS + 1):
         _run_benchmarks(
@@ -35,6 +35,8 @@ def _run_benchmarks(
     benchmark_run: int,
     benchmark_configuration: dict[str, list[dict[str, str | int | list[str]]]],
 ) -> None:
+    logger.info(f"Executing benchmark run {benchmark_run}/{Config.BENCHMARK_RUNS}.")
+
     experiments = benchmark_configuration["experiments"]
     completed_experiments: list[str] = []
 
@@ -63,8 +65,11 @@ def _run_benchmarks(
                 experiments_to_run,
             )
 
+        for experiment in experiments_to_run:
+            completed_experiments.append(str(experiment["id"]))
+
     _clear_all_container_instances(experiments)
-    logger.info(f"Completed benchmark run '{run_id}' - iteration {benchmark_run}")
+    logger.info(f"Completed benchmark run {benchmark_run}/{Config.BENCHMARK_RUNS}.")
 
 
 def _run_container_benchmark(
@@ -152,7 +157,7 @@ def _container_exists(container_group_name: str) -> bool:
 
 def _delete_container_instance(container_group_name: str) -> None:
     if not _container_exists(container_group_name):
-        logger.info(
+        logger.debug(
             f"Container group '{container_group_name}' does not exist. Skipping deletion."
         )
         return
@@ -168,7 +173,6 @@ def _delete_container_instance(container_group_name: str) -> None:
         "--yes",
     ]
 
-    logger.info(f"Deleting container group '{container_group_name}'...")
     _run_cmd(delete_command)
     logger.info(f"Deleted container group '{container_group_name}'")
 
@@ -234,7 +238,7 @@ def _create_container_instance(
     logger.info(f"Creating container group '{container_group_name}'...")
     _run_cmd(create_command)
     logger.info(
-        "Run %s/%s - Created container group '%s' (experiment=%s, CPU=%s cores, RAM=%s GB, run_id=%s) - startup: %s",
+        "Benchmark run %s/%s - Created container group '%s' (experiment=%s, CPU=%s cores, RAM=%s GB, run_id=%s)",
         benchmark_run,
         Config.BENCHMARK_RUNS,
         container_group_name,
@@ -242,7 +246,6 @@ def _create_container_instance(
         cpu,
         memory_gb,
         run_id,
-        startup_command,
     )
 
 
