@@ -15,6 +15,7 @@ geospatial (CNG) alternatives across a range of real-world spatial query pattern
         - [Container registry](#container-registry)
         - [PostgreSQL database](#postgresql-database)
         - [Web app for containers](#web-app-for-containers)
+        - [Databricks](#databricks)
     - [GitHub Actions](#github-actions)
     - [Local development](#local-development)
 
@@ -39,6 +40,11 @@ current subscription and roles.
 Blob storage is an essential part of this benchmarking framework. Everything from benchmarking results to the actual
 datasets are stored here. Create a storage account named `doppabs`. Under *Data protection* disable everything.
 All other settings can be left as default.
+
+> [!IMPORTANT]
+> Disabling all data protection options (soft delete for blobs and containers) is required. If these features are
+> enabled the Databricks ABFS driver will fail with a 409 error when reading data via the `dfs.core.windows.net`
+> endpoint.
 
 There is no need to create the containers
 as these are created during runtime. Each container is created with the `Container` access level. If you wish to make
@@ -152,14 +158,88 @@ Under *Container*:
 
 Navigate to *Review + create* and create the resource. Repeat this process for each name in the list.
 
+#### Databricks
+
+The national-scale spatial join benchmarks run on Azure Databricks using Apache Sedona. A separate Databricks
+workspace is required.
+
+> [!NOTE]
+> Norway East often has insufficient `Standard_D4s_v3` quota for multi-node clusters. Create the workspace in
+> **Sweden Central** instead. Cross-region data access (blob storage in Norway East, compute in Sweden Central)
+> adds minor latency but does not affect benchmark validity.
+
+##### 1. Request vCPU quota
+
+The benchmarks run clusters with 2, 4, and 8 worker nodes. Each `Standard_D4s_v3` node uses 4 vCPUs, so the
+8-node cluster requires 32 vCPUs (plus the driver). The default quota in most regions is 10 vCPUs.
+
+To request a quota increase:
+
+1. Navigate to the [Azure Portal](https://portal.azure.com) → **Subscriptions** → your subscription →
+   **Settings** → **Usage + quotas**
+2. Filter by region (e.g. Sweden Central) and search for `Standard DSv3 Family vCPUs`
+3. Click the pencil icon and request at least **40 vCPUs**
+4. Provide a justification (e.g. "Running distributed Spark benchmarks") and submit
+
+Quota increases for small VM families are typically approved automatically within minutes.
+
+##### 2. Create the workspace
+
+1. In the Azure Portal create a new **Azure Databricks** resource
+2. Under *Basics*:
+   - Resource group: `doppa`
+   - Workspace name: `doppa-databricks`
+   - Region: **Sweden Central** (or another region with sufficient quota)
+   - Pricing tier: `Premium`
+3. Leave all other settings as default and press *Review + create*
+
+##### 3. Generate an access token
+
+1. Open the Databricks workspace
+2. Navigate to your user icon (top right) → **Settings** → **Developer** → **Access tokens**
+3. Click *Generate new token*, give it a name and a suitable expiry, and copy the token value
+
+##### 4. Environment variables
+
+Add the following to your `.env` file:
+
+```dotenv
+DATABRICKS_HOST=https://<workspace-id>.azuredatabricks.net
+DATABRICKS_TOKEN=<personal-access-token>
+AZURE_BLOB_STORAGE_ACCOUNT_KEY=<storage-account-access-key>
+```
+
+- `DATABRICKS_HOST`: the full URL of your workspace (visible in the browser address bar after opening the workspace)
+- `DATABRICKS_TOKEN`: the token generated in the previous step
+- `AZURE_BLOB_STORAGE_ACCOUNT_KEY`: found in Azure Portal → Storage account `doppabs` → **Security + networking** → **Access keys** → copy either `key1` or `key2`
+
+The notebook script is automatically uploaded to the Databricks workspace at run time. No manual upload is required.
+
+##### 5. Upload county boundaries
+
+The spatial join requires Norwegian county polygon data in the `metadata` blob storage container.
+Upload `counties.parquet` to the `metadata` container in the `doppabs` storage account before running
+the Databricks benchmarks. This can be done via the Azure Portal Storage Browser or the Azure CLI:
+
+```bash
+az storage blob upload \
+  --account-name doppabs \
+  --container-name metadata \
+  --name counties.parquet \
+  --file <path-to-counties.parquet>
+```
+
 ### GitHub Actions
 
 In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
 
 - `AZURE_UAMI_RESOURCE_ID`
 - `AZURE_BLOB_STORAGE_CONNECTION_STRING`
+- `AZURE_BLOB_STORAGE_ACCOUNT_KEY`
 - `POSTGRES_USERNAME`
 - `POSTGRES_PASSWORD`
+- `DATABRICKS_HOST`
+- `DATABRICKS_TOKEN`
 
 and add the following **variables**:
 
@@ -204,6 +284,7 @@ AZURE_SUBSCRIPTION_ID=<azure-subscription-id>
 AZURE_UAMI_RESOURCE_ID=<azure-user-assigned-managed-identity-resource-id>
 
 AZURE_BLOB_STORAGE_CONNECTION_STRING=<azure-blob-storage-connection-string>
+AZURE_BLOB_STORAGE_ACCOUNT_KEY=<azure-blob-storage-account-key>
 AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=dev-benchmarks
 AZURE_BLOB_STORAGE_METADATA_CONTAINER=dev-metadata
 
@@ -212,6 +293,9 @@ ACR_LOGIN_SERVER=<azure-container-registry-login-server>
 POSTGRES_SERVER_NAME=<postgres-server-name>
 POSTGRES_USERNAME=<postgres-username>
 POSTGRES_PASSWORD=<postgres-password>
+
+DATABRICKS_HOST=https://<workspace-id>.azuredatabricks.net
+DATABRICKS_TOKEN=<personal-access-token>
 ```
 
 To run the entire script simply run `python main.py` or `python -m main` and to run a single benchmark run
