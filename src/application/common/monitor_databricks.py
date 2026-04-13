@@ -45,21 +45,27 @@ def monitor_databricks(
             ingress_sum: int = 0
             egress_sum: int = 0
             start_time = datetime.datetime.now(datetime.UTC)
+            total = benchmark_iteration.value
 
-            for i in range(benchmark_iteration.value):
+            for i in range(total):
                 iteration = i + 1
+                logger.info(f"Starting iteration {iteration}/{total}...")
                 result, elapsed_time, net_bytes_sent, net_bytes_received = _timed_call(
                     func, *args, **kwargs
                 )
                 ingress_sum += net_bytes_received
                 egress_sum += net_bytes_sent
 
+                logger.info(
+                    f"Iteration {iteration}/{total} completed in {round(elapsed_time, 2)}s."
+                )
+
                 _save_run(
                     run_id=run_id,
                     benchmark_run=benchmark_run,
                     query_id=query_id,
                     iteration=iteration,
-                    total_iterations=benchmark_iteration.value,
+                    total_iterations=total,
                     samples=[
                         {
                             "elapsed_time": elapsed_time,
@@ -70,11 +76,16 @@ def monitor_databricks(
                 )
 
             end_time = datetime.datetime.now(datetime.UTC)
+            total_seconds = round((end_time - start_time).total_seconds(), 2)
             logger.info(
-                f"Databricks benchmark completed in {round((end_time - start_time).total_seconds(), 2)} seconds."
+                f"All {total} iteration(s) completed in {total_seconds}s. Saving results..."
             )
 
             _save_run_metadata(query_id=query_id, run_id=run_id)
+            logger.info(
+                f"Waiting {Config.INGESTION_DELAY_SECONDS}s for Azure metrics ingestion "
+                f"before computing ACI cost..."
+            )
             _save_run_cost_analytics(
                 run_id=run_id,
                 cost_configuration=cost_configuration,
@@ -86,7 +97,7 @@ def monitor_databricks(
                 operation_type=BlobOperationType.READ,
             )
 
-            logger.info(f"Benchmark run {benchmark_run} completed.")
+            logger.info(f"Benchmark run {benchmark_run} complete.")
             return result
 
         return wrapper
