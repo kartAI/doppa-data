@@ -5,7 +5,7 @@ import geopandas as gpd
 from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 from shapely import from_wkb
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 
 from src import Config
 from src.application.common import logger
@@ -93,6 +93,11 @@ def _postgres_buildings_seed(
                 index=False
             )
             logger.info(f"Inserted rows {i + 1} to {min(i + Config.BUILDINGS_BATCH_SIZE, total_rows)} of {total_rows}")
+
+        logger.info("Creating GIST spatial index on buildings.geometry...")
+        conn.execute(text("CREATE INDEX IF NOT EXISTS buildings_geometry_idx ON buildings USING GIST (geometry)"))
+        conn.commit()
+        logger.info("Spatial index created.")
 
     logger.info("Insertion completed")
 
