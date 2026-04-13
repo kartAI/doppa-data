@@ -1,20 +1,38 @@
 ﻿import argparse
 from typing import Optional
-
 from src.presentation.configuration import initialize_dependencies
 from src.presentation.entrypoints import (
-    db_scan_blob_storage, db_scan_postgis, setup_benchmarking_framework, bbox_filtering_advanced_postgis,
-    bbox_filtering_advanced_duckdb, bbox_filtering_simple_local, bbox_filtering_simple_blob_storage,
-    bbox_filtering_result_set_sizes_neighborhood_duckdb, bbox_filtering_result_set_sizes_municipality_duckdb,
-    bbox_filtering_result_set_sizes_county_duckdb, bbox_filtering_result_set_sizes_neighborhood_postgis,
-    bbox_filtering_result_set_sizes_municipality_postgis, bbox_filtering_result_set_sizes_county_postgis,
-    bbox_filtering_result_set_sizes_neighborhood_local, bbox_filtering_result_set_sizes_municipality_local,
+    db_scan_blob_storage,
+    db_scan_postgis,
+    setup_benchmarking_framework,
+    bbox_filtering_advanced_postgis,
+    bbox_filtering_advanced_duckdb,
+    bbox_filtering_simple_local,
+    bbox_filtering_simple_blob_storage,
+    bbox_filtering_result_set_sizes_neighborhood_duckdb,
+    bbox_filtering_result_set_sizes_municipality_duckdb,
+    bbox_filtering_result_set_sizes_county_duckdb,
+    bbox_filtering_result_set_sizes_neighborhood_postgis,
+    bbox_filtering_result_set_sizes_municipality_postgis,
+    bbox_filtering_result_set_sizes_county_postgis,
+    bbox_filtering_result_set_sizes_neighborhood_local,
+    bbox_filtering_result_set_sizes_municipality_local,
     bbox_filtering_result_set_sizes_county_local,
-    vector_tiles_single_tile_pmtiles, vector_tiles_single_tile_vmt, vector_tiles_100k_vmt, vector_tiles_100k_pmtiles,
-    spatial_aggregation_grid_duckdb, spatial_aggregation_grid_postgis,
-    attribute_spatial_compound_filter_duckdb, attribute_spatial_compound_filter_postgis,
-    ordered_range_query_duckdb, ordered_range_query_postgis,
-    point_in_polygon_lookup_duckdb, point_in_polygon_lookup_postgis,
+    vector_tiles_single_tile_pmtiles,
+    vector_tiles_single_tile_vmt,
+    vector_tiles_100k_vmt,
+    vector_tiles_100k_pmtiles,
+    spatial_aggregation_grid_duckdb,
+    spatial_aggregation_grid_postgis,
+    attribute_spatial_compound_filter_duckdb,
+    attribute_spatial_compound_filter_postgis,
+    ordered_range_query_duckdb,
+    ordered_range_query_postgis,
+    point_in_polygon_lookup_duckdb,
+    point_in_polygon_lookup_postgis,
+    national_scale_spatial_join_databricks_2_nodes,
+    national_scale_spatial_join_databricks_4_nodes,
+    national_scale_spatial_join_databricks_8_nodes,
 )
 
 
@@ -104,6 +122,15 @@ def benchmark_runner() -> None:
         case "point-in-polygon-lookup-postgis":
             point_in_polygon_lookup_postgis()
             return
+        case "national-scale-spatial-join-databricks-2-nodes":
+            national_scale_spatial_join_databricks_2_nodes()
+            return
+        case "national-scale-spatial-join-databricks-4-nodes":
+            national_scale_spatial_join_databricks_4_nodes()
+            return
+        case "national-scale-spatial-join-databricks-8-nodes":
+            national_scale_spatial_join_databricks_8_nodes()
+            return
         case "setup-framework":
             setup_benchmarking_framework()
             return
@@ -116,7 +143,7 @@ def _get_args() -> tuple[str, int, Optional[str]]:
     parser.add_argument(
         "--script-id",
         required=True,
-        help="Script identifier. Must be one of the specified IDs"
+        help="Script identifier. Must be one of the specified IDs",
     )
 
     parser.add_argument(
@@ -127,7 +154,7 @@ def _get_args() -> tuple[str, int, Optional[str]]:
 
     parser.add_argument(
         "--run-id",
-        help="Run identifier. Randomly generated and prefixed with today's date"
+        help="Run identifier. Randomly generated and prefixed with today's date",
     )
 
     args = parser.parse_args()

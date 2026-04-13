@@ -261,6 +261,33 @@ services:
     image: point-in-polygon-lookup-postgis:latest
     command: python benchmark_runner.py --script-id point-in-polygon-lookup-postgis --benchmark-run 1 --run-id ABCDEF
 
+  national-scale-spatial-join-databricks-2-nodes:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: national-scale-spatial-join-databricks-2-nodes:latest
+    command: python benchmark_runner.py --script-id national-scale-spatial-join-databricks-2-nodes --benchmark-run 1 --run-id ABCDEF
+
+  national-scale-spatial-join-databricks-4-nodes:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: national-scale-spatial-join-databricks-4-nodes:latest
+    command: python benchmark_runner.py --script-id national-scale-spatial-join-databricks-4-nodes --benchmark-run 1 --run-id ABCDEF
+
+  national-scale-spatial-join-databricks-8-nodes:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: .docker/Query.Dockerfile
+    image: national-scale-spatial-join-databricks-8-nodes:latest
+    command: python benchmark_runner.py --script-id national-scale-spatial-join-databricks-8-nodes --benchmark-run 1 --run-id ABCDEF
+
   vmt-api-server:
     env_file:
       - .env
