@@ -5,6 +5,7 @@ from typing import Any
 
 import psutil
 
+from src import Config
 from src.application.common import logger
 from src.application.common.monitor_utils import (
     _get_run_id,
@@ -50,14 +51,18 @@ def monitor_databricks(
             for i in range(total):
                 iteration = i + 1
                 logger.info(f"Starting iteration {iteration}/{total}...")
-                result, elapsed_time, net_bytes_sent, net_bytes_received = _timed_call(
+                execution_duration_s, _, net_bytes_sent, net_bytes_received = _timed_call(
                     func, *args, **kwargs
                 )
+                # execution_duration_s is the API-reported notebook execution time,
+                # excluding cluster provisioning and teardown.
+                elapsed_time = execution_duration_s
                 ingress_sum += net_bytes_received
                 egress_sum += net_bytes_sent
 
                 logger.info(
-                    f"Iteration {iteration}/{total} completed in {round(elapsed_time, 2)}s."
+                    f"Iteration {iteration}/{total} completed in {round(elapsed_time, 2)}s "
+                    f"(execution only, excludes provisioning)."
                 )
 
                 _save_run(
@@ -84,7 +89,7 @@ def monitor_databricks(
             _save_run_metadata(query_id=query_id, run_id=run_id)
             logger.info(
                 f"Waiting {Config.INGESTION_DELAY_SECONDS}s for Azure metrics ingestion "
-                f"before computing ACI cost..."
+                f"before computing cost analytics..."
             )
             _save_run_cost_analytics(
                 run_id=run_id,

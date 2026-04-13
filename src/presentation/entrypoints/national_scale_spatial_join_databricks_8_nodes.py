@@ -22,5 +22,5 @@ def national_scale_spatial_join_databricks_8_nodes(
 )
 def _benchmark(
     databricks_service: IDatabricksService = Provide[Containers.databricks_service],
-) -> None:
-    databricks_service.submit_and_wait(num_workers=8)
+) -> float:
+    return databricks_service.submit_and_wait(num_workers=8)

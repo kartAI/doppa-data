@@ -18,23 +18,29 @@ class DatabricksService(IDatabricksService):
     @property
     def _host(self) -> str:
         if not Config.DATABRICKS_HOST:
-            raise EnvironmentError("DATABRICKS_HOST is not set. Add it to your .env file.")
+            raise EnvironmentError(
+                "DATABRICKS_HOST is not set. Add it to your .env file."
+            )
         return Config.DATABRICKS_HOST.rstrip("/")
 
     @property
     def _headers(self) -> dict:
         if not Config.DATABRICKS_TOKEN:
-            raise EnvironmentError("DATABRICKS_TOKEN is not set. Add it to your .env file.")
+            raise EnvironmentError(
+                "DATABRICKS_TOKEN is not set. Add it to your .env file."
+            )
         return {
             "Authorization": f"Bearer {Config.DATABRICKS_TOKEN}",
             "Content-Type": "application/json",
         }
 
-    def submit_and_wait(self, num_workers: int) -> None:
+    def submit_and_wait(self, num_workers: int) -> float:
         self._upload_notebook()
         run_id = self._submit_run(num_workers)
-        logger.info(f"Submitted Databricks run {run_id} with {num_workers} worker(s). Polling for completion.")
-        self._wait_for_run(run_id)
+        logger.info(
+            f"Submitted Databricks run {run_id} with {num_workers} worker(s). Polling for completion."
+        )
+        return self._wait_for_run(run_id)
 
     def _upload_notebook(self) -> None:
         folder = str(Path(Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH).parent)
@@ -61,7 +67,9 @@ class DatabricksService(IDatabricksService):
                 timeout=30,
             )
 
-        content = base64.b64encode(Path(Config.DATABRICKS_LOCAL_SCRIPT_PATH).read_bytes()).decode("utf-8")
+        content = base64.b64encode(
+            Path(Config.DATABRICKS_LOCAL_SCRIPT_PATH).read_bytes()
+        ).decode("utf-8")
         response = requests.post(
             f"{self._host}/api/2.0/workspace/import",
             headers=self._headers,
@@ -78,7 +86,9 @@ class DatabricksService(IDatabricksService):
             raise RuntimeError(
                 f"Failed to upload notebook to workspace: {response.status_code}: {response.text}"
             )
-        logger.info(f"Uploaded notebook to '{Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH}'.")
+        logger.info(
+            f"Uploaded notebook to '{Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH}'."
+        )
 
     def _submit_run(self, num_workers: int) -> str:
         payload = {
@@ -105,7 +115,11 @@ class DatabricksService(IDatabricksService):
                         },
                     },
                     "libraries": [
-                        {"maven": {"coordinates": Config.DATABRICKS_SEDONA_MAVEN_COORDINATES}},
+                        {
+                            "maven": {
+                                "coordinates": Config.DATABRICKS_SEDONA_MAVEN_COORDINATES
+                            }
+                        },
                         {"pypi": {"package": Config.DATABRICKS_SEDONA_PYPI_PACKAGE}},
                         {"pypi": {"package": "geopandas==0.14.4"}},
                     ],
@@ -126,7 +140,8 @@ class DatabricksService(IDatabricksService):
         run_id: str = str(response.json()["run_id"])
         return run_id
 
-    def _wait_for_run(self, run_id: str) -> None:
+    def _wait_for_run(self, run_id: str) -> float:
+        """Poll until terminal state. Returns execution_duration in seconds (excludes provisioning)."""
         while True:
             response = requests.get(
                 f"{self._host}/api/2.1/jobs/runs/get",
@@ -152,7 +167,16 @@ class DatabricksService(IDatabricksService):
                         f"Databricks run {run_id} finished with result_state='{result_state}'. "
                         f"State message: {state.get('state_message', '')}"
                     )
-                logger.info(f"Databricks run {run_id} completed successfully.")
-                return
+                execution_duration_ms = data.get("execution_duration", 0)
+                setup_duration_ms = data.get("setup_duration", 0)
+                cleanup_duration_ms = data.get("cleanup_duration", 0)
+                execution_duration_s = execution_duration_ms / 1000
+                logger.info(
+                    f"Databricks run {run_id} completed successfully. "
+                    f"setup={setup_duration_ms / 1000:.1f}s, "
+                    f"execution={execution_duration_s:.1f}s, "
+                    f"cleanup={cleanup_duration_ms / 1000:.1f}s"
+                )
+                return execution_duration_s
 
             time.sleep(Config.DATABRICKS_POLL_INTERVAL_SECONDS)
