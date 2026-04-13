@@ -90,6 +90,37 @@ class AzureCostService(IAzureCostService):
             total_cost=total,
         )
 
+    def compute_databricks_cost(
+            self,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+            num_workers: int,
+            bytes_egress: float,
+    ) -> Cost:
+        usage = self.__azure_metric_service.get_databricks_usage(
+            start_time=start_time,
+            end_time=end_time,
+            num_workers=num_workers,
+            bytes_egress=bytes_egress,
+        )
+        pricing = self.__azure_pricing_service.get_databricks_pricing()
+
+        duration_hours = usage.duration_seconds / 3600
+        dbu_cost = usage.num_workers * pricing.dbu_per_node_per_hour * pricing.dbu_price_per_hour * duration_hours
+        vm_cost = usage.num_workers * pricing.vm_cost_per_node_per_hour * duration_hours
+        compute_cost = dbu_cost + vm_cost
+
+        egress_gb = usage.bytes_egress / (1024 ** 3)
+        network_cost = egress_gb * pricing.network_egress_per_gb
+
+        return Cost(
+            compute_cost=compute_cost,
+            storage_cost=0.0,
+            network_cost=network_cost,
+            operations_cost=0.0,
+            total_cost=compute_cost + network_cost,
+        )
+
     def compute_database_cost(
             self,
             start_time: datetime.datetime,

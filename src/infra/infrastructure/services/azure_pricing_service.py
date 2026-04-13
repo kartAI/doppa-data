@@ -1,5 +1,10 @@
 ﻿from src.application.contracts import IAzurePricingService
-from src.application.dtos import AciPricing, BlobStoragePricing, DatabasePricing
+from src.application.dtos import (
+    AciPricing,
+    BlobStoragePricing,
+    DatabasePricing,
+    DatabricksPricing,
+)
 
 
 class AzurePricingService(IAzurePricingService):
@@ -51,6 +56,22 @@ class AzurePricingService(IAzurePricingService):
     __BLOB_EGRESS_PER_GB: float = 0.0  # Free — intra-region, same tenant
 
     # ------------------------------------------------------------------
+    # Azure Databricks — Norway East, Premium tier, Jobs Compute
+    # Node type: Standard_D4s_v3 (4 vCores, 16 GiB RAM)
+    #
+    # DBU rate: Standard_D4s_v3 consumes 0.75 DBU/node/hour for Jobs Compute.
+    # DBU price: $0.40/DBU-hour (Premium tier, Jobs Compute, Norway East).
+    # VM cost: Standard_D4s_v3 pay-as-you-go ≈ $0.22/node/hour (Norway East).
+    # Sources:
+    #   https://azure.microsoft.com/pricing/details/databricks/
+    #   https://azure.microsoft.com/pricing/details/virtual-machines/linux/
+    # ------------------------------------------------------------------
+    __DATABRICKS_DBU_PER_NODE_PER_HOUR: float = 0.75
+    __DATABRICKS_DBU_PRICE_PER_HOUR: float = 0.40
+    __DATABRICKS_VM_COST_PER_NODE_PER_HOUR: float = 0.22
+    __DATABRICKS_NETWORK_EGRESS_PER_GB: float = 0.0  # Free — intra-region, same tenant
+
+    # ------------------------------------------------------------------
     # PostgreSQL Flexible Server — Norway East
     # SKU: General Purpose, Standard_D4ads_v5 (4 vCores, 16 GiB RAM)
     # Source: Azure Portal → doppa-db → Compute + storage (March 2026)
@@ -77,6 +98,14 @@ class AzurePricingService(IAzurePricingService):
             storage_gb_per_month=self.__BLOB_STORAGE_GB_PER_MONTH,
             ingress_per_gb=self.__BLOB_INGRESS_PER_GB,
             egress_per_gb=self.__BLOB_EGRESS_PER_GB,
+        )
+
+    def get_databricks_pricing(self) -> DatabricksPricing:
+        return DatabricksPricing(
+            dbu_per_node_per_hour=self.__DATABRICKS_DBU_PER_NODE_PER_HOUR,
+            dbu_price_per_hour=self.__DATABRICKS_DBU_PRICE_PER_HOUR,
+            vm_cost_per_node_per_hour=self.__DATABRICKS_VM_COST_PER_NODE_PER_HOUR,
+            network_egress_per_gb=self.__DATABRICKS_NETWORK_EGRESS_PER_GB,
         )
 
     def get_database_pricing(self) -> DatabasePricing:

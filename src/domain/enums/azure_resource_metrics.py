@@ -10,3 +10,6 @@ class AzureResourceMetrics(Enum):
         "cpu_percent", "memory_percent", "storage_used", "network_bytes_ingress", "network_bytes_egress",
         "iops"
     ]
+    DATABRICKS = [
+        "clusterCount", "jobsCompleted", "jobsFailed", "sparkActiveExecutors", "sparkBlocksTransferred"
+    ]

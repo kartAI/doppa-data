@@ -34,3 +34,13 @@ class IAzureCostService(ABC):
             end_time: datetime.datetime,
     ) -> Cost:
         raise NotImplementedError
+
+    @abstractmethod
+    def compute_databricks_cost(
+            self,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+            num_workers: int,
+            bytes_egress: float,
+    ) -> Cost:
+        raise NotImplementedError
