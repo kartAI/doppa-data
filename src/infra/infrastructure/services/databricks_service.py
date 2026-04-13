@@ -141,7 +141,10 @@ class DatabricksService(IDatabricksService):
             life_cycle_state = state.get("life_cycle_state", "")
             result_state = state.get("result_state", "")
 
-            logger.info(f"Run {run_id}: life_cycle_state={life_cycle_state}, result_state={result_state}")
+            state_msg = f"life_cycle_state={life_cycle_state}"
+            if result_state:
+                state_msg += f", result_state={result_state}"
+            logger.info(f"Run {run_id}: {state_msg}")
 
             if life_cycle_state in _TERMINAL_STATES:
                 if result_state != "SUCCESS":
