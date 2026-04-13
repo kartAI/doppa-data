@@ -87,10 +87,6 @@ def monitor_databricks(
             )
 
             _save_run_metadata(query_id=query_id, run_id=run_id)
-            logger.info(
-                f"Waiting {Config.INGESTION_DELAY_SECONDS}s for Azure metrics ingestion "
-                f"before computing cost analytics..."
-            )
             _save_run_cost_analytics(
                 run_id=run_id,
                 cost_configuration=cost_configuration,

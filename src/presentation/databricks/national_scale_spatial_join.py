@@ -39,6 +39,14 @@ municipalities_df = municipalities_raw.selectExpr(
     "region AS municipality_name",
 )
 
+# Repartition to match cluster parallelism so all nodes receive work.
+# defaultParallelism = num_workers × cores_per_node (e.g. 8 nodes × 4 cores = 32).
+parallelism = spark.sparkContext.defaultParallelism
+print(f"Cluster parallelism: {parallelism}")
+print(f"Buildings partitions before repartition: {buildings_df.rdd.getNumPartitions()}")
+
+buildings_df = buildings_df.repartition(parallelism)
+
 buildings_df.createOrReplaceTempView("buildings")
 municipalities_df.createOrReplaceTempView("municipalities")
 
