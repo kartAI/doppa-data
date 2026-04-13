@@ -30,6 +30,8 @@ from src.presentation.entrypoints import (
     ordered_range_query_postgis,
     point_in_polygon_lookup_duckdb,
     point_in_polygon_lookup_postgis,
+    national_scale_spatial_join_duckdb,
+    national_scale_spatial_join_postgis,
     national_scale_spatial_join_databricks_2_nodes,
     national_scale_spatial_join_databricks_4_nodes,
     national_scale_spatial_join_databricks_8_nodes,
@@ -121,6 +123,12 @@ def benchmark_runner() -> None:
             return
         case "point-in-polygon-lookup-postgis":
             point_in_polygon_lookup_postgis()
+            return
+        case "national-scale-spatial-join-duckdb":
+            national_scale_spatial_join_duckdb()
+            return
+        case "national-scale-spatial-join-postgis":
+            national_scale_spatial_join_postgis()
             return
         case "national-scale-spatial-join-databricks-2-nodes":
             national_scale_spatial_join_databricks_2_nodes()

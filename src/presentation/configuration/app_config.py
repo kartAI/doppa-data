@@ -51,6 +51,9 @@ def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
             "src.presentation.entrypoints.point_in_polygon_lookup_duckdb",
             "src.presentation.entrypoints.point_in_polygon_lookup_postgis",
 
+            "src.presentation.entrypoints.national_scale_spatial_join_duckdb",
+            "src.presentation.entrypoints.national_scale_spatial_join_postgis",
+
             "src.presentation.entrypoints.national_scale_spatial_join_databricks_2_nodes",
             "src.presentation.entrypoints.national_scale_spatial_join_databricks_4_nodes",
             "src.presentation.entrypoints.national_scale_spatial_join_databricks_8_nodes",

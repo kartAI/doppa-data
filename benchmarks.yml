@@ -185,12 +185,38 @@ experiments:
     memory_gb: 8
     related_script_ids: ["point-in-polygon-lookup-duckdb"]
 
+  - id: national-scale-spatial-join-duckdb
+    image: doppaacr.azurecr.io/national-scale-spatial-join-duckdb:latest
+    cpu: 3
+    memory_gb: 8
+    related_script_ids:
+      [
+        "national-scale-spatial-join-postgis",
+        "national-scale-spatial-join-databricks-2-nodes",
+        "national-scale-spatial-join-databricks-4-nodes",
+        "national-scale-spatial-join-databricks-8-nodes",
+      ]
+
+  - id: national-scale-spatial-join-postgis
+    image: doppaacr.azurecr.io/national-scale-spatial-join-postgis:latest
+    cpu: 3
+    memory_gb: 8
+    related_script_ids:
+      [
+        "national-scale-spatial-join-duckdb",
+        "national-scale-spatial-join-databricks-2-nodes",
+        "national-scale-spatial-join-databricks-4-nodes",
+        "national-scale-spatial-join-databricks-8-nodes",
+      ]
+
   - id: national-scale-spatial-join-databricks-2-nodes
     image: doppaacr.azurecr.io/national-scale-spatial-join-databricks-2-nodes:latest
     cpu: 3
     memory_gb: 8
     related_script_ids:
       [
+        "national-scale-spatial-join-duckdb",
+        "national-scale-spatial-join-postgis",
         "national-scale-spatial-join-databricks-4-nodes",
         "national-scale-spatial-join-databricks-8-nodes",
       ]
@@ -201,6 +227,8 @@ experiments:
     memory_gb: 8
     related_script_ids:
       [
+        "national-scale-spatial-join-duckdb",
+        "national-scale-spatial-join-postgis",
         "national-scale-spatial-join-databricks-2-nodes",
         "national-scale-spatial-join-databricks-8-nodes",
       ]
@@ -211,6 +239,8 @@ experiments:
     memory_gb: 8
     related_script_ids:
       [
+        "national-scale-spatial-join-duckdb",
+        "national-scale-spatial-join-postgis",
         "national-scale-spatial-join-databricks-2-nodes",
         "national-scale-spatial-join-databricks-4-nodes",
       ]
