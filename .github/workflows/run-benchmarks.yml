@@ -29,38 +29,46 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Delete Existing Orchestrator Container
-        run: >
-          az container delete
-          --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
-          --name ${{ vars.ACI_ORCHESTRATOR_NAME }}
-          --yes 2>/dev/null || true
+        run: |
+          az container delete \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --name ${{ vars.ACI_ORCHESTRATOR_NAME }} \
+            --yes 2>/dev/null || true
 
       - name: Create Orchestrator Container on ACI
-        run: >
-          az container create
-          --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
-          --name ${{ vars.ACI_ORCHESTRATOR_NAME }}
-          --image ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest
-          --location ${{ vars.AZURE_RESOURCE_LOCATION }}
-          --cpu 2
-          --memory 2
-          --os-type Linux
-          --restart-policy Never
-          --assign-identity ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
-          --registry-login-server ${{ vars.ACR_LOGIN_SERVER }}
-          --acr-identity ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
-          --environment-variables
-          AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }}
-          ACR_LOGIN_SERVER=${{ vars.ACR_LOGIN_SERVER }}
-          AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }}
-          AZURE_BLOB_STORAGE_METADATA_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }}
-          POSTGRES_SERVER_NAME=${{ vars.POSTGRES_SERVER_NAME }}
-          --secure-environment-variables
-          AZURE_UAMI_RESOURCE_ID=${{ secrets.AZURE_UAMI_RESOURCE_ID }}
-          AZURE_BLOB_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
-          AZURE_BLOB_STORAGE_ACCOUNT_KEY=${{ secrets.AZURE_BLOB_STORAGE_ACCOUNT_KEY }}
-          POSTGRES_USERNAME=${{ secrets.POSTGRES_USERNAME }}
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}
-          --no-wait
+        env:
+          AZURE_UAMI_RESOURCE_ID: ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
+          AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+          AZURE_BLOB_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_STORAGE_ACCOUNT_KEY }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          az container create \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --name ${{ vars.ACI_ORCHESTRATOR_NAME }} \
+            --image ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest \
+            --location ${{ vars.AZURE_RESOURCE_LOCATION }} \
+            --cpu 2 \
+            --memory 2 \
+            --os-type Linux \
+            --restart-policy Never \
+            --assign-identity "$AZURE_UAMI_RESOURCE_ID" \
+            --registry-login-server ${{ vars.ACR_LOGIN_SERVER }} \
+            --acr-identity "$AZURE_UAMI_RESOURCE_ID" \
+            --environment-variables \
+              AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }} \
+              ACR_LOGIN_SERVER=${{ vars.ACR_LOGIN_SERVER }} \
+              AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }} \
+              AZURE_BLOB_STORAGE_METADATA_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }} \
+              POSTGRES_SERVER_NAME=${{ vars.POSTGRES_SERVER_NAME }} \
+            --secure-environment-variables \
+              "AZURE_UAMI_RESOURCE_ID=$AZURE_UAMI_RESOURCE_ID" \
+              "AZURE_BLOB_STORAGE_CONNECTION_STRING=$AZURE_BLOB_STORAGE_CONNECTION_STRING" \
+              "AZURE_BLOB_STORAGE_ACCOUNT_KEY=$AZURE_BLOB_STORAGE_ACCOUNT_KEY" \
+              "POSTGRES_USERNAME=$POSTGRES_USERNAME" \
+              "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
+              "DATABRICKS_HOST=$DATABRICKS_HOST" \
+              "DATABRICKS_TOKEN=$DATABRICKS_TOKEN" \
+            --no-wait
