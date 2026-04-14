@@ -31,8 +31,8 @@ jobs:
       - name: Delete Existing Orchestrator Container
         run: |
           az container delete \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --name ${{ vars.ACI_ORCHESTRATOR_NAME }} \
+            --resource-group doppa \
+            --name container-orchestrator \
             --yes 2>/dev/null || true
 
       - name: Create Orchestrator Container on ACI
@@ -46,10 +46,10 @@ jobs:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
           az container create \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --name ${{ vars.ACI_ORCHESTRATOR_NAME }} \
+            --resource-group doppa \
+            --name container-orchestrator \
             --image ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest \
-            --location ${{ vars.AZURE_RESOURCE_LOCATION }} \
+            --location norwayeast \
             --cpu 2 \
             --memory 2 \
             --os-type Linux \
