@@ -55,18 +55,6 @@ class DatabricksService(IDatabricksService):
                 f"Failed to create workspace folder: {mkdirs_response.status_code}: {mkdirs_response.text}"
             )
 
-        # Delete any stale file at either the plain or .py-suffixed path before importing
-        for stale_path in (
-            Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH,
-            Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH + ".py",
-        ):
-            requests.post(
-                f"{self._host}/api/2.0/workspace/delete",
-                headers=self._headers,
-                json={"path": stale_path, "recursive": False},
-                timeout=30,
-            )
-
         content = base64.b64encode(
             Path(Config.DATABRICKS_LOCAL_SCRIPT_PATH).read_bytes()
         ).decode("utf-8")
