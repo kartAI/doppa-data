@@ -6,3 +6,4 @@ class AzureMetricNamespace(Enum):
     CONTAINER_INSTANCES = "Microsoft.ContainerInstance/containerGroups"
     POSTGRESQL_FLEXIBLE = "Microsoft.DBforPostgreSQL/flexibleServers"
     WEB_APP = "Microsoft.Web/sites"
+    DATABRICKS = "Microsoft.Databricks/workspaces"

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from azure.monitor.querymetrics import MetricAggregationType, MetricsQueryResult
 
-from src.application.dtos import AciUsage, BlobStorageUsage, DatabaseUsage
+from src.application.dtos import AciUsage, BlobStorageUsage, DatabaseUsage, DatabricksUsage
 from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, BlobOperationType
 
 
@@ -48,4 +48,14 @@ class IAzureMetricService(ABC):
             start_time: datetime.datetime,
             end_time: datetime.datetime,
     ) -> DatabaseUsage:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_databricks_usage(
+            self,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+            num_workers: int,
+            bytes_egress: float,
+    ) -> DatabricksUsage:
         raise NotImplementedError

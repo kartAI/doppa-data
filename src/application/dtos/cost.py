@@ -22,3 +22,5 @@ class CostConfiguration:
     include_aci: bool = False
     include_blob_storage: bool = False
     include_postgres: bool = False
+    include_databricks: bool = False
+    num_workers: int = 0

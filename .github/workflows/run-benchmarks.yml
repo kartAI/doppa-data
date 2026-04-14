@@ -45,6 +45,9 @@ jobs:
           POSTGRES_SERVER_NAME: ${{ vars.POSTGRES_SERVER_NAME }}
           POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          AZURE_BLOB_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_STORAGE_ACCOUNT_KEY }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
         run: >
           docker run --rm
@@ -58,4 +61,7 @@ jobs:
           -e POSTGRES_SERVER_NAME
           -e POSTGRES_USERNAME
           -e POSTGRES_PASSWORD
+          -e AZURE_BLOB_STORAGE_ACCOUNT_KEY
+          -e DATABRICKS_HOST
+          -e DATABRICKS_TOKEN
           ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:latest

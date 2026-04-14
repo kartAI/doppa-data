@@ -132,6 +132,23 @@ def _save_run_cost_analytics(
             cost=postgres_cost,
         )
 
+    if cost_configuration.include_databricks:
+        egress = bytes_egress if bytes_egress is not None else 0.0
+        databricks_cost = azure_cost_service.compute_databricks_cost(
+            start_time=start_time,
+            end_time=end_time,
+            num_workers=cost_configuration.num_workers,
+            bytes_egress=egress,
+        )
+        logger.info(f"Computed Databricks cost: {databricks_cost.to_dict()}")
+        monitoring_storage_service.write_cost_analytics_to_blob_storage(
+            query_id=query_id,
+            run_id=run_id,
+            benchmark_run=benchmark_run,
+            file_name="databricks_cost.parquet",
+            cost=databricks_cost,
+        )
+
 
 def _create_global_iteration(iteration: int, total_iterations: int, benchmark_run: int) -> int:
     return iteration + total_iterations * (benchmark_run - 1)

@@ -116,3 +116,18 @@ class Config:
     BENCHMARK_DOPPA_DATA_RELEASE: str = "2026-04-02.0"
 
     INGESTION_DELAY_SECONDS: int = 600
+
+    # DATABRICKS
+    DATABRICKS_HOST: str = os.getenv("DATABRICKS_HOST")
+    DATABRICKS_TOKEN: str = os.getenv("DATABRICKS_TOKEN")
+    DATABRICKS_SPARK_VERSION: str = os.getenv("DATABRICKS_SPARK_VERSION", "15.4.x-scala2.12")
+    DATABRICKS_NODE_TYPE_ID: str = os.getenv("DATABRICKS_NODE_TYPE_ID", "Standard_D4s_v3")
+    DATABRICKS_POLL_INTERVAL_SECONDS: int = 30
+    DATABRICKS_DRIVER_MEMORY: str = "9g"
+    DATABRICKS_DRIVER_MEMORY_OVERHEAD: str = "512m"
+    DATABRICKS_SEDONA_MAVEN_COORDINATES: str = "org.apache.sedona:sedona-spark-shaded-3.5_2.12:1.7.1"
+    DATABRICKS_SEDONA_PYPI_PACKAGE: str = "apache-sedona==1.7.1"
+    DATABRICKS_LOCAL_SCRIPT_PATH: str = "src/presentation/databricks/national_scale_spatial_join.py"
+    DATABRICKS_WORKSPACE_NOTEBOOK_PATH: str = "/Shared/doppa/national_scale_spatial_join"
+    DATABRICKS_MUNICIPALITIES_FILE: str = "counties.parquet"
+    AZURE_BLOB_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_BLOB_STORAGE_ACCOUNT_KEY")

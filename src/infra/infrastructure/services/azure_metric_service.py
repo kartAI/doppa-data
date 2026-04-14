@@ -8,7 +8,7 @@ from src import Config
 from src.application.common import logger
 from src.application.contracts import IAzureMetricService, IBenchmarkConfigurationService, IBlobStorageService, \
     IFilePathService
-from src.application.dtos import DatabaseUsage, BlobStorageUsage, AciUsage
+from src.application.dtos import DatabaseUsage, BlobStorageUsage, AciUsage, DatabricksUsage
 from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, Theme, StorageContainer, BlobOperationType
 
 
@@ -120,6 +120,19 @@ class AzureMetricService(IAzureMetricService):
             bytes_ingress=bytes_ingress,
             bytes_egress=bytes_egress,
             storage_bytes=storage_size
+        )
+
+    def get_databricks_usage(
+            self,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+            num_workers: int,
+            bytes_egress: float,
+    ) -> DatabricksUsage:
+        return DatabricksUsage(
+            duration_seconds=(end_time - start_time).total_seconds(),
+            num_workers=num_workers,
+            bytes_egress=bytes_egress,
         )
 
     def get_database_usage(self, start_time, end_time) -> DatabaseUsage:

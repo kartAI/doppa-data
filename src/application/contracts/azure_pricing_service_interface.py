@@ -1,6 +1,6 @@
 ﻿from abc import abstractmethod, ABC
 
-from src.application.dtos import AciPricing, BlobStoragePricing, DatabasePricing
+from src.application.dtos import AciPricing, BlobStoragePricing, DatabasePricing, DatabricksPricing
 
 
 class IAzurePricingService(ABC):
@@ -15,4 +15,8 @@ class IAzurePricingService(ABC):
 
     @abstractmethod
     def get_database_pricing(self) -> DatabasePricing:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_databricks_pricing(self) -> DatabricksPricing:
         raise NotImplementedError

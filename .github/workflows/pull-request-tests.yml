@@ -121,6 +121,27 @@ jobs:
           - service: ordered-range-query-postgis
             display_name: PostGIS Ordered Range Query with LIMIT
 
+          - service: point-in-polygon-lookup-duckdb
+            display_name: DuckDB Point-in-Polygon Lookup
+
+          - service: point-in-polygon-lookup-postgis
+            display_name: PostGIS Point-in-Polygon Lookup
+
+          - service: national-scale-spatial-join-duckdb
+            display_name: DuckDB National Scale Spatial Join
+
+          - service: national-scale-spatial-join-postgis
+            display_name: PostGIS National Scale Spatial Join
+
+          - service: national-scale-spatial-join-databricks-2-nodes
+            display_name: Databricks National Scale Spatial Join - 2 Nodes
+
+          - service: national-scale-spatial-join-databricks-4-nodes
+            display_name: Databricks National Scale Spatial Join - 4 Nodes
+
+          - service: national-scale-spatial-join-databricks-8-nodes
+            display_name: Databricks National Scale Spatial Join - 8 Nodes
+
           - service: vmt-api-server
             display_name: VMT API Server
 

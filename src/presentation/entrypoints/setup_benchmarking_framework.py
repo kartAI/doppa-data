@@ -5,39 +5,43 @@ import geopandas as gpd
 from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 from shapely import from_wkb
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 
 from src import Config
 from src.application.common import logger
-from src.application.contracts import IFilePathService, IBlobStorageService, IBytesService, ITileService, \
-    ITileApiService, ITestDatasetService
+from src.application.contracts import (
+    IFilePathService,
+    IBlobStorageService,
+    IBytesService,
+    ITileService,
+    ITileApiService,
+    ITestDatasetService,
+)
 from src.domain.enums import StorageContainer, Theme, EPSGCode
 from src.infra.infrastructure import Containers
 
 
 @inject
 def setup_benchmarking_framework(
-        test_dataset_service: ITestDatasetService = Provide[Containers.test_dataset_service]
+    test_dataset_service: ITestDatasetService = Provide[
+        Containers.test_dataset_service
+    ],
 ) -> None:
     logger.info("Starting benchmarking framework setup...")
 
-    logger.info("Step 1/5: Running test dataset pipeline...")
+    logger.info("Step 1/4: Running test dataset pipeline...")
     release = test_dataset_service.run_pipeline()
     logger.info(f"Test dataset pipeline complete. Release: '{release}'")
 
-    logger.info("Step 2/5: Seeding Postgres with buildings...")
+    logger.info("Step 2/4: Seeding Postgres with buildings...")
     _postgres_buildings_seed(release=release)
     logger.info("Postgres seed complete.")
 
-    logger.info("Step 3/5: Creating PMTiles...")
+    logger.info("Step 3/4: Creating PMTiles...")
     _create_pmtiles(release=release)
     logger.info("PMTiles complete.")
 
-    logger.info("Step 4/5: Creating MVT tiles...")
-    _create_mvt(release=release)
-    logger.info("MVT tiles complete.")
-
-    logger.info("Step 5/5: Creating MVT tiles...")
+    logger.info("Step 4/4: Creating MVT tiles...")
     _create_mvt(release=release)
     logger.info("MVT tiles complete.")
 
@@ -46,10 +50,10 @@ def setup_benchmarking_framework(
 
 @inject
 def _postgres_buildings_seed(
-        release: str | None = None,
-        duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
-        postgres_db_context: Engine = Provide[Containers.postgres_context],
-        file_path_service: IFilePathService = Provide[Containers.file_path_service],
+    release: str | None = None,
+    duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
+    postgres_db_context: Engine = Provide[Containers.postgres_context],
+    file_path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> None:
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
@@ -57,12 +61,13 @@ def _postgres_buildings_seed(
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
         region="*",
-        file_name="*.parquet"
+        file_name="*.parquet",
     )
 
     logger.info(f"Fetching buildings from '{path}'")
     building_df = duckdb_context.execute(
-        f"SELECT ST_AsWKB(geometry) AS geometry, * EXCLUDE geometry FROM read_parquet('{path}')").fetchdf()
+        f"SELECT ST_AsWKB(geometry) AS geometry, * EXCLUDE geometry FROM read_parquet('{path}')"
+    ).fetchdf()
 
     building_df["geometry"] = building_df["geometry"].apply(
         lambda g: bytes(g) if isinstance(g, (memoryview, bytearray)) else g
@@ -81,30 +86,44 @@ def _postgres_buildings_seed(
         return
 
     total_rows = building_gdf.shape[0]
-    logger.info(f"Inserting {total_rows} rows into 'buildings' table in chunks of {Config.BUILDINGS_BATCH_SIZE}...")
+    logger.info(
+        f"Inserting {total_rows} rows into 'buildings' table in chunks of {Config.BUILDINGS_BATCH_SIZE}..."
+    )
 
     with postgres_db_context.connect() as conn:
         for i in range(0, total_rows, Config.BUILDINGS_BATCH_SIZE):
-            chunk = building_gdf.iloc[i:i + Config.BUILDINGS_BATCH_SIZE]
+            chunk = building_gdf.iloc[i : i + Config.BUILDINGS_BATCH_SIZE]
             chunk.to_postgis(
                 name="buildings",
                 con=conn,
                 if_exists="replace" if i == 0 else "append",
-                index=False
+                index=False,
             )
-            logger.info(f"Inserted rows {i + 1} to {min(i + Config.BUILDINGS_BATCH_SIZE, total_rows)} of {total_rows}")
+            logger.info(
+                f"Inserted rows {i + 1} to {min(i + Config.BUILDINGS_BATCH_SIZE, total_rows)} of {total_rows}"
+            )
+
+        logger.info("Creating GIST spatial index on buildings.geometry...")
+        conn.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS buildings_geometry_idx ON buildings USING GIST (geometry)"
+            )
+        )
+        conn.commit()
+        logger.info("Spatial index created.")
 
     logger.info("Insertion completed")
 
 
 @inject
 def _create_pmtiles(
-        release: str | None = None,
-        duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
-        file_path_service: IFilePathService = Provide[Containers.file_path_service],
-        blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
-        bytes_service: IBytesService = Provide[Containers.bytes_service]
-
+    release: str | None = None,
+    duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
+    file_path_service: IFilePathService = Provide[Containers.file_path_service],
+    blob_storage_service: IBlobStorageService = Provide[
+        Containers.blob_storage_service
+    ],
+    bytes_service: IBytesService = Provide[Containers.bytes_service],
 ) -> None:
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
@@ -120,8 +139,7 @@ def _create_pmtiles(
 
     logger.info("Fetching buildings as GeoJSONL file.")
 
-    duckdb_context.execute(
-        f"""
+    duckdb_context.execute(f"""
         COPY (
             SELECT 
                 * EXCLUDE (geometry, bbox),
@@ -137,8 +155,7 @@ def _create_pmtiles(
             FORMAT GDAL,
             DRIVER 'GeoJSONSeq'
         );
-        """
-    )
+        """)
 
     logger.info(f"Saved buildings to '{Config.BUILDINGS_GEOJSONL_FILE}'")
 
@@ -167,11 +184,13 @@ def _create_pmtiles(
     logger.info(f"PMTiles saved to '{Config.BUILDINGS_PMTILES_FILE}'")
     logger.info("Uploading PMTiles to blob storage.")
 
-    pmtiles_bytes = bytes_service.convert_pmtiles_to_bytes(Config.BUILDINGS_PMTILES_FILE)
+    pmtiles_bytes = bytes_service.convert_pmtiles_to_bytes(
+        Config.BUILDINGS_PMTILES_FILE
+    )
     blob_storage_service.upload_file(
         container_name=StorageContainer.TILES,
         blob_name=Config.BUILDINGS_PMTILES_FILE.name,
-        data=pmtiles_bytes
+        data=pmtiles_bytes,
     )
 
     logger.info(f"Uploaded PMTiles to container '{StorageContainer.TILES.value}'")
@@ -179,10 +198,12 @@ def _create_pmtiles(
 
 @inject
 def _create_mvt(
-        release: str | None = None,
-        duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
-        file_path_service: IFilePathService = Provide[Containers.file_path_service],
-        blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service],
+    release: str | None = None,
+    duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
+    file_path_service: IFilePathService = Provide[Containers.file_path_service],
+    blob_storage_service: IBlobStorageService = Provide[
+        Containers.blob_storage_service
+    ],
 ) -> None:
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
@@ -199,8 +220,7 @@ def _create_mvt(
     if not Config.BUILDINGS_GEOJSONL_FILE.exists():
         logger.info("Fetching buildings as GeoJSONL file for MVT generation.")
 
-        duckdb_context.execute(
-            f"""
+        duckdb_context.execute(f"""
             COPY (
                 SELECT 
                     * EXCLUDE (geometry, bbox),
@@ -216,12 +236,13 @@ def _create_mvt(
                 FORMAT GDAL,
                 DRIVER 'GeoJSONSeq'
             );
-            """
-        )
+            """)
 
         logger.info(f"Saved buildings to '{Config.BUILDINGS_GEOJSONL_FILE}'")
     else:
-        logger.info(f"GeoJSONL file already exists at '{Config.BUILDINGS_GEOJSONL_FILE}', skipping creation.")
+        logger.info(
+            f"GeoJSONL file already exists at '{Config.BUILDINGS_GEOJSONL_FILE}', skipping creation."
+        )
 
     cmd = [
         "tippecanoe",
@@ -265,13 +286,15 @@ def _create_mvt(
         )
         tile_count += 1
 
-    logger.info(f"Uploaded {tile_count} MVT tiles to container '{StorageContainer.TILES.value}' under 'mvt/' prefix.")
+    logger.info(
+        f"Uploaded {tile_count} MVT tiles to container '{StorageContainer.TILES.value}' under 'mvt/' prefix."
+    )
 
 
 @inject
 def _generate_tiles_file(
-        tile_service: ITileService = Provide[Containers.tile_service],
-        tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
+    tile_service: ITileService = Provide[Containers.tile_service],
+    tile_api_service: ITileApiService = Provide[Containers.tile_api_service],
 ) -> None:
     TILE_ZOOM: int = 13
 
@@ -281,7 +304,7 @@ def _generate_tiles_file(
         min_lon=min_lon,
         max_lat=max_lat,
         max_lon=max_lon,
-        zoom=TILE_ZOOM
+        zoom=TILE_ZOOM,
     )
 
     logger.info(f"Created {len(candidate_tiles)} candidate tiles")
@@ -293,9 +316,11 @@ def _generate_tiles_file(
         if tile_api_service.fetch_vmt_tile(z=z, x=x, y=y) is not None:
             existing_tiles.append(candidate_tile)
 
-    logger.info(f"Found {len(existing_tiles)} tiles with data out of {len(candidate_tiles)} candidates")
+    logger.info(
+        f"Found {len(existing_tiles)} tiles with data out of {len(candidate_tiles)} candidates"
+    )
 
-    with open(Config.MVT_TILES_PATH, 'w', encoding='utf-8') as f:
+    with open(Config.MVT_TILES_PATH, "w", encoding="utf-8") as f:
         json.dump([list(tile) for tile in existing_tiles], f)
 
     logger.info(f"Tiles file saved to '{Config.MVT_TILES_PATH}'")

@@ -5,7 +5,7 @@ from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
     TestDatasetService, MonitoringStorageService, MVTService, TileApiService, TileService, AzureCostService,
-    BenchmarkConfigurationService, AzureMetricService, AzurePricingService, BenchmarkService
+    BenchmarkConfigurationService, AzureMetricService, AzurePricingService, BenchmarkService, DatabricksService
 )
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
 
@@ -152,6 +152,10 @@ class Containers(containers.DeclarativeContainer):
         county_service=county_service,
         fkb_service=fkb_service,
         osm_service=open_street_map_service,
+    )
+
+    databricks_service = providers.Singleton(
+        DatabricksService
     )
 
     StacIO.set_default(stac_io_service)
