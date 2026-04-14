@@ -56,19 +56,25 @@ class AzurePricingService(IAzurePricingService):
     __BLOB_EGRESS_PER_GB: float = 0.0  # Free — intra-region, same tenant
 
     # ------------------------------------------------------------------
-    # Azure Databricks — Norway East, Premium tier, Jobs Compute
+    # Azure Databricks — Sweden Central, Standard tier, Jobs Compute
     # Node type: Standard_D4s_v3 (4 vCores, 16 GiB RAM)
     #
     # DBU rate: Standard_D4s_v3 consumes 0.75 DBU/node/hour for Jobs Compute.
-    # DBU price: $0.40/DBU-hour (Premium tier, Jobs Compute, Norway East).
-    # VM cost: Standard_D4s_v3 pay-as-you-go ≈ $0.22/node/hour (Norway East).
+    # DBU price: $0.15/DBU-hour (Standard tier, Jobs Compute, Sweden Central).
+    # VM cost: Standard_D4s_v3 pay-as-you-go = $0.204/node/hour (Sweden Central).
+    #
+    # NOTE: Standard tier is retired on October 1, 2026. Existing workspaces
+    # are auto-upgraded to Premium on that date. When upgraded, update
+    # __DATABRICKS_DBU_PRICE_PER_HOUR to $0.30 (Premium Jobs Compute,
+    # Sweden Central).
+    #
     # Sources:
     #   https://azure.microsoft.com/pricing/details/databricks/
-    #   https://azure.microsoft.com/pricing/details/virtual-machines/linux/
+    #   https://prices.azure.com/api/retail/prices (swedencentral, DSv3 Series)
     # ------------------------------------------------------------------
     __DATABRICKS_DBU_PER_NODE_PER_HOUR: float = 0.75
-    __DATABRICKS_DBU_PRICE_PER_HOUR: float = 0.40
-    __DATABRICKS_VM_COST_PER_NODE_PER_HOUR: float = 0.22
+    __DATABRICKS_DBU_PRICE_PER_HOUR: float = 0.15
+    __DATABRICKS_VM_COST_PER_NODE_PER_HOUR: float = 0.204
     __DATABRICKS_NETWORK_EGRESS_PER_GB: float = 0.0  # Free — intra-region, same tenant
 
     # ------------------------------------------------------------------
