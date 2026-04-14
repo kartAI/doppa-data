@@ -7,9 +7,8 @@ from sqlalchemy import Engine, text
 from src import Config
 from src.application.common import logger
 from src.application.common.monitor_network import monitor_network
-from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
-from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, EPSGCode
+from src.domain.enums import StorageContainer, BenchmarkIteration, EPSGCode
 from src.infra.infrastructure import Containers
 
 
@@ -22,7 +21,9 @@ def national_scale_spatial_join_postgis(
     _benchmark()
 
 
-def _seed_counties(duckdb_context: DuckDBPyConnection, postgres_context: Engine) -> None:
+def _seed_counties(
+    duckdb_context: DuckDBPyConnection, postgres_context: Engine
+) -> None:
     counties_path = f"az://{StorageContainer.METADATA.value}/{Config.DATABRICKS_MUNICIPALITIES_FILE}"
 
     logger.info(f"Loading counties from '{counties_path}' into PostgreSQL...")
