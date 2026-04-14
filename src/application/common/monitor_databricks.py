@@ -5,7 +5,6 @@ from typing import Any
 
 import psutil
 
-from src import Config
 from src.application.common import logger
 from src.application.common.monitor_utils import (
     _get_run_id,
@@ -51,12 +50,12 @@ def monitor_databricks(
             for i in range(total):
                 iteration = i + 1
                 logger.info(f"Starting iteration {iteration}/{total}...")
-                execution_duration_s, _, net_bytes_sent, net_bytes_received = _timed_call(
-                    func, *args, **kwargs
+                result, wall_elapsed_time, net_bytes_sent, net_bytes_received = (
+                    _timed_call(func, *args, **kwargs)
                 )
-                # execution_duration_s is the API-reported notebook execution time,
-                # excluding cluster provisioning and teardown.
-                elapsed_time = execution_duration_s
+                # Use API-reported notebook execution time (excludes cluster provisioning/teardown),
+                # not wall_elapsed_time which includes provisioning overhead.
+                elapsed_time: float = result
                 ingress_sum += net_bytes_received
                 egress_sum += net_bytes_sent
 
