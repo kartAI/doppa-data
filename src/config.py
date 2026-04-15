@@ -20,13 +20,16 @@ class Config:
     AZURE_SUBSCRIPTION_ID: str = os.getenv("AZURE_SUBSCRIPTION_ID")
     AZURE_UAMI_RESOURCE_ID: str = os.getenv("AZURE_UAMI_RESOURCE_ID")
 
-
     AZURE_BLOB_STORAGE_HTTPS_URL: str = "https://doppabs.blob.core.windows.net"
     AZURE_BLOB_STORAGE_ACCOUNT_NAME: str = "doppabs"
-    AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv("AZURE_BLOB_STORAGE_CONNECTION_STRING")
+    AZURE_BLOB_STORAGE_CONNECTION_STRING: str = os.getenv(
+        "AZURE_BLOB_STORAGE_CONNECTION_STRING"
+    )
     AZURE_BLOB_STORAGE_MAX_CONCURRENCY: int = 1
     AZURE_VMT_SERVER_URL: str = "https://doppa-vmt.azurewebsites.net"
-    AZURE_METRICS_REGIONAL_ENDPOINT: str = f"https://{AZURE_RESOURCE_LOCATION}.metrics.monitor.azure.com"
+    AZURE_METRICS_REGIONAL_ENDPOINT: str = (
+        f"https://{AZURE_RESOURCE_LOCATION}.metrics.monitor.azure.com"
+    )
 
     AZURE_ACI_VCPU_PRICE_PER_SECOND: float = 0.0002
     AZURE_ACI_MEMORY_GB_PRICE_PER_SECOND: float = 0.0002
@@ -45,7 +48,9 @@ class Config:
     POSTGRES_USERNAME: str = os.getenv("POSTGRES_USERNAME")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_SERVER_NAME: str = os.getenv("POSTGRES_SERVER_NAME")
-    POSTGRES_HOST: str = f"{os.getenv('POSTGRES_SERVER_NAME')}.postgres.database.azure.com"
+    POSTGRES_HOST: str = (
+        f"{os.getenv('POSTGRES_SERVER_NAME')}.postgres.database.azure.com"
+    )
     POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
     POSTGRES_PAGE_SIZE: int = 10_000
@@ -109,7 +114,7 @@ class Config:
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
     DEFAULT_SAMPLE_TIMEOUT: float = 0.01
-    BENCHMARK_RUNS: int = 1
+    BENCHMARK_RUNS: int = 5
     BENCHMARK_WARMUP_ITERATIONS: int = 5
     BENCHMARK_ITERATIONS: int = 100
     BENCHMARK_METADATA_BLOB_NAME: str = "benchmark_metadata.parquet"
@@ -120,14 +125,24 @@ class Config:
     # DATABRICKS
     DATABRICKS_HOST: str = os.getenv("DATABRICKS_HOST")
     DATABRICKS_TOKEN: str = os.getenv("DATABRICKS_TOKEN")
-    DATABRICKS_SPARK_VERSION: str = os.getenv("DATABRICKS_SPARK_VERSION", "15.4.x-scala2.12")
-    DATABRICKS_NODE_TYPE_ID: str = os.getenv("DATABRICKS_NODE_TYPE_ID", "Standard_D4s_v3")
+    DATABRICKS_SPARK_VERSION: str = os.getenv(
+        "DATABRICKS_SPARK_VERSION", "15.4.x-scala2.12"
+    )
+    DATABRICKS_NODE_TYPE_ID: str = os.getenv(
+        "DATABRICKS_NODE_TYPE_ID", "Standard_D4s_v3"
+    )
     DATABRICKS_POLL_INTERVAL_SECONDS: int = 30
     DATABRICKS_DRIVER_MEMORY: str = "9g"
     DATABRICKS_DRIVER_MEMORY_OVERHEAD: str = "512m"
-    DATABRICKS_SEDONA_MAVEN_COORDINATES: str = "org.apache.sedona:sedona-spark-shaded-3.5_2.12:1.7.1"
+    DATABRICKS_SEDONA_MAVEN_COORDINATES: str = (
+        "org.apache.sedona:sedona-spark-shaded-3.5_2.12:1.7.1"
+    )
     DATABRICKS_SEDONA_PYPI_PACKAGE: str = "apache-sedona==1.7.1"
-    DATABRICKS_LOCAL_SCRIPT_PATH: str = "src/presentation/databricks/national_scale_spatial_join.py"
-    DATABRICKS_WORKSPACE_NOTEBOOK_PATH: str = "/Shared/doppa/national_scale_spatial_join"
+    DATABRICKS_LOCAL_SCRIPT_PATH: str = (
+        "src/presentation/databricks/national_scale_spatial_join.py"
+    )
+    DATABRICKS_WORKSPACE_NOTEBOOK_PATH: str = (
+        "/Shared/doppa/national_scale_spatial_join"
+    )
     DATABRICKS_MUNICIPALITIES_FILE: str = "counties.parquet"
     AZURE_BLOB_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_BLOB_STORAGE_ACCOUNT_KEY")
