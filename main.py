@@ -96,6 +96,7 @@ def _run_container_benchmark(
         memory_gb=memory_gb,
     )
     _check_container_state(container_group_name=container_group_name)
+    _delete_container_instance(container_group_name=container_group_name)
 
 
 def _create_run_id() -> str:
