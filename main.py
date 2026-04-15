@@ -16,6 +16,8 @@ from src.domain.enums import StorageContainer
 
 
 def main() -> None:
+    _run_cmd(["az", "login", "--identity"])
+
     with open(Config.BENCHMARK_FILE) as f:
         benchmark_configuration = yaml.safe_load(f)
 
