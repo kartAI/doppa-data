@@ -1,6 +1,6 @@
 ﻿from dependency_injector.wiring import inject, Provide
 
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.contracts import ITileApiService
 from src.application.dtos import CostConfiguration
 from src.domain.enums import BenchmarkIteration
@@ -8,7 +8,7 @@ from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="vector-tiles-single-tile-vmt",
     benchmark_iteration=BenchmarkIteration.VECTOR_TILE_SINGLE_TILE,
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)

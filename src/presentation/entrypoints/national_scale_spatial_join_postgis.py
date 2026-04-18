@@ -6,7 +6,7 @@ from sqlalchemy import Engine, text
 
 from src import Config
 from src.application.common import logger
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, BenchmarkIteration, EPSGCode
 from src.infra.infrastructure import Containers
@@ -46,7 +46,7 @@ def _seed_counties(
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="national-scale-spatial-join-postgis",
     benchmark_iteration=BenchmarkIteration.NATIONAL_SCALE_SPATIAL_JOIN,
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True),

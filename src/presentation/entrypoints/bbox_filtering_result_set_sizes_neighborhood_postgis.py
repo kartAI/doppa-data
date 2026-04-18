@@ -1,7 +1,7 @@
 from dependency_injector.wiring import Provide, inject
 from sqlalchemy import Engine, text
 
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.dtos import CostConfiguration
 from src.domain.enums import BenchmarkIteration, BoundingBox
 from src.infra.infrastructure import Containers
@@ -12,7 +12,7 @@ def bbox_filtering_result_set_sizes_neighborhood_postgis() -> None:
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="bbox-filtering-result-set-sizes-neighborhood-postgis",
     benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_RESULT_SET_SIZES,
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)
@@ -24,11 +24,13 @@ def _benchmark(
 
     sql = text(
         """
-        SELECT * FROM buildings
+        SELECT *, ST_Area(ST_Transform(geometry, 25832)) AS area
+        FROM buildings
         WHERE ST_Intersects(
             geometry,
             ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-        );
+        )
+        AND ST_Area(ST_Transform(geometry, 25832)) > 10;
         """
     )
 

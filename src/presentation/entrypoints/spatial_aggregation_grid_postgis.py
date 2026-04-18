@@ -1,14 +1,14 @@
 from dependency_injector.wiring import Provide, inject
 from sqlalchemy import Engine, text
 
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.dtos import CostConfiguration
 from src.domain.enums import BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="spatial-aggregation-grid-postgis",
     benchmark_iteration=BenchmarkIteration.SPATIAL_AGGREGATION_GRID,
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)

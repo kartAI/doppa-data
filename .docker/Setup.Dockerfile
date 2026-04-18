@@ -8,12 +8,14 @@ RUN apt-get update && apt-get install -y \
     make \
     libsqlite3-dev \
     zlib1g-dev \
+    libgdal-dev \
     && git clone https://github.com/felt/tippecanoe.git /tmp/tippecanoe \
     && cd /tmp/tippecanoe \
     && make -j$(nproc) \
     && make install \
     && cd / \
     && rm -rf /tmp/tippecanoe \
+    && pip install --no-cache-dir gdal==$(gdal-config --version) \
     && apt-get purge -y git g++ make \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*

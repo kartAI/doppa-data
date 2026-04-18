@@ -189,61 +189,31 @@ experiments:
     image: doppaacr.azurecr.io/national-scale-spatial-join-duckdb:latest
     cpu: 3
     memory_gb: 8
-    related_script_ids:
-      [
-        "national-scale-spatial-join-postgis",
-        "national-scale-spatial-join-databricks-2-nodes",
-        "national-scale-spatial-join-databricks-4-nodes",
-        "national-scale-spatial-join-databricks-8-nodes",
-      ]
+    related_script_ids: ["national-scale-spatial-join-postgis"]
 
   - id: national-scale-spatial-join-postgis
     image: doppaacr.azurecr.io/national-scale-spatial-join-postgis:latest
     cpu: 3
     memory_gb: 8
-    related_script_ids:
-      [
-        "national-scale-spatial-join-duckdb",
-        "national-scale-spatial-join-databricks-2-nodes",
-        "national-scale-spatial-join-databricks-4-nodes",
-        "national-scale-spatial-join-databricks-8-nodes",
-      ]
+    related_script_ids: ["national-scale-spatial-join-duckdb"]
 
   - id: national-scale-spatial-join-databricks-2-nodes
     image: doppaacr.azurecr.io/national-scale-spatial-join-databricks-2-nodes:latest
     cpu: 3
     memory_gb: 8
-    related_script_ids:
-      [
-        "national-scale-spatial-join-duckdb",
-        "national-scale-spatial-join-postgis",
-        "national-scale-spatial-join-databricks-4-nodes",
-        "national-scale-spatial-join-databricks-8-nodes",
-      ]
+    related_script_ids: []
 
   - id: national-scale-spatial-join-databricks-4-nodes
     image: doppaacr.azurecr.io/national-scale-spatial-join-databricks-4-nodes:latest
     cpu: 3
     memory_gb: 8
-    related_script_ids:
-      [
-        "national-scale-spatial-join-duckdb",
-        "national-scale-spatial-join-postgis",
-        "national-scale-spatial-join-databricks-2-nodes",
-        "national-scale-spatial-join-databricks-8-nodes",
-      ]
+    related_script_ids: []
 
   - id: national-scale-spatial-join-databricks-8-nodes
     image: doppaacr.azurecr.io/national-scale-spatial-join-databricks-8-nodes:latest
     cpu: 3
     memory_gb: 8
-    related_script_ids:
-      [
-        "national-scale-spatial-join-duckdb",
-        "national-scale-spatial-join-postgis",
-        "national-scale-spatial-join-databricks-2-nodes",
-        "national-scale-spatial-join-databricks-4-nodes",
-      ]
+    related_script_ids: []
 
 #  - id: vector-tiles-100k-pmtiles
 #    image: doppaacr.azurecr.io/vector-tiles-100k-pmtiles:latest

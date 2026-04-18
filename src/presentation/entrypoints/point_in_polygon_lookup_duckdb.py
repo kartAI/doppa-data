@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
 from src import Config
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox
@@ -78,7 +78,7 @@ def _generate_points(
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="point-in-polygon-lookup-duckdb",
     benchmark_iteration=BenchmarkIteration.POINT_IN_POLYGON_LOOKUP,
     cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True),
