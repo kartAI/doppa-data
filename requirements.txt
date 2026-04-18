@@ -108,6 +108,7 @@ pandas==2.3.3
 pandas-stubs==2.3.3.260113
 pandocfilters==1.5.1
 parso==0.8.5
+pexpect==4.9.0
 pillow==11.3.0
 platformdirs==4.4.0
 pmtiles==3.7.0
@@ -116,6 +117,7 @@ prompt_toolkit==3.0.52
 propcache==0.4.1
 psutil==7.1.0
 psycopg2-binary==2.9.11
+ptyprocess==0.7.0
 pure_eval==0.2.3
 pyarrow==21.0.0
 pycparser==2.23
@@ -132,8 +134,6 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-json-logger==3.3.0
 pytz==2025.2
-pywin32==311; sys_platform == "win32"
-pywinpty==3.0.0; sys_platform == "win32"
 PyYAML==6.0.3
 pyzmq==27.1.0
 query==0.1.4
