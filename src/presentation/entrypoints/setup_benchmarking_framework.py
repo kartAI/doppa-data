@@ -2,6 +2,8 @@
 import subprocess
 
 import geopandas as gpd
+from osgeo import ogr
+from pyproj import CRS
 from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 from shapely import from_wkb
@@ -16,6 +18,7 @@ from src.application.contracts import (
     ITileService,
     ITileApiService,
     ITestDatasetService,
+    IBenchmarkService,
 )
 from src.domain.enums import StorageContainer, Theme, EPSGCode
 from src.infra.infrastructure import Containers
@@ -29,21 +32,25 @@ def setup_benchmarking_framework(
 ) -> None:
     logger.info("Starting benchmarking framework setup...")
 
-    logger.info("Step 1/4: Running test dataset pipeline...")
+    logger.info("Step 1/5: Running test dataset pipeline...")
     release = test_dataset_service.run_pipeline()
     logger.info(f"Test dataset pipeline complete. Release: '{release}'")
 
-    logger.info("Step 2/4: Seeding Postgres with buildings...")
+    logger.info("Step 2/5: Seeding Postgres with buildings...")
     _postgres_buildings_seed(release=release)
     logger.info("Postgres seed complete.")
 
-    logger.info("Step 3/4: Creating PMTiles...")
+    logger.info("Step 3/5: Creating PMTiles...")
     _create_pmtiles(release=release)
     logger.info("PMTiles complete.")
 
-    logger.info("Step 4/4: Creating MVT tiles...")
+    logger.info("Step 4/5: Creating MVT tiles...")
     _create_mvt(release=release)
     logger.info("MVT tiles complete.")
+
+    logger.info("Step 5/5: Creating shapefile copy in blob storage...")
+    _create_shapefile_copy(release=release)
+    logger.info("Shapefile copy complete.")
 
     logger.info("Benchmarking framework setup complete.")
 
@@ -324,3 +331,63 @@ def _generate_tiles_file(
         json.dump([list(tile) for tile in existing_tiles], f)
 
     logger.info(f"Tiles file saved to '{Config.MVT_TILES_PATH}'")
+
+
+@inject
+def _create_shapefile_copy(
+    release: str | None = None,
+    file_path_service: IFilePathService = Provide[Containers.file_path_service],
+    benchmark_service: IBenchmarkService = Provide[Containers.benchmark_service],
+    blob_storage_service: IBlobStorageService = Provide[
+        Containers.blob_storage_service
+    ],
+) -> None:
+
+    path = file_path_service.create_release_virtual_filesystem_path(
+        storage_scheme="az",
+        release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
+        container=StorageContainer.DATA,
+        theme=Theme.BUILDINGS,
+        region="*",
+        file_name="*.parquet",
+    )
+
+    logger.info("Converting parquet to shapefile locally...")
+    benchmark_service.download_parquet_as_shapefile_locally(
+        virtual_file_path=path,
+        save_path=Config.BUILDINGS_SHAPEFILE,
+    )
+    logger.info(f"Shapefile written to '{Config.BUILDINGS_SHAPEFILE}'")
+
+    prj_path = Config.BUILDINGS_SHAPEFILE.with_suffix(".prj")
+    prj_path.write_text(CRS.from_epsg(4326).to_wkt(version="WKT1_ESRI"))
+    logger.info(f"WGS84 .prj file written to '{prj_path}'")
+
+    logger.info("Creating spatial index (.qix)...")
+    ogr.UseExceptions()
+    ds = ogr.Open(Config.BUILDINGS_SHAPEFILE.as_posix(), update=1)
+    ds.ExecuteSQL(f"CREATE SPATIAL INDEX ON {Config.BUILDINGS_SHAPEFILE.stem}")
+    ds = None
+    logger.info("Spatial index created.")
+
+    blob_prefix = "copies/shapefile"
+    base = Config.BUILDINGS_SHAPEFILE.with_suffix("")
+    for ext in (".shp", ".shx", ".dbf", ".prj", ".cpg", ".qix"):
+        component = base.with_suffix(ext)
+        if not component.exists():
+            logger.warning(
+                f"Shapefile component '{component.name}' not found, skipping."
+            )
+            continue
+
+        blob_name = f"{blob_prefix}/{component.name}"
+        data = component.read_bytes()
+        blob_storage_service.upload_file(
+            container_name=StorageContainer.DATA,
+            blob_name=blob_name,
+            data=data,
+        )
+
+        logger.info(
+            f"Uploaded '{component.name}' to '{blob_name}' in container '{StorageContainer.DATA.value}'"
+        )
