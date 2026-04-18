@@ -2,16 +2,18 @@
 from dependency_injector.wiring import inject, Provide
 
 from src import Config
-from src.application.common.monitor_cpu_and_ram import monitor_cpu_and_ram
+from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
+from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, Theme, BenchmarkIteration
 from src.infra.infrastructure import Containers
 
 
 @inject
-@monitor_cpu_and_ram(
+@monitor(
     query_id="bbox-filtering-simple-blob-storage",
-    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_SIMPLE
+    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_SIMPLE,
+    cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True)
 )
 def bbox_filtering_simple_blob_storage(
         db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb_context],
@@ -33,10 +35,12 @@ def bbox_filtering_simple_blob_storage(
 
     db_context.execute(
         f"""
-            SELECT * FROM read_parquet('{path}')
+            SELECT *, ST_Area(ST_Transform(geometry, 'EPSG:4326', 'EPSG:25832')) AS area
+            FROM read_parquet('{path}')
             WHERE ST_Intersects(
                 geometry,
                 ST_MakeEnvelope({min_lon}, {min_lat}, {max_lon}, {max_lat})
-            );
+            )
+            AND ST_Area(ST_Transform(geometry, 'EPSG:4326', 'EPSG:25832')) > 10;
             """
     )

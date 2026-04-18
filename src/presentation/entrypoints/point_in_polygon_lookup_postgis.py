@@ -3,7 +3,7 @@ import random
 from dependency_injector.wiring import Provide, inject
 from sqlalchemy import Engine, text
 
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.dtos import CostConfiguration
 from src.domain.enums import BenchmarkIteration, BoundingBox
 from src.infra.infrastructure import Containers
@@ -72,7 +72,7 @@ def _generate_points(db_context: Engine) -> list[tuple[float, float]]:
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="point-in-polygon-lookup-postgis",
     benchmark_iteration=BenchmarkIteration.POINT_IN_POLYGON_LOOKUP,
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True),
