@@ -23,7 +23,7 @@ def monitor_databricks(
     cost_configuration: CostConfiguration,
 ):
     """
-    Monitoring decorator for Databricks jobs. Identical to monitor_network but without warmup
+    Monitoring decorator for Databricks jobs. Identical to monitor but without warmup
     iterations, since each Databricks run provisions a cluster (warmup would multiply cost).
     """
 

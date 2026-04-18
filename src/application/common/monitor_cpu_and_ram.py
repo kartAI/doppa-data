@@ -1,4 +1,5 @@
-﻿import functools
+﻿import datetime
+import functools
 import threading
 import time
 from typing import Any
@@ -33,9 +34,13 @@ def monitor_cpu_and_ram(
 
             logger.info(f"Warmup runs completed. Starting {benchmark_iteration.value} benchmark runs.")
             logger.info(f"Benchmarking started with sampling interval of {interval} seconds.")
+
+            start_time = datetime.datetime.now(datetime.UTC)
             for i in range(benchmark_iteration.value):
                 iteration = i + 1
                 samples: list[dict[str, Any]] = []
+
+                logger.info(f"Starting iteration {iteration}/{benchmark_iteration.value}...")
 
                 _initialize_cpu_metrics(process=process)
 
@@ -62,8 +67,12 @@ def monitor_cpu_and_ram(
                     samples=samples
                 )
 
-            logger.info(f"Benchmarking completed.")
+                logger.info(f"Iteration {iteration}/{benchmark_iteration.value} completed.")
+
+            end_time = datetime.datetime.now(datetime.UTC)
+            logger.info(f"Benchmarking completed in {round((end_time - start_time).total_seconds(), 2)} seconds.")
             _save_run_metadata(query_id=query_id, run_id=run_id)
+            logger.info(f"Benchmark run {benchmark_run} completed.")
             return result
 
         return wrapper
