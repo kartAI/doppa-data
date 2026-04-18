@@ -2,7 +2,7 @@ from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
 
 from src import Config
-from src.application.common.monitor_network import monitor_network
+from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
 from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox
@@ -14,7 +14,7 @@ def bbox_filtering_result_set_sizes_municipality_duckdb() -> None:
 
 
 @inject
-@monitor_network(
+@monitor(
     query_id="bbox-filtering-result-set-sizes-municipality-duckdb",
     benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_RESULT_SET_SIZES,
     cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=True)
@@ -36,11 +36,13 @@ def _benchmark(
 
     db_context.execute(
         f"""
-        SELECT * FROM read_parquet('{path}')
+        SELECT *, ST_Area(ST_Transform(geometry, 'EPSG:4326', 'EPSG:25832')) AS area
+        FROM read_parquet('{path}')
         WHERE ST_Intersects(
             geometry,
             ST_MakeEnvelope(?, ?, ?, ?)
-        );
+        )
+        AND ST_Area(ST_Transform(geometry, 'EPSG:4326', 'EPSG:25832')) > 10;
         """,
         [min_lon, min_lat, max_lon, max_lat],
     )

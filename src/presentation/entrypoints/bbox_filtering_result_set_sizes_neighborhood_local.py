@@ -1,10 +1,11 @@
-import duckdb
+import geopandas as gpd
 from dependency_injector.wiring import inject, Provide
 
 from src import Config
-from src.application.common.monitor_cpu_and_ram import monitor_cpu_and_ram
-from src.application.contracts import IFilePathService, IBenchmarkService
-from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox
+from src.application.common.monitor import monitor
+from src.application.contracts import IBlobStorageService
+from src.application.dtos import CostConfiguration
+from src.domain.enums import StorageContainer, BenchmarkIteration, BoundingBox
 from src.infra.infrastructure import Containers
 
 
@@ -13,42 +14,36 @@ def bbox_filtering_result_set_sizes_neighborhood_local() -> None:
     _benchmark()
 
 
-@inject
-@monitor_cpu_and_ram(
+@monitor(
     query_id="bbox-filtering-result-set-sizes-neighborhood-local",
-    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_RESULT_SET_SIZES
+    benchmark_iteration=BenchmarkIteration.BBOX_FILTERING_RESULT_SET_SIZES,
+    cost_configuration=CostConfiguration(include_aci=True, include_blob_storage=False)
 )
-def _benchmark(
-        db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb_context],
-) -> None:
+def _benchmark() -> None:
     min_lon, min_lat, max_lon, max_lat = BoundingBox.NEIGHBORHOOD_WGS84.value
 
-    db_context.execute(
-        f"""
-        SELECT * FROM ST_ReadShp('{str(Config.BUILDINGS_SHAPEFILE)}')
-        WHERE ST_Intersects(
-            geom,
-            ST_MakeEnvelope({min_lon}, {min_lat}, {max_lon}, {max_lat})
-        );
-        """
+    gdf = gpd.read_file(
+        Config.BUILDINGS_SHAPEFILE,
+        bbox=(min_lon, min_lat, max_lon, max_lat),
     )
+    gdf = gdf.set_crs(epsg=4326, allow_override=True).to_crs(epsg=25832)
+    gdf["area"] = gdf.geometry.area
+    gdf = gdf[gdf["area"] > 10]
 
 
 @inject
 def _download_data(
-        file_path_service: IFilePathService = Provide[Containers.file_path_service],
-        benchmark_service: IBenchmarkService = Provide[Containers.benchmark_service]
+        blob_storage_service: IBlobStorageService = Provide[Containers.blob_storage_service]
 ) -> None:
-    virtual_file_path = file_path_service.create_release_virtual_filesystem_path(
-        storage_scheme="az",
-        container=StorageContainer.DATA,
-        release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
-        theme=Theme.BUILDINGS,
-        region="*",
-        file_name="*.parquet"
-    )
+    Config.BUILDINGS_SHAPEFILE.parent.mkdir(parents=True, exist_ok=True)
 
-    benchmark_service.download_parquet_as_shapefile_locally(
-        virtual_file_path=virtual_file_path,
-        save_path=Config.BUILDINGS_SHAPEFILE
-    )
+    blob_prefix = "copies/shapefile"
+    base = Config.BUILDINGS_SHAPEFILE.with_suffix("")
+    for ext in (".shp", ".shx", ".dbf", ".prj", ".cpg", ".qix"):
+        blob_name = f"{blob_prefix}/{base.name}{ext}"
+        data = blob_storage_service.download_file(
+            container_name=StorageContainer.DATA,
+            blob_name=blob_name,
+        )
+        if data is not None:
+            base.with_suffix(ext).write_bytes(data)
