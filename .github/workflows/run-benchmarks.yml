@@ -35,6 +35,21 @@ jobs:
             --name container-orchestrator \
             --yes 2>/dev/null || true
 
+      - name: Wait for Container Deletion
+        run: |
+          for i in $(seq 1 30); do
+            STATUS=$(az container show \
+              --resource-group doppa \
+              --name container-orchestrator \
+              --query "provisioningState" -o tsv 2>/dev/null || echo "Deleted")
+            if [ "$STATUS" = "Deleted" ]; then
+              echo "Container deleted."
+              break
+            fi
+            echo "Still deleting (attempt $i/30)... waiting 10s"
+            sleep 10
+          done
+
       - name: Create Orchestrator Container on ACI
         env:
           AZURE_UAMI_RESOURCE_ID: ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
