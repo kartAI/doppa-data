@@ -1,8 +1,8 @@
 name: Run Benchmarks
 
 on:
-  schedule:
-    # - cron: "30 3 * * 1"
+  # schedule:
+  #   - cron: "30 3 * * 1"
   workflow_dispatch:
 
 concurrency:
@@ -87,4 +87,3 @@ jobs:
               "DATABRICKS_HOST=$DATABRICKS_HOST" \
               "DATABRICKS_TOKEN=$DATABRICKS_TOKEN" \
             --no-wait
-
