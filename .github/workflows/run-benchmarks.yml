@@ -1,8 +1,8 @@
 name: Run Benchmarks
 
 on:
-  schedule:
-    - cron: "30 3 * * 1"
+  # schedule:
+  #   - cron: "30 3 * * 1"
   workflow_dispatch:
 
 concurrency:
@@ -34,6 +34,26 @@ jobs:
             --resource-group doppa \
             --name container-orchestrator \
             --yes 2>/dev/null || true
+
+      - name: Wait for Container Deletion
+        run: |
+          STATUS="Unknown"
+          for i in $(seq 1 30); do
+            STATUS=$(az container show \
+              --resource-group doppa \
+              --name container-orchestrator \
+              --query "provisioningState" -o tsv 2>/dev/null || echo "Deleted")
+            if [ "$STATUS" = "Deleted" ]; then
+              echo "Container deleted."
+              break
+            fi
+            echo "Still deleting (attempt $i/30)... waiting 10s"
+            sleep 10
+          done
+          if [ "$STATUS" != "Deleted" ]; then
+            echo "Container was not deleted after 30 attempts (last status: $STATUS). Aborting."
+            exit 1
+          fi
 
       - name: Create Orchestrator Container on ACI
         env:
