@@ -15,28 +15,29 @@ on:
 
 jobs:
   compile:
-    
+    name: Check Python syntax
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-    - name: Install system dependencies (GDAL)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gdal-bin libgdal-dev
-        name: Check Python syntax
-        runs-on: ubuntu-latest
+      - name: Install system dependencies (GDAL)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gdal-bin libgdal-dev
 
-    - name: Install dependencies
-      run: |
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Compile all Python files
-      run: python -m compileall src main.py benchmark_runner.py
+      - name: Compile all Python files
+        run: python -m compileall src main.py benchmark_runner.py
 
   build-docker-images:
     name: Build ${{ matrix.display_name }}
