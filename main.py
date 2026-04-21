@@ -40,8 +40,11 @@ def _run_benchmarks(
     logger.info(f"Executing benchmark run {benchmark_run}/{Config.BENCHMARK_RUNS}.")
 
     experiments = benchmark_configuration["experiments"]
-    completed_experiments: list[str] = []
 
+    if Config.IS_REVERSED_BENCHMARK_EXECTUION_ORDER:
+        experiments.reverse()
+
+    completed_experiments: list[str] = []
     _clear_all_container_instances(experiments)
 
     for experiment in experiments:
