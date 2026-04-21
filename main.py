@@ -242,6 +242,7 @@ def _create_container_instance(
         f"POSTGRES_PASSWORD={Config.POSTGRES_PASSWORD}",
         f"DATABRICKS_HOST={Config.DATABRICKS_HOST}",
         f"DATABRICKS_TOKEN={Config.DATABRICKS_TOKEN}",
+        f"AZURE_BLOB_STORAGE_ACCOUNT_KEY={Config.AZURE_BLOB_STORAGE_ACCOUNT_KEY}",
         "--no-wait",
     ]
 
