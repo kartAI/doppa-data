@@ -13,6 +13,7 @@ load_dotenv(find_dotenv())
 class Config:
     IS_NOTEBOOK: bool = False
     IOU_ROUNDING_DECIMALS: int = 9
+    IS_REVERSED_BENCHMARK_EXECTUION_ORDER: bool = True
 
     # AZURE
     AZURE_RESOURCE_GROUP: str = "doppa"
