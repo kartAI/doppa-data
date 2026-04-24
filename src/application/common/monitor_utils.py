@@ -1,10 +1,12 @@
 ﻿import datetime
 import random
 import string
+import time
 import uuid
 from datetime import date
 from typing import Any
 
+import psutil
 from dependency_injector.wiring import inject, Provide
 
 from src import Config
@@ -16,13 +18,15 @@ from src.infra.infrastructure import Containers
 
 
 @inject
-def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
+def _get_run_id(run_id: str | None = Provide[Containers.config.run_id]) -> str:
     if run_id is not None:
         logger.debug(f"Found run ID '{run_id}' from DI.")
         return run_id
 
     today = date.today().strftime("%Y-%m-%d")
-    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH))
+    suffix = "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=Config.RUN_ID_LENGTH)
+    )
     run_id = f"{today}-{suffix}"
     logger.info(f"No run ID from DI. Created run ID '{run_id}'")
 
@@ -30,24 +34,28 @@ def _get_run_id(run_id: str = Provide[Containers.config.run_id]) -> str:
 
 
 @inject
-def _get_benchmark_run(benchmark_run: int = Provide[Containers.config.benchmark_run]) -> int:
+def _get_benchmark_run(
+    benchmark_run: int = Provide[Containers.config.benchmark_run],
+) -> int:
     return benchmark_run
 
 
 @inject
 def _save_run(
-        run_id: str,
-        benchmark_run: int,
-        query_id: str,
-        iteration: int,
-        total_iterations: int,
-        samples: list[dict[str, Any]],
-        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
+    run_id: str,
+    benchmark_run: int,
+    query_id: str,
+    iteration: int,
+    total_iterations: int,
+    samples: list[dict[str, Any]],
+    monitoring_storage_service: IMonitoringStorageService = Provide[
+        Containers.monitoring_storage_service
+    ],
 ) -> None:
     iteration = _create_global_iteration(
         iteration=iteration,
         total_iterations=total_iterations,
-        benchmark_run=benchmark_run
+        benchmark_run=benchmark_run,
     )
 
     monitoring_storage_service.write_run_to_blob_storage(
@@ -55,24 +63,23 @@ def _save_run(
         query_id=query_id,
         run_id=run_id,
         benchmark_run=benchmark_run,
-        iteration=iteration
+        iteration=iteration,
     )
 
 
 @inject
 def _save_run_metadata(
-        query_id: str,
-        run_id: str,
-        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service],
+    query_id: str,
+    run_id: str,
+    monitoring_storage_service: IMonitoringStorageService = Provide[
+        Containers.monitoring_storage_service
+    ],
 ) -> None:
     logger.info("Saving benchmark metadata to blob storage.")
     metadata_id = str(uuid.uuid4())
     timestamp = datetime.datetime.now(datetime.timezone.utc)
     monitoring_storage_service.write_metadata_to_blob_storage(
-        metadata_id=metadata_id,
-        timestamp=timestamp,
-        query_id=query_id,
-        run_id=run_id
+        metadata_id=metadata_id, timestamp=timestamp, query_id=query_id, run_id=run_id
     )
 
     logger.info(f"Benchmark metadata saved with ID '{metadata_id}'.")
@@ -80,16 +87,18 @@ def _save_run_metadata(
 
 @inject
 def _save_run_cost_analytics(
-        query_id: str,
-        run_id: str,
-        cost_configuration: CostConfiguration,
-        start_time: datetime.datetime,
-        end_time: datetime.datetime,
-        bytes_ingress: float | None = None,
-        bytes_egress: float | None = None,
-        operation_type: BlobOperationType | None = None,
-        azure_cost_service: IAzureCostService = Provide[Containers.azure_cost_service],
-        monitoring_storage_service: IMonitoringStorageService = Provide[Containers.monitoring_storage_service]
+    query_id: str,
+    run_id: str,
+    cost_configuration: CostConfiguration,
+    start_time: datetime.datetime,
+    end_time: datetime.datetime,
+    bytes_ingress: float | None = None,
+    bytes_egress: float | None = None,
+    operation_type: BlobOperationType | None = None,
+    azure_cost_service: IAzureCostService = Provide[Containers.azure_cost_service],
+    monitoring_storage_service: IMonitoringStorageService = Provide[
+        Containers.monitoring_storage_service
+    ],
 ) -> None:
     benchmark_run = _get_benchmark_run()
     if cost_configuration.include_aci:
@@ -100,17 +109,17 @@ def _save_run_cost_analytics(
             run_id=run_id,
             benchmark_run=benchmark_run,
             file_name="aci_cost.parquet",
-            cost=aci_cost
+            cost=aci_cost,
         )
 
-    is_blob_params_present = bytes_ingress is not None and bytes_egress is not None and operation_type is not None
+    is_blob_params_present = (
+        bytes_ingress is not None
+        and bytes_egress is not None
+        and operation_type is not None
+    )
     if cost_configuration.include_blob_storage and is_blob_params_present:
         blob_cost = azure_cost_service.compute_blob_storage_cost(
-            start_time,
-            end_time,
-            bytes_ingress,
-            bytes_egress,
-            operation_type
+            start_time, end_time, bytes_ingress, bytes_egress, operation_type
         )
         logger.info(f"Computed Blob Storage cost: {blob_cost.to_dict()}")
         monitoring_storage_service.write_cost_analytics_to_blob_storage(
@@ -118,7 +127,7 @@ def _save_run_cost_analytics(
             run_id=run_id,
             benchmark_run=benchmark_run,
             file_name="blob_cost.parquet",
-            cost=blob_cost
+            cost=blob_cost,
         )
 
     if cost_configuration.include_postgres:
@@ -150,5 +159,23 @@ def _save_run_cost_analytics(
         )
 
 
-def _create_global_iteration(iteration: int, total_iterations: int, benchmark_run: int) -> int:
+def _create_global_iteration(
+    iteration: int, total_iterations: int, benchmark_run: int
+) -> int:
     return iteration + total_iterations * (benchmark_run - 1)
+
+
+def _measure_net_io(func, *args, **kwargs) -> tuple[Any, float, int, int]:
+    before = psutil.net_io_counters()
+    start_time = time.perf_counter()
+
+    result = func(*args, **kwargs)
+
+    end_time = time.perf_counter()
+    after = psutil.net_io_counters()
+
+    elapsed_time = end_time - start_time
+    network_bytes_sent = after.bytes_sent - before.bytes_sent
+    network_bytes_received = after.bytes_recv - before.bytes_recv
+
+    return result, elapsed_time, network_bytes_sent, network_bytes_received

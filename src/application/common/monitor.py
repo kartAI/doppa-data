@@ -1,15 +1,12 @@
-﻿import datetime
+import datetime
 import functools
-import time
-from typing import Any
-
-import psutil
 
 from src import Config
 from src.application.common import logger
 from src.application.common.monitor_utils import (
     _get_run_id,
     _get_benchmark_run,
+    _measure_net_io,
     _save_run,
     _save_run_metadata,
     _save_run_cost_analytics,
@@ -22,7 +19,19 @@ def monitor(
     query_id: str,
     benchmark_iteration: BenchmarkIteration,
     cost_configuration: CostConfiguration,
+    skip_warmup: bool = False,
+    elapsed_from_result: bool = False,
 ):
+    """
+    Benchmarking decorator. Wraps a function in warmup + timed iterations, records
+    per-iteration samples, and writes run metadata and cost analytics to blob storage.
+    :param query_id: Identifier for the benchmarked query.
+    :param benchmark_iteration: Number of timed iterations to run.
+    :param cost_configuration: Which Azure cost components to compute and store.
+    :param skip_warmup: Disable warmup runs. Use for Databricks, since each run provisions a cluster and warmup would multiply cost. Default is False.
+    :param elapsed_from_result: Treat the wrapped function's return value as the elapsed time in seconds instead of wall-clock. Use for Databricks, since the API-reported notebook execution time excludes cluster provisioning/teardown. Default is False.
+    """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -34,14 +43,20 @@ def monitor(
             logger.info(
                 f"Starting benchmark for query '{query_id}' with run ID '{run_id}'."
             )
-            logger.info(f"Executing {Config.BENCHMARK_WARMUP_ITERATIONS} warmup runs.")
 
-            for _ in range(Config.BENCHMARK_WARMUP_ITERATIONS):
-                func(*args, **kwargs)
-
-            logger.info(
-                f"Warmup runs completed. Starting {benchmark_iteration.value} benchmark runs."
-            )
+            if skip_warmup:
+                logger.info(
+                    f"Executing {benchmark_iteration.value} benchmark run(s) (no warmup)."
+                )
+            else:
+                logger.info(
+                    f"Executing {Config.BENCHMARK_WARMUP_ITERATIONS} warmup runs."
+                )
+                for _ in range(Config.BENCHMARK_WARMUP_ITERATIONS):
+                    func(*args, **kwargs)
+                logger.info(
+                    f"Warmup runs completed. Starting {benchmark_iteration.value} benchmark runs."
+                )
 
             ingress_sum: int = 0
             egress_sum: int = 0
@@ -49,9 +64,11 @@ def monitor(
 
             for i in range(benchmark_iteration.value):
                 iteration = i + 1
-                result, elapsed_time, net_bytes_sent, net_bytes_received = _benchmark(
-                    func, *args, **kwargs
+                result, wall_elapsed_time, net_bytes_sent, net_bytes_received = (
+                    _measure_net_io(func, *args, **kwargs)
                 )
+                elapsed_time = result if elapsed_from_result else wall_elapsed_time
+
                 ingress_sum += net_bytes_received
                 egress_sum += net_bytes_sent
 
@@ -93,19 +110,3 @@ def monitor(
         return wrapper
 
     return decorator
-
-
-def _benchmark(func, *args, **kwargs) -> tuple[Any, float, int, int]:
-    before = psutil.net_io_counters()
-    start_time = time.perf_counter()
-
-    result = func(*args, **kwargs)
-
-    end_time = time.perf_counter()
-    after = psutil.net_io_counters()
-
-    elapsed_time = end_time - start_time
-    network_bytes_sent = after.bytes_sent - before.bytes_sent
-    network_bytes_received = after.bytes_recv - before.bytes_recv
-
-    return result, elapsed_time, network_bytes_sent, network_bytes_received
