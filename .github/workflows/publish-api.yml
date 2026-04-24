@@ -3,8 +3,6 @@ name: Publish APIs
 on:
   pull_request:
     types: [ closed ]
-    paths-ignore:
-      - src/presentation/entrypoints/**
   workflow_dispatch:
 
 
@@ -17,9 +15,36 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      api: ${{ steps.filter.outputs.api || (github.event_name == 'workflow_dispatch' && 'true') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            api:
+              - 'src/**'
+              - '!src/presentation/entrypoints/**'
+              - '!src/presentation/databricks/**'
+              - '.docker/Api.Dockerfile'
+              - 'requirements.txt'
+              - 'docker-compose.yml'
+              - '.github/workflows/publish-api.yml'
+
   build-and-push-api-images-to-acr:
     name: Build & Push API Images to ACR
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:

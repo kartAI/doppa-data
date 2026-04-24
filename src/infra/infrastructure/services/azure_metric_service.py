@@ -1,6 +1,7 @@
 ﻿import datetime
 import time
 
+from azure.core.exceptions import ClientAuthenticationError, ServiceRequestError
 from azure.identity import DefaultAzureCredential
 from azure.monitor.querymetrics import MetricsClient, MetricAggregationType, MetricsQueryResult
 
@@ -46,14 +47,30 @@ class AzureMetricService(IAzureMetricService):
         if is_waiting_for_ingestion:
             self.__wait_for_ingestion(end_time=end_time)
 
-        return self.__metrics_client.query_resources(
-            resource_ids=[self.__create_resource_ids(metric_namespace, resource_name)],
-            metric_namespace=metric_namespace.value,
-            metric_names=metric_names.value,
-            timespan=(start_time, end_time),
-            granularity=granularity,
-            aggregations=aggregations,
-        )
+        max_attempts = 3
+        last_exception: Exception | None = None
+        for attempt in range(max_attempts):
+            try:
+                return self.__metrics_client.query_resources(
+                    resource_ids=[self.__create_resource_ids(metric_namespace, resource_name)],
+                    metric_namespace=metric_namespace.value,
+                    metric_names=metric_names.value,
+                    timespan=(start_time, end_time),
+                    granularity=granularity,
+                    aggregations=aggregations,
+                )
+            except (ClientAuthenticationError, ServiceRequestError) as e:
+                last_exception = e
+                if attempt == max_attempts - 1:
+                    break
+                wait = 5 * (3 ** attempt)
+                logger.warning(
+                    f"Azure metrics query failed (attempt {attempt + 1}/{max_attempts}), "
+                    f"retrying in {wait}s: {e}"
+                )
+                time.sleep(wait)
+
+        raise last_exception
 
     def get_aci_usage(
             self,

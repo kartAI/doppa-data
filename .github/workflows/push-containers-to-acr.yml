@@ -14,9 +14,46 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      orchestrator: ${{ steps.filter.outputs.orchestrator || (github.event_name == 'workflow_dispatch' && 'true') }}
+      benchmarks: ${{ steps.filter.outputs.benchmarks || (github.event_name == 'workflow_dispatch' && 'true') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            orchestrator:
+              - 'main.py'
+              - 'benchmarks.yml'
+              - 'src/__init__.py'
+              - 'src/config.py'
+              - 'src/application/common/**'
+              - 'src/domain/enums/storage_container.py'
+              - '.docker/Orchestrator.Dockerfile'
+              - 'requirements.txt'
+              - 'docker-compose.yml'
+            benchmarks:
+              - 'src/**'
+              - 'benchmark_runner.py'
+              - '.docker/Query.Dockerfile'
+              - '.docker/Setup.Dockerfile'
+              - 'requirements.txt'
+              - 'docker-compose.yml'
+
   build-and-push-queries:
     name: Build & Push ${{ matrix.display_name }}
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.benchmarks == 'true' }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -181,8 +218,15 @@ jobs:
 
   build-and-push-container-orchestrator:
     name: Build & Push Container Orchestrator
-    needs: build-and-push-queries
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    needs:
+      - detect-changes
+      - build-and-push-queries
+    if: |
+      always()
+      && !cancelled()
+      && needs.detect-changes.result == 'success'
+      && needs.detect-changes.outputs.orchestrator == 'true'
+      && (needs.build-and-push-queries.result == 'success' || needs.build-and-push-queries.result == 'skipped')
     runs-on: ubuntu-latest
 
     steps:
@@ -213,4 +257,3 @@ jobs:
 
       - name: Push Container Orchestrator (commit SHA)
         run: docker push ${{ vars.ACR_LOGIN_SERVER }}/container-orchestrator:${{ github.sha }}
-

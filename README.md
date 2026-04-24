@@ -1,9 +1,22 @@
 # doppa: A Framework for Comparing Traditional & CNG Queries
 
+doppa is a reproducible benchmarking framework for evaluating traditional geospatial query stacks
+(PostGIS, shapefiles) against cloud-native geospatial (CNG) alternatives (DuckDB over GeoParquet in
+blob storage, PMTiles/MVT vector tiles, and Apache Sedona on Databricks) across a range of real-world
+spatial query patterns: database scans, bounding-box filtering at varying result-set sizes, vector
+tile fetching, spatial aggregation over grids, attribute + spatial compound filters, ordered range
+queries, point-in-polygon lookups, and national-scale spatial joins.
+
+Each query is packaged as an independent container image, executed on Azure Container Instances via
+an orchestrator, and produces cost and runtime metrics written back to blob storage for downstream
+analysis. The framework is designed to make the trade-offs between traditional and CNG approaches
+measurable and reproducible on identical datasets and hardware.
+
+<div align="center">
+
 [![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
 
-doppa is a benchmarking framework for comparing traditional geospatial query approaches against cloud-native
-geospatial (CNG) alternatives across a range of real-world spatial query patterns.
+</div>
 
 ## Table of contents
 
