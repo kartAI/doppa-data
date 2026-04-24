@@ -3,8 +3,14 @@ name: Publish APIs
 on:
   pull_request:
     types: [ closed ]
-    paths-ignore:
-      - src/presentation/entrypoints/**
+    paths:
+      - 'src/**'
+      - '!src/presentation/entrypoints/**'
+      - '!src/presentation/databricks/**'
+      - '.docker/Api.Dockerfile'
+      - 'requirements.txt'
+      - 'docker-compose.yml'
+      - '.github/workflows/publish-api.yml'
   workflow_dispatch:
 
 
