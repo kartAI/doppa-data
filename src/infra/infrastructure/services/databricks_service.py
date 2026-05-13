@@ -8,6 +8,7 @@ import requests
 from src import Config
 from src.application.common import logger
 from src.application.contracts import IDatabricksService
+from src.application.dtos import DatabricksRunResult
 
 _TERMINAL_STATES = {"TERMINATED", "SKIPPED", "INTERNAL_ERROR"}
 
@@ -35,7 +36,7 @@ class DatabricksService(IDatabricksService):
             "Content-Type": "application/json",
         }
 
-    def submit_and_wait(self, num_workers: int) -> tuple[float, int]:
+    def submit_and_wait(self, num_workers: int) -> DatabricksRunResult:
         self._upload_notebook()
         run_id = self._submit_run(num_workers)
         logger.info(
@@ -170,8 +171,8 @@ class DatabricksService(IDatabricksService):
 
             time.sleep(Config.DATABRICKS_POLL_INTERVAL_SECONDS)
 
-    def _fetch_notebook_output(self, run_id: str) -> tuple[float, int]:
-        """Fetch the notebook's dbutils.notebookExit JSON payload and return (elapsed_seconds, cardinality)."""
+    def _fetch_notebook_output(self, run_id: str) -> DatabricksRunResult:
+        """Fetch the notebook's dbutils.notebookExit JSON payload and return a DatabricksRunResult."""
         response = requests.get(
             f"{self._host}/api/2.1/jobs/runs/get-output",
             headers=self._headers,
@@ -186,7 +187,7 @@ class DatabricksService(IDatabricksService):
         if not raw_result:
             raise RuntimeError(
                 f"Databricks run {run_id} produced no notebook_output.result. "
-                f"Expected JSON with 'elapsed_seconds' and 'cardinality'."
+                f"Expected JSON with execution_duration_s, cardinality, and Spark phase metrics."
             )
 
         try:
@@ -197,8 +198,16 @@ class DatabricksService(IDatabricksService):
             ) from exc
 
         try:
-            elapsed_seconds = float(parsed["elapsed_seconds"])
-            cardinality = int(parsed["cardinality"])
+            result = DatabricksRunResult(
+                execution_duration_s=float(parsed["execution_duration_s"]),
+                cardinality=int(parsed["cardinality"]),
+                executor_input_bytes_read=int(parsed["executor_input_bytes_read"]),
+                executor_run_time_ms=int(parsed["executor_run_time_ms"]),
+                shuffle_read_bytes=int(parsed["shuffle_read_bytes"]),
+                shuffle_write_bytes=int(parsed["shuffle_write_bytes"]),
+                driver_collection_time_ms=int(parsed["driver_collection_time_ms"]),
+                stage_durations_ms=str(parsed["stage_durations_ms"]),
+            )
         except (KeyError, TypeError, ValueError) as exc:
             raise RuntimeError(
                 f"Databricks run {run_id} notebook_output.result missing required fields. "
@@ -207,6 +216,11 @@ class DatabricksService(IDatabricksService):
 
         logger.info(
             f"Databricks run {run_id} notebook output: "
-            f"elapsed_seconds={elapsed_seconds:.3f}, cardinality={cardinality}"
+            f"execution_duration_s={result.execution_duration_s:.3f}, "
+            f"cardinality={result.cardinality}, "
+            f"executor_run_time_ms={result.executor_run_time_ms}, "
+            f"shuffle_read_bytes={result.shuffle_read_bytes}, "
+            f"shuffle_write_bytes={result.shuffle_write_bytes}, "
+            f"driver_collection_time_ms={result.driver_collection_time_ms}"
         )
-        return elapsed_seconds, cardinality
+        return result
