@@ -1,4 +1,5 @@
 import base64
+import json
 import time
 from pathlib import Path
 
@@ -34,13 +35,14 @@ class DatabricksService(IDatabricksService):
             "Content-Type": "application/json",
         }
 
-    def submit_and_wait(self, num_workers: int) -> float:
+    def submit_and_wait(self, num_workers: int) -> tuple[float, int]:
         self._upload_notebook()
         run_id = self._submit_run(num_workers)
         logger.info(
             f"Submitted Databricks run {run_id} with {num_workers} worker(s). Polling for completion."
         )
-        return self._wait_for_run(run_id)
+        self._wait_for_run(run_id)
+        return self._fetch_notebook_output(run_id)
 
     def _upload_notebook(self) -> None:
         folder = str(Path(Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH).parent)
@@ -128,8 +130,8 @@ class DatabricksService(IDatabricksService):
         run_id: str = str(response.json()["run_id"])
         return run_id
 
-    def _wait_for_run(self, run_id: str) -> float:
-        """Poll until terminal state. Returns execution_duration in seconds (excludes provisioning)."""
+    def _wait_for_run(self, run_id: str) -> None:
+        """Poll until terminal state. Logs API-reported durations for diagnostic purposes."""
         while True:
             response = requests.get(
                 f"{self._host}/api/2.1/jobs/runs/get",
@@ -158,13 +160,53 @@ class DatabricksService(IDatabricksService):
                 execution_duration_ms = data.get("execution_duration", 0)
                 setup_duration_ms = data.get("setup_duration", 0)
                 cleanup_duration_ms = data.get("cleanup_duration", 0)
-                execution_duration_s = execution_duration_ms / 1000
                 logger.info(
                     f"Databricks run {run_id} completed successfully. "
                     f"setup={setup_duration_ms / 1000:.1f}s, "
-                    f"execution={execution_duration_s:.1f}s, "
+                    f"execution={execution_duration_ms / 1000:.1f}s, "
                     f"cleanup={cleanup_duration_ms / 1000:.1f}s"
                 )
-                return execution_duration_s
+                return
 
             time.sleep(Config.DATABRICKS_POLL_INTERVAL_SECONDS)
+
+    def _fetch_notebook_output(self, run_id: str) -> tuple[float, int]:
+        """Fetch the notebook's dbutils.notebookExit JSON payload and return (elapsed_seconds, cardinality)."""
+        response = requests.get(
+            f"{self._host}/api/2.1/jobs/runs/get-output",
+            headers=self._headers,
+            params={"run_id": run_id},
+            timeout=30,
+        )
+        response.raise_for_status()
+        payload = response.json()
+
+        notebook_output = payload.get("notebook_output", {})
+        raw_result = notebook_output.get("result")
+        if not raw_result:
+            raise RuntimeError(
+                f"Databricks run {run_id} produced no notebook_output.result. "
+                f"Expected JSON with 'elapsed_seconds' and 'cardinality'."
+            )
+
+        try:
+            parsed = json.loads(raw_result)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                f"Databricks run {run_id} notebook_output.result is not valid JSON: {raw_result!r}"
+            ) from exc
+
+        try:
+            elapsed_seconds = float(parsed["elapsed_seconds"])
+            cardinality = int(parsed["cardinality"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise RuntimeError(
+                f"Databricks run {run_id} notebook_output.result missing required fields. "
+                f"Got: {parsed!r}"
+            ) from exc
+
+        logger.info(
+            f"Databricks run {run_id} notebook output: "
+            f"elapsed_seconds={elapsed_seconds:.3f}, cardinality={cardinality}"
+        )
+        return elapsed_seconds, cardinality
