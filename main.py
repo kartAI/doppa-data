@@ -39,10 +39,18 @@ def _run_benchmarks(
 ) -> None:
     logger.info(f"Executing benchmark run {benchmark_run}/{Config.BENCHMARK_RUNS}.")
 
-    experiments = benchmark_configuration["experiments"]
+    experiments = list(benchmark_configuration["experiments"])
 
-    if Config.IS_REVERSED_BENCHMARK_EXECTUION_ORDER:
-        experiments.reverse()
+    rng = random.Random(benchmark_run)
+    rng.shuffle(experiments)
+
+    _assert_related_ids_resolvable(experiments)
+
+    logger.info(
+        "Benchmark run %s execution order: %s",
+        benchmark_run,
+        [exp["id"] for exp in experiments],
+    )
 
     completed_experiments: list[str] = []
     _clear_all_container_instances(experiments)
@@ -328,6 +336,25 @@ def _check_container_state(
             case _:
                 lines_seen = _stream_container_logs(container_group_name, lines_seen)
                 time.sleep(poll_interval_seconds)
+
+
+def _assert_related_ids_resolvable(
+    experiments: list[dict[str, str | int | list[str]]],
+) -> None:
+    known_ids = {str(exp["id"]) for exp in experiments}
+    missing: dict[str, list[str]] = {}
+
+    for experiment in experiments:
+        experiment_id = str(experiment["id"])
+        related_ids = experiment.get("related_script_ids") or []
+        unresolved = [
+            str(rid) for rid in related_ids if str(rid) not in known_ids  # type: ignore
+        ]
+        if unresolved:
+            missing[experiment_id] = unresolved
+
+    if missing:
+        raise ValueError(f"Unresolvable related_script_ids references: {missing}")
 
 
 def _get_experiment_from_id(
