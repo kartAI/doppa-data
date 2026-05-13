@@ -2,7 +2,7 @@ from dependency_injector.wiring import Provide, inject
 
 from src.application.common.monitor import monitor
 from src.application.contracts import IDatabricksService
-from src.application.dtos import CostConfiguration
+from src.application.dtos import CostConfiguration, DatabricksRunResult
 from src.domain.enums import BenchmarkIteration
 from src.infra.infrastructure import Containers
 
@@ -24,5 +24,5 @@ def national_scale_spatial_join_databricks_8_nodes(
 )
 def _benchmark(
     databricks_service: IDatabricksService = Provide[Containers.databricks_service],
-) -> tuple[float, int]:
+) -> DatabricksRunResult:
     return databricks_service.submit_and_wait(num_workers=8)
