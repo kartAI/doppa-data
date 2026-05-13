@@ -354,9 +354,7 @@ def _assert_related_ids_resolvable(
             missing[experiment_id] = unresolved
 
     if missing:
-        raise ValueError(
-            f"Unresolvable related_script_ids references: {missing}"
-        )
+        raise ValueError(f"Unresolvable related_script_ids references: {missing}")
 
 
 def _get_experiment_from_id(
