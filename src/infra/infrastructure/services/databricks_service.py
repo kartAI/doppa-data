@@ -42,8 +42,8 @@ class DatabricksService(IDatabricksService):
         logger.info(
             f"Submitted Databricks run {run_id} with {num_workers} worker(s). Polling for completion."
         )
-        self._wait_for_run(run_id)
-        return self._fetch_notebook_output(run_id)
+        task_run_id = self._wait_for_run(run_id)
+        return self._fetch_notebook_output(task_run_id)
 
     def _upload_notebook(self) -> None:
         folder = str(Path(Config.DATABRICKS_WORKSPACE_NOTEBOOK_PATH).parent)
@@ -131,16 +131,29 @@ class DatabricksService(IDatabricksService):
         run_id: str = str(response.json()["run_id"])
         return run_id
 
-    def _wait_for_run(self, run_id: str) -> None:
-        """Poll until terminal state. Logs API-reported durations for diagnostic purposes."""
+    def _wait_for_run(self, run_id: str) -> str:
+        """Poll until terminal state. Logs API-reported durations for diagnostic purposes.
+
+        Returns the task run id (sub-run under the parent job run), which is the id
+        required by /api/2.1/jobs/runs/get-output. Passing the parent run id to
+        get-output returns 400 Bad Request.
+        """
         while True:
-            response = requests.get(
-                f"{self._host}/api/2.1/jobs/runs/get",
-                headers=self._headers,
-                params={"run_id": run_id},
-                timeout=30,
-            )
-            response.raise_for_status()
+            try:
+                response = requests.get(
+                    f"{self._host}/api/2.1/jobs/runs/get",
+                    headers=self._headers,
+                    params={"run_id": run_id},
+                    timeout=30,
+                )
+                response.raise_for_status()
+            except (requests.ConnectionError, requests.Timeout) as exc:
+                logger.warning(
+                    f"Transient network error polling run {run_id}: {exc}. "
+                    f"Retrying in {Config.DATABRICKS_POLL_INTERVAL_SECONDS}s."
+                )
+                time.sleep(Config.DATABRICKS_POLL_INTERVAL_SECONDS)
+                continue
             data = response.json()
 
             state = data.get("state", {})
@@ -167,19 +180,37 @@ class DatabricksService(IDatabricksService):
                     f"execution={execution_duration_ms / 1000:.1f}s, "
                     f"cleanup={cleanup_duration_ms / 1000:.1f}s"
                 )
-                return
+                tasks = data.get("tasks") or []
+                if not tasks:
+                    raise RuntimeError(
+                        f"Databricks run {run_id} has no tasks in response payload; "
+                        f"cannot resolve task run id for notebook output."
+                    )
+                task_run_id = str(tasks[0].get("run_id"))
+                logger.info(
+                    f"Resolved task run id {task_run_id} for parent run {run_id}."
+                )
+                return task_run_id
 
             time.sleep(Config.DATABRICKS_POLL_INTERVAL_SECONDS)
 
     def _fetch_notebook_output(self, run_id: str) -> DatabricksRunResult:
-        """Fetch the notebook's dbutils.notebookExit JSON payload and return a DatabricksRunResult."""
+        """Fetch the notebook's dbutils.notebook.exit JSON payload and return a DatabricksRunResult.
+
+        run_id here must be the task run id (returned by _wait_for_run), not the parent
+        job run id from runs/submit.
+        """
         response = requests.get(
             f"{self._host}/api/2.1/jobs/runs/get-output",
             headers=self._headers,
             params={"run_id": run_id},
             timeout=30,
         )
-        response.raise_for_status()
+        if not response.ok:
+            raise RuntimeError(
+                f"Databricks runs/get-output failed for run {run_id}: "
+                f"{response.status_code} {response.reason}: {response.text}"
+            )
         payload = response.json()
 
         notebook_output = payload.get("notebook_output", {})

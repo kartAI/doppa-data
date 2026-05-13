@@ -11,7 +11,7 @@
 #                              includes planning + final collect)
 #
 # Notes:
-# - stage_durations_ms is capped at the first 100 stages (dbutils.notebookExit
+# - stage_durations_ms is capped at the first 100 stages (dbutils.notebook.exit
 #   has a payload cap around 1 MB); a warning is logged if truncation happens.
 # - driver_collection_time_ms is computed as
 #   wall_clock_ms - sum(stage_durations_ms); clamped to 0 with a warning if
@@ -174,7 +174,7 @@ if len(stage_durations_all) > _STAGE_DURATION_CAP:
     print(
         f"WARNING: {len(stage_durations_all)} stages observed; truncating "
         f"stage_durations_ms to first {_STAGE_DURATION_CAP} to stay under the "
-        f"dbutils.notebookExit payload cap."
+        f"dbutils.notebook.exit payload cap."
     )
     stage_durations = stage_durations_all[:_STAGE_DURATION_CAP]
 else:
@@ -206,4 +206,4 @@ payload = {
 
 print(f"Phase-metric payload: {payload}")
 
-dbutils.notebookExit(json.dumps(payload))
+dbutils.notebook.exit(json.dumps(payload))
