@@ -6,13 +6,13 @@ from src.application.common import logger
 from src.application.common.monitor_utils import (
     _get_run_id,
     _get_benchmark_run,
-    _measure_net_io,
+    _measure_io,
     _save_run,
     _save_run_metadata,
     _save_run_cost_analytics,
 )
 from src.application.dtos import CostConfiguration
-from src.domain.enums import BenchmarkIteration, BlobOperationType
+from src.domain.enums import BenchmarkIteration, BlobOperationType, SchemaVersion
 
 
 def monitor(
@@ -29,7 +29,7 @@ def monitor(
     :param benchmark_iteration: Number of timed iterations to run.
     :param cost_configuration: Which Azure cost components to compute and store.
     :param skip_warmup: Disable warmup runs. Use for Databricks, since each run provisions a cluster and warmup would multiply cost. Default is False.
-    :param elapsed_from_result: Treat the wrapped function's return value as the elapsed time in seconds instead of wall-clock. Use for Databricks, since the API-reported notebook execution time excludes cluster provisioning/teardown. Default is False.
+    :param elapsed_from_result: Treat the wrapped function's return value as a (elapsed_seconds, cardinality) tuple instead of using wall-clock time and len(result). Use for Databricks, since the notebook self-reports both. Default is False.
     """
 
     def decorator(func):
@@ -64,10 +64,23 @@ def monitor(
 
             for i in range(benchmark_iteration.value):
                 iteration = i + 1
-                result, wall_elapsed_time, net_bytes_sent, net_bytes_received = (
-                    _measure_net_io(func, *args, **kwargs)
-                )
-                elapsed_time = result if elapsed_from_result else wall_elapsed_time
+
+                started_at = datetime.datetime.now(datetime.UTC)
+                (
+                    result,
+                    wall_elapsed_time,
+                    net_bytes_sent,
+                    net_bytes_received,
+                    cpu_time_user_seconds,
+                    cpu_time_system_seconds,
+                ) = _measure_io(func, *args, **kwargs)
+                ended_at = datetime.datetime.now(datetime.UTC)
+
+                if elapsed_from_result:
+                    elapsed_time, result_cardinality = result
+                else:
+                    elapsed_time = wall_elapsed_time
+                    result_cardinality = len(result) if result is not None else -1
 
                 ingress_sum += net_bytes_received
                 egress_sum += net_bytes_sent
@@ -83,6 +96,12 @@ def monitor(
                             "elapsed_time": elapsed_time,
                             "network_bytes_sent": net_bytes_sent,
                             "network_bytes_received": net_bytes_received,
+                            "started_at": started_at.isoformat(),
+                            "ended_at": ended_at.isoformat(),
+                            "cpu_time_user_seconds": cpu_time_user_seconds,
+                            "cpu_time_system_seconds": cpu_time_system_seconds,
+                            "result_cardinality": result_cardinality,
+                            "schema_version": SchemaVersion.V2.value,
                         }
                     ],
                 )

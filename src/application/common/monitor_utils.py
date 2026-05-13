@@ -165,17 +165,29 @@ def _create_global_iteration(
     return iteration + total_iterations * (benchmark_run - 1)
 
 
-def _measure_net_io(func, *args, **kwargs) -> tuple[Any, float, int, int]:
-    before = psutil.net_io_counters()
+def _measure_io(func, *args, **kwargs) -> tuple[Any, float, int, int, float, float]:
+    process = psutil.Process()
+    net_before = psutil.net_io_counters()
+    cpu_before = process.cpu_times()
     start_time = time.perf_counter()
 
     result = func(*args, **kwargs)
 
     end_time = time.perf_counter()
-    after = psutil.net_io_counters()
+    cpu_after = process.cpu_times()
+    net_after = psutil.net_io_counters()
 
     elapsed_time = end_time - start_time
-    network_bytes_sent = after.bytes_sent - before.bytes_sent
-    network_bytes_received = after.bytes_recv - before.bytes_recv
+    network_bytes_sent = net_after.bytes_sent - net_before.bytes_sent
+    network_bytes_received = net_after.bytes_recv - net_before.bytes_recv
+    cpu_time_user_seconds = cpu_after.user - cpu_before.user
+    cpu_time_system_seconds = cpu_after.system - cpu_before.system
 
-    return result, elapsed_time, network_bytes_sent, network_bytes_received
+    return (
+        result,
+        elapsed_time,
+        network_bytes_sent,
+        network_bytes_received,
+        cpu_time_user_seconds,
+        cpu_time_system_seconds,
+    )
