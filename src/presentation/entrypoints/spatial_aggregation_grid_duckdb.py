@@ -18,7 +18,7 @@ from src.infra.infrastructure import Containers
 def spatial_aggregation_grid_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
-) -> None:
+) -> list:
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
@@ -45,4 +45,4 @@ def spatial_aggregation_grid_duckdb(
         ORDER BY building_count DESC;
     """
 
-    db_context.execute(query, [cell_size, cell_size])
+    return db_context.execute(query, [cell_size, cell_size]).fetchall()

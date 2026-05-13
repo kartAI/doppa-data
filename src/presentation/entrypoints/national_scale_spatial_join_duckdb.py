@@ -18,7 +18,7 @@ from src.infra.infrastructure import Containers
 def national_scale_spatial_join_duckdb(
     db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
     path_service: IFilePathService = Provide[Containers.file_path_service],
-) -> None:
+) -> list:
     buildings_path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
@@ -29,7 +29,7 @@ def national_scale_spatial_join_duckdb(
     )
     counties_path = f"az://{StorageContainer.METADATA.value}/{Config.DATABRICKS_MUNICIPALITIES_FILE}"
 
-    db_context.execute(f"""
+    return db_context.execute(f"""
         WITH counties AS (
             SELECT
                 region AS county_name,
@@ -44,4 +44,4 @@ def national_scale_spatial_join_duckdb(
           ON ST_Intersects(c.geometry, b.geometry)
         GROUP BY c.county_name
         ORDER BY building_count DESC
-    """)
+    """).fetchall()

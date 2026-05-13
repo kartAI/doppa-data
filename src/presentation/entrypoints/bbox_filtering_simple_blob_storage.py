@@ -18,7 +18,7 @@ from src.infra.infrastructure import Containers
 def bbox_filtering_simple_blob_storage(
         db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service]
-) -> None:
+) -> list:
     min_lon = 10.40
     max_lon = 10.95
     min_lat = 59.70
@@ -33,7 +33,7 @@ def bbox_filtering_simple_blob_storage(
         file_name="*.parquet"
     )
 
-    db_context.execute(
+    return db_context.execute(
         f"""
             SELECT *, ST_Area(ST_Transform(geometry, 'EPSG:4326', 'EPSG:25832')) AS area
             FROM read_parquet('{path}')
@@ -43,4 +43,4 @@ def bbox_filtering_simple_blob_storage(
             )
             AND ST_Area(ST_Transform(geometry, 'EPSG:4326', 'EPSG:25832')) > 10;
             """
-    )
+    ).fetchall()

@@ -87,7 +87,7 @@ def _benchmark(
     points: list[tuple[float, float]],
     db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
     path_service: IFilePathService = Provide[Containers.file_path_service],
-) -> None:
+) -> list:
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
@@ -97,11 +97,15 @@ def _benchmark(
         file_name="*.parquet",
     )
 
+    rows: list = []
     for lon, lat in points:
-        db_context.execute(
-            f"""
-            SELECT COUNT(*) FROM read_parquet('{path}')
-            WHERE ST_Contains(geometry, ST_Point(?, ?))
-            """,
-            [lon, lat],
+        rows.extend(
+            db_context.execute(
+                f"""
+                SELECT COUNT(*) FROM read_parquet('{path}')
+                WHERE ST_Contains(geometry, ST_Point(?, ?))
+                """,
+                [lon, lat],
+            ).fetchall()
         )
+    return rows

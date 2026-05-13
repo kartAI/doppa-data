@@ -15,7 +15,7 @@ from src.infra.infrastructure import Containers
 )
 def bbox_filtering_advanced_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
-) -> None:
+) -> list:
     # Same bbox as in the DuckDB example (Oslo-ish, WGS84 lon/lat)
     min_lon = 10.40
     max_lon = 10.95
@@ -55,7 +55,7 @@ def bbox_filtering_advanced_postgis(
     )
 
     with db_context.connect() as conn:
-        _ = conn.execute(
+        return conn.execute(
             sql,
             {
                 "min_lon": min_lon,
@@ -63,4 +63,4 @@ def bbox_filtering_advanced_postgis(
                 "max_lon": max_lon,
                 "max_lat": max_lat,
             },
-        ).fetchone()
+        ).fetchall()

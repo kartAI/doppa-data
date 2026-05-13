@@ -80,13 +80,15 @@ def _generate_points(db_context: Engine) -> list[tuple[float, float]]:
 def _benchmark(
     points: list[tuple[float, float]],
     db_context: Engine = Provide[Containers.postgres_context],
-) -> None:
+) -> list:
     sql = text("""
         SELECT COUNT(*)
         FROM buildings
         WHERE ST_Contains(geometry, ST_SetSRID(ST_Point(:lon, :lat), 4326))
         """)
 
+    results: list = []
     with db_context.connect() as conn:
         for lon, lat in points:
-            conn.execute(sql, {"lon": lon, "lat": lat}).scalar_one()
+            results.append(conn.execute(sql, {"lon": lon, "lat": lat}).scalar_one())
+    return results

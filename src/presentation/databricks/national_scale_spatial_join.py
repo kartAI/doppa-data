@@ -2,6 +2,9 @@
 
 # COMMAND ----------
 
+import json
+import time
+
 from sedona.spark import SedonaContext
 
 # COMMAND ----------
@@ -52,6 +55,8 @@ municipalities_df.createOrReplaceTempView("municipalities")
 
 # COMMAND ----------
 
+start_time = time.perf_counter()
+
 result = sedona.sql("""
     SELECT
         m.municipality_name,
@@ -63,5 +68,12 @@ result = sedona.sql("""
     ORDER BY building_count DESC
 """)
 
-count = result.count()
-print(f"Spatial join complete. Regions with matched buildings: {count}")
+cardinality = result.count()
+elapsed_seconds = time.perf_counter() - start_time
+
+print(f"Spatial join complete. Regions with matched buildings: {cardinality}")
+print(f"Elapsed seconds: {elapsed_seconds:.3f}")
+
+dbutils.notebookExit(
+    json.dumps({"elapsed_seconds": elapsed_seconds, "cardinality": cardinality})
+)
