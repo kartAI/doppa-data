@@ -27,3 +27,21 @@ class DatabricksPricing:
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict())
+
+
+@dataclass(frozen=True)
+class DatabricksRunResult:
+    execution_duration_s: float
+    cardinality: int
+    executor_input_bytes_read: int
+    executor_run_time_ms: int
+    shuffle_read_bytes: int
+    shuffle_write_bytes: int
+    driver_collection_time_ms: int
+    stage_durations_ms: str
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
