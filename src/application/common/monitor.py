@@ -11,7 +11,7 @@ from src.application.common.monitor_utils import (
     _save_run_metadata,
     _save_run_cost_analytics,
 )
-from src.application.dtos import CostConfiguration
+from src.application.dtos import CostConfiguration, DatabricksRunResult
 from src.domain.enums import BenchmarkIteration, BlobOperationType, SchemaVersion
 
 
@@ -76,8 +76,25 @@ def monitor(
                 ) = _measure_io(func, *args, **kwargs)
                 ended_at = datetime.datetime.now(datetime.UTC)
 
+                executor_input_bytes_read = None
+                executor_run_time_ms = None
+                shuffle_read_bytes = None
+                shuffle_write_bytes = None
+                driver_collection_time_ms = None
+                stage_durations_ms = None
+
                 if elapsed_from_result:
-                    elapsed_time, result_cardinality = result
+                    if isinstance(result, DatabricksRunResult):
+                        elapsed_time = result.execution_duration_s
+                        result_cardinality = result.cardinality
+                        executor_input_bytes_read = result.executor_input_bytes_read
+                        executor_run_time_ms = result.executor_run_time_ms
+                        shuffle_read_bytes = result.shuffle_read_bytes
+                        shuffle_write_bytes = result.shuffle_write_bytes
+                        driver_collection_time_ms = result.driver_collection_time_ms
+                        stage_durations_ms = result.stage_durations_ms
+                    else:
+                        elapsed_time, result_cardinality = result
                 else:
                     elapsed_time = wall_elapsed_time
                     result_cardinality = len(result) if result is not None else -1
@@ -101,7 +118,13 @@ def monitor(
                             "cpu_time_user_seconds": cpu_time_user_seconds,
                             "cpu_time_system_seconds": cpu_time_system_seconds,
                             "result_cardinality": result_cardinality,
-                            "schema_version": SchemaVersion.V2.value,
+                            "executor_input_bytes_read": executor_input_bytes_read,
+                            "executor_run_time_ms": executor_run_time_ms,
+                            "shuffle_read_bytes": shuffle_read_bytes,
+                            "shuffle_write_bytes": shuffle_write_bytes,
+                            "driver_collection_time_ms": driver_collection_time_ms,
+                            "stage_durations_ms": stage_durations_ms,
+                            "schema_version": SchemaVersion.V3.value,
                         }
                     ],
                 )
