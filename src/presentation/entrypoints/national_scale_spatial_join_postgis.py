@@ -53,7 +53,7 @@ def _seed_counties(
 )
 def _benchmark(
     db_context: Engine = Provide[Containers.postgres_context],
-) -> None:
+) -> list:
     sql = text("""
         SELECT
             c.county_name,
@@ -65,4 +65,4 @@ def _benchmark(
     """)
 
     with db_context.connect() as conn:
-        conn.execute(sql).fetchall()
+        return conn.execute(sql).fetchall()

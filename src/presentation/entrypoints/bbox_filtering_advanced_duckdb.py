@@ -18,7 +18,7 @@ from src.infra.infrastructure import Containers
 def bbox_filtering_advanced_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
-) -> None:
+) -> list:
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
@@ -73,7 +73,7 @@ def bbox_filtering_advanced_duckdb(
         FROM filtered;
     """
 
-    db_context.execute(
+    return db_context.execute(
         query,
         [min_lon, min_lat, max_lon, max_lat],
-    )
+    ).fetchall()

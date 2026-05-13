@@ -15,7 +15,7 @@ from src.infra.infrastructure import Containers
 )
 def spatial_aggregation_grid_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
-) -> None:
+) -> list:
     sql = text(
         """
         WITH building_centroids AS (
@@ -34,4 +34,4 @@ def spatial_aggregation_grid_postgis(
     )
 
     with db_context.connect() as conn:
-        _ = conn.execute(sql).fetchall()
+        return conn.execute(sql).fetchall()

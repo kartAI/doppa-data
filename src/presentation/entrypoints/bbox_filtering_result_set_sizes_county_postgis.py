@@ -19,7 +19,7 @@ def bbox_filtering_result_set_sizes_county_postgis() -> None:
 )
 def _benchmark(
         db_context: Engine = Provide[Containers.postgres_context],
-) -> None:
+) -> list:
     min_lon, min_lat, max_lon, max_lat = BoundingBox.TRONDELAG_WGS84.value
 
     sql = text(
@@ -35,7 +35,7 @@ def _benchmark(
     )
 
     with db_context.connect() as conn:
-        conn.execute(
+        return conn.execute(
             sql,
             {
                 "min_lon": min_lon,

@@ -15,7 +15,7 @@ from src.infra.infrastructure import Containers
 )
 def ordered_range_query_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
-) -> None:
+) -> list:
     min_lon, min_lat, max_lon, max_lat = BoundingBox.TRONDELAG_WGS84.value
 
     sql = text(
@@ -32,9 +32,7 @@ def ordered_range_query_postgis(
     )
 
     with db_context.connect() as conn:
-        result = conn.execute(sql, {
+        return conn.execute(sql, {
             "min_lon": min_lon, "min_lat": min_lat,
             "max_lon": max_lon, "max_lat": max_lat,
-        })
-
-        result.fetchall()
+        }).fetchall()
