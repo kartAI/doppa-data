@@ -6,28 +6,22 @@ from shapely import from_wkb
 
 from src.domain.enums import StorageContainer, EPSGCode
 from src.application.contracts import (
-    IFKBService, IFKBFileService, IZipService, IBytesService, IBlobStorageService
+    IFKBService, IBytesService, IBlobStorageService
 )
 
 
 class FKBService(IFKBService):
     __db_context: DuckDBPyConnection
-    __zip_service: IZipService
-    __fkb_file_service: IFKBFileService
     __bytes_service: IBytesService
     __blob_storage_service: IBlobStorageService
 
     def __init__(
             self,
             db_context: DuckDBPyConnection,
-            zip_service: IZipService,
-            fkb_file_service: IFKBFileService,
             bytes_service: IBytesService,
             blob_storage_service: IBlobStorageService
     ) -> None:
         self.__db_context = db_context
-        self.__zip_service = zip_service
-        self.__fkb_file_service = fkb_file_service
         self.__bytes_service = bytes_service
         self.__blob_storage_service = blob_storage_service
 
