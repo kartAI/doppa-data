@@ -6,5 +6,6 @@ from .storage_container import StorageContainer
 from .epsg_code import EPSGCode
 from .theme import Theme
 from .data_source import DataSource
+from .dataset_size import DatasetSize
 from .bounding_box import BoundingBox
 from .schema_version import SchemaVersion
