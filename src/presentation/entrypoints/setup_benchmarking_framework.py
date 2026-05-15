@@ -6,7 +6,8 @@ from osgeo import ogr
 from pyproj import CRS
 from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
-from shapely import from_wkb
+import numpy as np
+import shapely
 from sqlalchemy import Engine, text
 
 from src import Config
@@ -18,9 +19,10 @@ from src.application.contracts import (
     ITileService,
     ITileApiService,
     ITestDatasetService,
+    IDatasetSynthesisService,
     IBenchmarkService,
 )
-from src.domain.enums import StorageContainer, Theme, EPSGCode
+from src.domain.enums import StorageContainer, Theme, EPSGCode, DatasetSize
 from src.infra.infrastructure import Containers
 
 
@@ -29,6 +31,9 @@ def setup_benchmarking_framework(
     test_dataset_service: ITestDatasetService = Provide[
         Containers.test_dataset_service
     ],
+    dataset_synthesis_service: IDatasetSynthesisService = Provide[
+        Containers.dataset_synthesis_service
+    ],
 ) -> None:
     logger.info("Starting benchmarking framework setup...")
 
@@ -36,17 +41,17 @@ def setup_benchmarking_framework(
     release = test_dataset_service.run_pipeline()
     logger.info(f"Test dataset pipeline complete. Release: '{release}'")
 
-    logger.info("Step 2/5: Seeding Postgres with buildings...")
+    logger.info("Step 2/5: Synthesizing medium dataset...")
+    dataset_synthesis_service.run_pipeline(release=release, target_size=DatasetSize.MEDIUM)
+    logger.info("Medium dataset synthesis complete.")
+
+    logger.info("Step 3/5: Synthesizing large dataset...")
+    dataset_synthesis_service.run_pipeline(release=release, target_size=DatasetSize.LARGE)
+    logger.info("Large dataset synthesis complete.")
+
+    logger.info("Step 4/5: Seeding Postgres with buildings...")
     _postgres_buildings_seed(release=release)
     logger.info("Postgres seed complete.")
-
-    logger.info("Step 3/5: Creating PMTiles...")
-    _create_pmtiles(release=release)
-    logger.info("PMTiles complete.")
-
-    logger.info("Step 4/5: Creating MVT tiles...")
-    _create_mvt(release=release)
-    logger.info("MVT tiles complete.")
 
     logger.info("Step 5/5: Creating shapefile copy in blob storage...")
     _create_shapefile_copy(release=release)
@@ -62,64 +67,108 @@ def _postgres_buildings_seed(
     postgres_db_context: Engine = Provide[Containers.postgres_context],
     file_path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> None:
+    effective_release = release or Config.BENCHMARK_DOPPA_DATA_RELEASE
+
+    for size in DatasetSize:
+        _seed_postgres_for_size(
+            release=effective_release,
+            size=size,
+            duckdb_context=duckdb_context,
+            postgres_db_context=postgres_db_context,
+            file_path_service=file_path_service,
+        )
+
+
+def _seed_postgres_for_size(
+    release: str,
+    size: DatasetSize,
+    duckdb_context: DuckDBPyConnection,
+    postgres_db_context: Engine,
+    file_path_service: IFilePathService,
+) -> None:
+    table_name = f"buildings_{size.value}"
+    index_name = f"{table_name}_geometry_idx"
+
     path = file_path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
-        release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
+        release=release,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=size,
         region="*",
         file_name="*.parquet",
     )
 
-    logger.info(f"Fetching buildings from '{path}'")
-    building_df = duckdb_context.execute(
-        f"SELECT ST_AsWKB(geometry) AS geometry, * EXCLUDE geometry FROM read_parquet('{path}')"
-    ).fetchdf()
+    total_rows = duckdb_context.execute(
+        f"SELECT COUNT(*) FROM read_parquet('{path}')"
+    ).fetchone()[0]
 
-    building_df["geometry"] = building_df["geometry"].apply(
-        lambda g: bytes(g) if isinstance(g, (memoryview, bytearray)) else g
-    )
-
-    building_df["geometry"] = building_df["geometry"].apply(from_wkb)
-
-    building_gdf = gpd.GeoDataFrame(
-        building_df,
-        geometry="geometry",
-        crs=EPSGCode.WGS84.value,
-    )
-
-    if building_gdf.empty:
-        logger.warning(f"No buildings found at blob storage path '{path}'")
+    if total_rows == 0:
+        logger.warning(
+            f"No buildings found at blob storage path '{path}' for size '{size.value}'. Skipping table '{table_name}'."
+        )
         return
 
-    total_rows = building_gdf.shape[0]
+    duckdb_vector_size = 2048
+    vectors_per_chunk = max(1, Config.BUILDINGS_BATCH_SIZE // duckdb_vector_size)
+
     logger.info(
-        f"Inserting {total_rows} rows into 'buildings' table in chunks of {Config.BUILDINGS_BATCH_SIZE}..."
+        f"Streaming {total_rows} rows from '{path}' into '{table_name}' in chunks of ~{vectors_per_chunk * duckdb_vector_size}..."
     )
 
+    streaming_result = duckdb_context.execute(
+        f"SELECT ST_AsWKB(geometry) AS geometry, * EXCLUDE geometry FROM read_parquet('{path}')"
+    )
+
+    inserted_rows = 0
+    is_first_chunk = True
+
     with postgres_db_context.connect() as conn:
-        for i in range(0, total_rows, Config.BUILDINGS_BATCH_SIZE):
-            chunk = building_gdf.iloc[i : i + Config.BUILDINGS_BATCH_SIZE]
-            chunk.to_postgis(
-                name="buildings",
-                con=conn,
-                if_exists="replace" if i == 0 else "append",
-                index=False,
+        while True:
+            chunk_df = streaming_result.fetch_df_chunk(vectors_per_chunk)
+            if chunk_df.empty:
+                break
+
+            geometry_array = chunk_df["geometry"].to_numpy()
+            geometry_array = np.array(
+                [bytes(g) if isinstance(g, (memoryview, bytearray)) else g for g in geometry_array],
+                dtype=object,
             )
-            logger.info(
-                f"Inserted rows {i + 1} to {min(i + Config.BUILDINGS_BATCH_SIZE, total_rows)} of {total_rows}"
+            chunk_df["geometry"] = shapely.from_wkb(geometry_array)
+
+            chunk_gdf = gpd.GeoDataFrame(
+                chunk_df,
+                geometry="geometry",
+                crs=EPSGCode.WGS84.value,
             )
 
-        logger.info("Creating GIST spatial index on buildings.geometry...")
+            chunk_gdf.to_postgis(
+                name=table_name,
+                con=conn,
+                if_exists="replace" if is_first_chunk else "append",
+                index=False,
+            )
+
+            inserted_rows += len(chunk_gdf)
+            is_first_chunk = False
+            logger.info(
+                f"Inserted {inserted_rows} of {total_rows} rows into '{table_name}'"
+            )
+
+        logger.info(
+            f"Creating GIST spatial index '{index_name}' on '{table_name}.geometry'..."
+        )
         conn.execute(
             text(
-                "CREATE INDEX IF NOT EXISTS buildings_geometry_idx ON buildings USING GIST (geometry)"
+                f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING GIST (geometry)"
             )
         )
         conn.commit()
-        logger.info("Spatial index created.")
+        logger.info(f"Spatial index '{index_name}' created.")
 
-    logger.info("Insertion completed")
+    logger.info(
+        f"Insertion into '{table_name}' completed: {inserted_rows} rows"
+    )
 
 
 @inject
@@ -137,6 +186,7 @@ def _create_pmtiles(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
@@ -148,12 +198,12 @@ def _create_pmtiles(
 
     duckdb_context.execute(f"""
         COPY (
-            SELECT 
+            SELECT
                 * EXCLUDE (geometry, bbox),
-                bbox.maxx, 
-                bbox.maxy, 
-                bbox.minx, 
-                bbox.miny,
+                ST_XMax(geometry) AS bbox_maxx,
+                ST_YMax(geometry) AS bbox_maxy,
+                ST_XMin(geometry) AS bbox_minx,
+                ST_YMin(geometry) AS bbox_miny,
                 geometry
             FROM read_parquet('{path}')
         )
@@ -217,6 +267,7 @@ def _create_mvt(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
@@ -229,12 +280,12 @@ def _create_mvt(
 
         duckdb_context.execute(f"""
             COPY (
-                SELECT 
+                SELECT
                     * EXCLUDE (geometry, bbox),
-                    bbox.maxx, 
-                    bbox.maxy, 
-                    bbox.minx, 
-                    bbox.miny,
+                    ST_XMax(geometry) AS bbox_maxx,
+                    ST_YMax(geometry) AS bbox_maxy,
+                    ST_XMin(geometry) AS bbox_minx,
+                    ST_YMin(geometry) AS bbox_miny,
                     geometry
                 FROM read_parquet('{path}')
             )
@@ -348,6 +399,7 @@ def _create_shapefile_copy(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )

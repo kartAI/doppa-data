@@ -25,7 +25,7 @@ def _benchmark(
     sql = text(
         """
         SELECT *, ST_Area(ST_Transform(geometry, 25832)) AS area
-        FROM buildings
+        FROM buildings_small
         WHERE ST_Intersects(
             geometry,
             ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)

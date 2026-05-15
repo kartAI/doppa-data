@@ -22,13 +22,16 @@ class BenchmarkService(IBenchmarkService):
         self.__duckdb_context.execute(
             f"""
             COPY (
+                WITH source AS (
+                    SELECT * FROM read_parquet('{virtual_file_path}')
+                )
                 SELECT
                     * EXCLUDE (bbox),
-                    bbox.maxx AS bbox_maxx,
-                    bbox.maxy AS bbox_maxy,
-                    bbox.minx AS bbox_minx,
-                    bbox.miny AS bbox_miny
-                FROM read_parquet('{virtual_file_path}')
+                    ST_XMax(geometry) AS bbox_maxx,
+                    ST_YMax(geometry) AS bbox_maxy,
+                    ST_XMin(geometry) AS bbox_minx,
+                    ST_YMin(geometry) AS bbox_miny
+                FROM source
             ) TO '{save_path.as_posix()}'
             WITH (
                 FORMAT GDAL,

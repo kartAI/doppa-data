@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt /app/
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --fix-missing \
     libexpat1 \
     libgdal-dev \
     g++ \

@@ -4,7 +4,7 @@ from typing import Literal
 
 from src import Config
 from src.application.contracts import IFilePathService
-from src.domain.enums import Theme, StorageContainer
+from src.domain.enums import Theme, StorageContainer, DatasetSize
 
 
 class FilePathService(IFilePathService):
@@ -13,29 +13,40 @@ class FilePathService(IFilePathService):
         return f"{Config.AZURE_BLOB_STORAGE_HTTPS_URL}/{container.value}/{blob_path}"
 
     @staticmethod
-    def create_hive_blob_path(
-            file_name: str,
-            **kwargs: str | int
-    ) -> str:
-        hive_path = "/".join([f"{key}={value}" for key, value in kwargs.items()]) if kwargs else ""
+    def create_hive_blob_path(file_name: str, **kwargs: str | int) -> str:
+        hive_path = (
+            "/".join([f"{key}={value}" for key, value in kwargs.items()])
+            if kwargs
+            else ""
+        )
         return f"{hive_path}/{file_name}"
 
     @staticmethod
     def create_dataset_blob_path(
-            release: str,
-            theme: Theme,
-            region: str,
-            file_name: str,
-            **kwargs
+        release: str,
+        theme: Theme,
+        region: str,
+        file_name: str,
+        dataset_size: DatasetSize | None = None,
+        **kwargs,
     ) -> str:
-        FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) + '/' if kwargs else ''
-        return f"release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"
+        FilePathService.validate_file_path(
+            release=release, region=region, file_name=file_name
+        )
+        middle = (
+            "/".join([f"{key}={value}" for key, value in kwargs.items()]) + "/"
+            if kwargs
+            else ""
+        )
+        size_segment = f"size={dataset_size.value}/" if dataset_size is not None else ""
+        return (
+            f"release/{release}/{size_segment}{middle}theme={theme.value}/region={region}/{file_name}"
+        )
 
     @staticmethod
     def validate_file_path(release: str, region: str, file_name: str) -> None:
         """Validate release, region, and file name format."""
-        parts = release.rsplit('.', 1)
+        parts = release.rsplit(".", 1)
         if len(parts) != 2:
             raise AssertionError("release must be in format 'yyyy-mm-dd.x'")
 
@@ -43,7 +54,9 @@ class FilePathService(IFilePathService):
         try:
             datetime.strptime(date_part, "%Y-%m-%d")
         except ValueError:
-            raise AssertionError("release date must be a valid date in 'yyyy-mm-dd' format")
+            raise AssertionError(
+                "release date must be a valid date in 'yyyy-mm-dd' format"
+            )
 
         if not version_part.isdigit() or int(version_part) < 0:
             raise AssertionError("release version must be a non-negative integer")
@@ -52,8 +65,7 @@ class FilePathService(IFilePathService):
             raise AssertionError("region must be two digits (e.g. '03')")
 
         if not (
-                file_name == "*.parquet"
-                or re.fullmatch(r"part_\d{5,}\.parquet", file_name)
+            file_name == "*.parquet" or re.fullmatch(r"part_\d{5,}\.parquet", file_name)
         ):
             raise AssertionError(
                 f"invalid file_name '{file_name}': expected format 'part_00000.parquet' or '*.parquet'"
@@ -65,7 +77,9 @@ class FilePathService(IFilePathService):
         return file_name.split(".")[0]
 
     @staticmethod
-    def remove_blob_file_name_from_path(file_path: str, file_name: str, prefix: str | None = None) -> str:
+    def remove_blob_file_name_from_path(
+        file_path: str, file_name: str, prefix: str | None = None
+    ) -> str:
         file_path = file_path.removesuffix(file_name)
         if prefix and file_path.startswith(prefix):
             file_path = file_path.removeprefix(prefix)
@@ -78,27 +92,41 @@ class FilePathService(IFilePathService):
 
     @staticmethod
     def create_virtual_filesystem_path(
-            storage_scheme: Literal["az"],
-            container: StorageContainer,
-            file_name: str,
-            **kwargs: str | int
+        storage_scheme: Literal["az"],
+        container: StorageContainer,
+        file_name: str,
+        **kwargs: str | int,
     ) -> str:
         if not file_name.endswith(".parquet"):
-            raise AssertionError(f"Filename '{file_name}' is invalid. Filename must end with '.parquet'.")
+            raise AssertionError(
+                f"Filename '{file_name}' is invalid. Filename must end with '.parquet'."
+            )
 
-        middle = "/".join([f"{key}={value}" for key, value in kwargs.items()]) if kwargs else ""
+        middle = (
+            "/".join([f"{key}={value}" for key, value in kwargs.items()])
+            if kwargs
+            else ""
+        )
         return f"{storage_scheme}://{container.value}/{middle}/{file_name}"
 
     @staticmethod
     def create_release_virtual_filesystem_path(
-            storage_scheme: Literal["az"],
-            container: StorageContainer,
-            release: str,
-            theme: Theme,
-            region: str,
-            file_name: str,
-            **kwargs: str
+        storage_scheme: Literal["az"],
+        container: StorageContainer,
+        release: str,
+        theme: Theme,
+        region: str,
+        file_name: str,
+        dataset_size: DatasetSize | None = None,
+        **kwargs: str,
     ) -> str:
-        FilePathService.validate_file_path(release=release, region=region, file_name=file_name)
-        middle = '/'.join([f'{key}={value}' for key, value in kwargs.items()]) + "/" if kwargs else ''
-        return f"{storage_scheme}://{container.value}/release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"
+        FilePathService.validate_file_path(
+            release=release, region=region, file_name=file_name
+        )
+        middle = (
+            "/".join([f"{key}={value}" for key, value in kwargs.items()]) + "/"
+            if kwargs
+            else ""
+        )
+        size_segment = f"size={dataset_size.value}/" if dataset_size is not None else ""
+        return f"{storage_scheme}://{container.value}/release/{release}/{size_segment}{middle}theme={theme.value}/region={region}/{file_name}"

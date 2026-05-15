@@ -10,7 +10,7 @@ from src.application.common import logger
 from src.application.contracts import IAzureMetricService, IBenchmarkConfigurationService, IBlobStorageService, \
     IFilePathService
 from src.application.dtos import DatabaseUsage, BlobStorageUsage, AciUsage, DatabricksUsage
-from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, Theme, StorageContainer, BlobOperationType
+from src.domain.enums import AzureMetricNamespace, AzureResourceMetrics, Theme, StorageContainer, BlobOperationType, DatasetSize
 
 
 class AzureMetricService(IAzureMetricService):
@@ -115,7 +115,8 @@ class AzureMetricService(IAzureMetricService):
             release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
             theme=Theme.BUILDINGS,
             region="*",
-            file_name="*.parquet"
+            file_name="*.parquet",
+            dataset_size=DatasetSize.SMALL,
         )
 
         blob_count, storage_size = self.__blob_storage_service.get_blob_summary(

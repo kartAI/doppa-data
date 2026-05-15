@@ -7,7 +7,7 @@ from src import Config
 from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
-from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox
+from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox, DatasetSize
 from src.infra.infrastructure import Containers
 
 TOTAL_POINTS: int = 10
@@ -37,6 +37,7 @@ def _generate_points(
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
@@ -93,6 +94,7 @@ def _benchmark(
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )

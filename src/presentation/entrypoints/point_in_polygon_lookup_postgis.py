@@ -29,7 +29,7 @@ def _generate_points(db_context: Engine) -> list[tuple[float, float]]:
     # TODO: See if this query can be improved in terms of efficiency
     sql = text("""
         WITH buildings_with_point_on_surface AS (
-            SELECT *, ST_PointOnSurface(geometry) AS point_on_surface FROM buildings
+            SELECT *, ST_PointOnSurface(geometry) AS point_on_surface FROM buildings_small
         ),
 
         buildings_inside AS(
@@ -83,7 +83,7 @@ def _benchmark(
 ) -> list:
     sql = text("""
         SELECT COUNT(*)
-        FROM buildings
+        FROM buildings_small
         WHERE ST_Contains(geometry, ST_SetSRID(ST_Point(:lon, :lat), 4326))
         """)
 

@@ -21,7 +21,7 @@ def ordered_range_query_postgis(
     sql = text(
         """
         SELECT *
-        FROM buildings
+        FROM buildings_small
         WHERE ST_Intersects(
                       geometry,
                       ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)

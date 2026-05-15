@@ -59,7 +59,7 @@ def _benchmark(
             c.county_name,
             COUNT(*) AS building_count
         FROM counties c
-        JOIN buildings b ON ST_Intersects(c.geometry, b.geometry)
+        JOIN buildings_small b ON ST_Intersects(c.geometry, b.geometry)
         GROUP BY c.county_name
         ORDER BY building_count DESC
     """)

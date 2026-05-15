@@ -5,7 +5,7 @@ from src import Config
 from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
-from src.domain.enums import StorageContainer, Theme, BenchmarkIteration
+from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, DatasetSize
 from src.infra.infrastructure import Containers
 
 
@@ -24,6 +24,7 @@ def db_scan_blob_storage(
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet"
     )

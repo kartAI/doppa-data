@@ -24,14 +24,14 @@ class MVTService(IMVTService):
                 mvtgeom AS (
                     SELECT
                         ST_AsMVTGeom(
-                            ST_Transform(buildings.geometry, 3857),
+                            ST_Transform(buildings_small.geometry, 3857),
                             tile_bounds.geom_3857,
                             4096,
                             256,
                             true
                         ) AS geometry
-                    FROM buildings, tile_bounds, bounds_4326
-                    WHERE ST_Intersects(buildings.geometry, bounds_4326.geom)
+                    FROM buildings_small, tile_bounds, bounds_4326
+                    WHERE ST_Intersects(buildings_small.geometry, bounds_4326.geom)
                 )
             SELECT ST_AsMVT(mvtgeom, 'buildings', 4096, 'geometry') AS tile
             FROM mvtgeom

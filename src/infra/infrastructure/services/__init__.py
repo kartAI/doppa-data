@@ -8,8 +8,8 @@ from .blob_storage_service import BlobStorageService
 from .bytes_service import BytesService
 from .conflation_service import ConflationService
 from .county_service import CountyService
+from .dataset_synthesis_service import DatasetSynthesisService
 from .file_path_service import FilePathService
-from .fkb_file_service import FKBFileService
 from .fkb_service import FKBService
 from .monitoring_storage_service import MonitoringStorageService
 from .mvt_service import MVTService
@@ -22,4 +22,3 @@ from .test_dataset_service import TestDatasetService
 from .tile_api_service import TileApiService
 from .tile_service import TileService
 from .vector_service import VectorService
-from .zip_service import ZipService
