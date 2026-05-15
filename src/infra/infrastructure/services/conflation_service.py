@@ -5,7 +5,7 @@ from shapely import from_wkb
 
 from src.application.common import logger
 from src.application.contracts import IConflationService, IFilePathService, IBlobStorageService
-from src.domain.enums import Theme, StorageContainer, DataSource, EPSGCode, DatasetSize
+from src.domain.enums import Theme, StorageContainer, DataSource, EPSGCode
 
 
 class ConflationService(IConflationService):
@@ -31,7 +31,6 @@ class ConflationService(IConflationService):
             container=StorageContainer.RAW,
             release=release,
             theme=Theme.BUILDINGS,
-            dataset_size=DatasetSize.SMALL,
             region=region,
             file_name="*.parquet",
             dataset=DataSource.OSM.value
@@ -42,7 +41,6 @@ class ConflationService(IConflationService):
             container=StorageContainer.RAW,
             release=release,
             theme=Theme.BUILDINGS,
-            dataset_size=DatasetSize.SMALL,
             region=region,
             file_name="*.parquet",
             dataset=DataSource.FKB.value
@@ -194,7 +192,6 @@ class ConflationService(IConflationService):
             container=StorageContainer.RAW,
             release=release,
             theme=Theme.BUILDINGS,
-            dataset_size=DatasetSize.SMALL,
             region=region,
             file_name="*.parquet",
             dataset=DataSource.OSM.value
@@ -205,7 +202,6 @@ class ConflationService(IConflationService):
             container=StorageContainer.RAW,
             release=release,
             theme=Theme.BUILDINGS,
-            dataset_size=DatasetSize.SMALL,
             region=region,
             file_name="*.parquet",
             dataset=DataSource.FKB.value

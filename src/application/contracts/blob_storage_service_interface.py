@@ -3,7 +3,7 @@
 import geopandas as gpd
 from azure.storage.blob import ContainerClient
 
-from src.domain.enums import StorageContainer, Theme
+from src.domain.enums import StorageContainer, Theme, DatasetSize
 
 
 class IBlobStorageService(ABC):
@@ -78,6 +78,7 @@ class IBlobStorageService(ABC):
             theme: Theme,
             region: str,
             partitions: list[gpd.GeoDataFrame],
+            dataset_size: DatasetSize | None = None,
             **kwargs: str
     ) -> list[str]:
         """
@@ -87,6 +88,7 @@ class IBlobStorageService(ABC):
         :param theme: Theme enum representing the data theme.
         :param region: County ID, e.g. '03' for Oslo.
         :param partitions: List of GeoDataFrame partitions to upload.
+        :param dataset_size: Optional dataset size. When provided, inserts `size={value}/` between release and theme. Omit for raw OSM/FKB writes.
         :return: List of URLs of the uploaded blobs.
         """
         raise NotImplementedError

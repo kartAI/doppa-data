@@ -7,7 +7,7 @@ from azure.storage.blob import BlobServiceClient, ContainerClient, PublicAccess
 from src import Config
 from src.application.common import logger
 from src.application.contracts import IBlobStorageService, IFilePathService
-from src.domain.enums import StorageContainer, Theme
+from src.domain.enums import StorageContainer, Theme, DatasetSize
 
 
 class BlobStorageService(IBlobStorageService):
@@ -70,6 +70,7 @@ class BlobStorageService(IBlobStorageService):
             theme: Theme,
             region: str,
             partitions: list[gpd.GeoDataFrame],
+            dataset_size: DatasetSize | None = None,
             **kwargs: str
     ) -> list[str]:
         asset_paths = []
@@ -84,6 +85,7 @@ class BlobStorageService(IBlobStorageService):
                 theme=theme,
                 region=region,
                 file_name=f"part_{index:05d}.parquet",
+                dataset_size=dataset_size,
                 **kwargs if kwargs else {}
             )
 

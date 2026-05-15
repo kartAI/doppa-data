@@ -23,7 +23,12 @@ class FilePathService(IFilePathService):
 
     @staticmethod
     def create_dataset_blob_path(
-        release: str, theme: Theme, region: str, file_name: str, **kwargs
+        release: str,
+        theme: Theme,
+        region: str,
+        file_name: str,
+        dataset_size: DatasetSize | None = None,
+        **kwargs,
     ) -> str:
         FilePathService.validate_file_path(
             release=release, region=region, file_name=file_name
@@ -33,8 +38,9 @@ class FilePathService(IFilePathService):
             if kwargs
             else ""
         )
+        size_segment = f"size={dataset_size.value}/" if dataset_size is not None else ""
         return (
-            f"release/{release}/{middle}theme={theme.value}/region={region}/{file_name}"
+            f"release/{release}/{size_segment}{middle}theme={theme.value}/region={region}/{file_name}"
         )
 
     @staticmethod
@@ -109,9 +115,9 @@ class FilePathService(IFilePathService):
         container: StorageContainer,
         release: str,
         theme: Theme,
-        dataset_size: DatasetSize,
         region: str,
         file_name: str,
+        dataset_size: DatasetSize | None = None,
         **kwargs: str,
     ) -> str:
         FilePathService.validate_file_path(
@@ -122,4 +128,5 @@ class FilePathService(IFilePathService):
             if kwargs
             else ""
         )
-        return f"{storage_scheme}://{container.value}/release/{release}/size={dataset_size.value}/{middle}theme={theme.value}/region={region}/{file_name}"
+        size_segment = f"size={dataset_size.value}/" if dataset_size is not None else ""
+        return f"{storage_scheme}://{container.value}/release/{release}/{size_segment}{middle}theme={theme.value}/region={region}/{file_name}"

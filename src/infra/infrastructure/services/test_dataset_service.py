@@ -9,7 +9,7 @@ from src.application.contracts import (
     IVectorService, IBlobStorageService, IFilePathService, IConflationService
 )
 from src.application.contracts import ITestDatasetService
-from src.domain.enums import EPSGCode, Theme, DataSource, StorageContainer
+from src.domain.enums import EPSGCode, Theme, DataSource, StorageContainer, DatasetSize
 
 
 class TestDatasetService(ITestDatasetService):
@@ -110,7 +110,8 @@ class TestDatasetService(ITestDatasetService):
                 release=latest_release,
                 theme=Theme.BUILDINGS,
                 region=region,
-                partitions=partitions
+                partitions=partitions,
+                dataset_size=DatasetSize.SMALL,
             )
 
             conflated_region_item = self.__create_region_items(
@@ -238,6 +239,7 @@ class TestDatasetService(ITestDatasetService):
             region: str,
             partitions: list[gpd.GeoDataFrame],
             dataset: DataSource = None,
+            dataset_size: DatasetSize | None = None,
     ) -> list[str]:
         assets = self.__blob_storage_service.upload_blobs_as_parquet(
             container=container,
@@ -245,6 +247,7 @@ class TestDatasetService(ITestDatasetService):
             theme=theme,
             region=region,
             partitions=partitions,
+            dataset_size=dataset_size,
             **({"dataset": dataset.value} if dataset else {})
         )
 

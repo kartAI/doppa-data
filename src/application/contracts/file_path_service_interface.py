@@ -30,16 +30,22 @@ class IFilePathService(ABC):
     @staticmethod
     @abstractmethod
     def create_dataset_blob_path(
-        release: str, theme: Theme, region: str, file_name: str, **kwargs
+        release: str,
+        theme: Theme,
+        region: str,
+        file_name: str,
+        dataset_size: DatasetSize | None = None,
+        **kwargs,
     ) -> str:
         """
-        Creates a storage account file path to a dataset blob. On the format `release/{release}/**kwargs/theme={theme}/region={region}/{file_name}`
+        Creates a storage account file path to a dataset blob. On the format `release/{release}/size={dataset_size}/**kwargs/theme={theme}/region={region}/{file_name}`. The `size=` segment is omitted when `dataset_size` is None (e.g. raw OSM/FKB inputs which are not partitioned by size).
 
         :param release: Release version in the format 'yyyy-mm-dd.x'
         :param theme: Theme enum value
         :param region: A region in Norway is defined as county. For example '03' for Oslo
         :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet'
-        :param kwargs: Additional keyword arguments that will be added between release and theme
+        :param dataset_size: Optional DatasetSize enum value. When provided, inserts `size={value}/` between release and theme
+        :param kwargs: Additional keyword arguments that will be added between release/size and theme
         :return: Storage path
         :rtype: str
         """
@@ -109,21 +115,21 @@ class IFilePathService(ABC):
         container: StorageContainer,
         release: str,
         theme: Theme,
-        dataset_size: DatasetSize,
         region: str,
         file_name: str,
-        **kwargs: str
+        dataset_size: DatasetSize | None = None,
+        **kwargs: str,
     ) -> str:
         """
-        Creates a virtual filesystem path for accessing files in a storage account.
+        Creates a virtual filesystem path for accessing files in a storage account. The `size=` segment is omitted when `dataset_size` is None (e.g. raw OSM/FKB inputs which are not partitioned by size).
         :param storage_scheme: Storage scheme, e.g., "az" for Azure Blob Storage
         :param container: Name of storage container
         :param release: Release on the format 'yyyy-mm-dd.x'
         :param theme: Theme enum value
-        :param dataset_size: Dataset size enum value
         :param region: Region code, i.e '03' for Oslo
         :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet', or '*.parquet' for all files
-        :param kwargs: Additional keyword arguments that will be added between release and theme
+        :param dataset_size: Optional dataset size enum value. When provided, inserts `size={value}/` between release and theme
+        :param kwargs: Additional keyword arguments that will be added between release/size and theme
         :return: Virtual filesystem path
         """
         raise NotImplementedError
