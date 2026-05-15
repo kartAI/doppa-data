@@ -161,6 +161,7 @@ class Containers(containers.DeclarativeContainer):
         file_path_service=file_path_service,
         blob_storage_service=blob_storage_service,
         county_service=county_service,
+        vector_service=vector_service,
     )
 
     databricks_service = providers.Singleton(

@@ -14,7 +14,7 @@ class VectorService(IVectorService):
     def __init__(self, db_context: DuckDBPyConnection):
         self.__db_context = db_context
 
-    def partition_dataframe(self, dataframe: gpd.GeoDataFrame) -> list[gpd.GeoDataFrame]:
+    def compute_partition_key(self, dataframe: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         dataframe = dataframe.copy()
         centroids = (
             dataframe.geometry
@@ -27,6 +27,11 @@ class VectorService(IVectorService):
             phg.encode(lat, lon, precision=Config.PARTITION_RESOLUTION)
             for lat, lon in zip(centroids.y.values, centroids.x.values)
         ]
+
+        return dataframe
+
+    def partition_dataframe(self, dataframe: gpd.GeoDataFrame) -> list[gpd.GeoDataFrame]:
+        dataframe = self.compute_partition_key(dataframe)
 
         partitions = [
             gpd.GeoDataFrame(partition) for _, partition in

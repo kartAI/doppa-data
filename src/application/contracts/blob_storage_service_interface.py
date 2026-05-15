@@ -79,6 +79,7 @@ class IBlobStorageService(ABC):
             region: str,
             partitions: list[gpd.GeoDataFrame],
             dataset_size: DatasetSize | None = None,
+            row_group_size: int | None = None,
             **kwargs: str
     ) -> list[str]:
         """
@@ -89,6 +90,7 @@ class IBlobStorageService(ABC):
         :param region: County ID, e.g. '03' for Oslo.
         :param partitions: List of GeoDataFrame partitions to upload.
         :param dataset_size: Optional dataset size. When provided, inserts `size={value}/` between release and theme. Omit for raw OSM/FKB writes.
+        :param row_group_size: Optional GeoParquet row group size. When provided, forwarded to `GeoDataFrame.to_parquet` to control internal row group chunking.
         :return: List of URLs of the uploaded blobs.
         """
         raise NotImplementedError

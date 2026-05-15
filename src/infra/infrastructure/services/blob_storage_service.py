@@ -71,6 +71,7 @@ class BlobStorageService(IBlobStorageService):
             region: str,
             partitions: list[gpd.GeoDataFrame],
             dataset_size: DatasetSize | None = None,
+            row_group_size: int | None = None,
             **kwargs: str
     ) -> list[str]:
         asset_paths = []
@@ -89,6 +90,10 @@ class BlobStorageService(IBlobStorageService):
                 **kwargs if kwargs else {}
             )
 
+            extra_parquet_kwargs: dict[str, int] = (
+                {"row_group_size": row_group_size} if row_group_size is not None else {}
+            )
+
             with BytesIO() as buffer:
                 partition.to_parquet(
                     buffer,
@@ -96,7 +101,8 @@ class BlobStorageService(IBlobStorageService):
                     compression="snappy",
                     geometry_encoding="WKB",
                     schema_version="1.1.0",
-                    write_covering_bbox="bbox" not in partition.columns
+                    write_covering_bbox="bbox" not in partition.columns,
+                    **extra_parquet_kwargs,
                 )
 
                 buffer.seek(0)
