@@ -338,12 +338,11 @@ class ConflationService(IConflationService):
             fkb_filter: str
     ) -> tuple[str, str]:
         if has_osm_files:
-            osm_cte = f"""osm AS 
+            osm_cte = f"""osm AS
             (
-                SELECT 
+                SELECT
                     external_id,
                     ST_AsWKB(geometry) as geometry,
-                    bbox,
                     region,
                     partition_key,
                     building_type,
@@ -361,7 +360,6 @@ class ConflationService(IConflationService):
                 SELECT
                     CAST(NULL AS INTEGER) AS external_id,
                     CAST(NULL AS BLOB) AS geometry,
-                    CAST(NULL AS STRUCT(minx DOUBLE, miny DOUBLE, maxx DOUBLE, maxy DOUBLE)) AS bbox,
                     CAST(NULL AS VARCHAR) AS region,
                     CAST(NULL AS VARCHAR) AS partition_key,
                     CAST(NULL AS VARCHAR) AS building_type,
@@ -374,12 +372,11 @@ class ConflationService(IConflationService):
             """
 
         if has_fkb_files:
-            fkb_cte = f"""fkb AS 
+            fkb_cte = f"""fkb AS
             (
-                SELECT 
+                SELECT
                     external_id,
                     ST_AsWKB(geometry) AS geometry,
-                    bbox,
                     region,
                     partition_key,
                     TRY_CAST(building_type AS VARCHAR) AS building_type,
@@ -397,7 +394,6 @@ class ConflationService(IConflationService):
                 SELECT
                     CAST(NULL AS VARCHAR) AS external_id,
                     CAST(NULL AS BLOB) AS geometry,
-                    CAST(NULL AS STRUCT(minx DOUBLE, miny DOUBLE, maxx DOUBLE, maxy DOUBLE)) AS bbox,
                     CAST(NULL AS VARCHAR) AS region,
                     CAST(NULL AS VARCHAR) AS partition_key,
                     CAST(NULL AS VARCHAR) AS building_type,
