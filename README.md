@@ -14,7 +14,7 @@ measurable and reproducible on identical datasets and hardware.
 
 <div align="center">
 
-[![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
+[![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Setup Benchmarking Framework](https://github.com/kartAI/doppa-data/actions/workflows/setup-benchmarking-framework.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/setup-benchmarking-framework.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
 
 </div>
 

@@ -1,0 +1,92 @@
+name: Setup Benchmarking Framework
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  setup-benchmarking-framework:
+    name: Run Setup Benchmarking Framework via ACI
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Delete Existing Setup Container
+        run: |
+          az container delete \
+            --resource-group doppa \
+            --name container-setup-framework \
+            --yes 2>/dev/null || true
+
+      - name: Wait for Container Deletion
+        run: |
+          STATUS="Unknown"
+          for i in $(seq 1 30); do
+            STATUS=$(az container show \
+              --resource-group doppa \
+              --name container-setup-framework \
+              --query "provisioningState" -o tsv 2>/dev/null || echo "Deleted")
+            if [ "$STATUS" = "Deleted" ]; then
+              echo "Container deleted."
+              break
+            fi
+            echo "Still deleting (attempt $i/30)... waiting 10s"
+            sleep 10
+          done
+          if [ "$STATUS" != "Deleted" ]; then
+            echo "Container was not deleted after 30 attempts (last status: $STATUS). Aborting."
+            exit 1
+          fi
+
+      - name: Create Setup Container on ACI
+        env:
+          AZURE_UAMI_RESOURCE_ID: ${{ secrets.AZURE_UAMI_RESOURCE_ID }}
+          AZURE_BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
+          AZURE_BLOB_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_BLOB_STORAGE_ACCOUNT_KEY }}
+          POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          az container create \
+            --resource-group doppa \
+            --name container-setup-framework \
+            --image ${{ vars.ACR_LOGIN_SERVER }}/setup-framework:latest \
+            --location norwayeast \
+            --cpu 4 \
+            --memory 16 \
+            --os-type Linux \
+            --restart-policy Never \
+            --assign-identity "$AZURE_UAMI_RESOURCE_ID" \
+            --registry-login-server ${{ vars.ACR_LOGIN_SERVER }} \
+            --acr-identity "$AZURE_UAMI_RESOURCE_ID" \
+            --environment-variables \
+              AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }} \
+              ACR_LOGIN_SERVER=${{ vars.ACR_LOGIN_SERVER }} \
+              AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER }} \
+              AZURE_BLOB_STORAGE_METADATA_CONTAINER=${{ vars.AZURE_BLOB_STORAGE_METADATA_CONTAINER }} \
+              POSTGRES_SERVER_NAME=${{ vars.POSTGRES_SERVER_NAME }} \
+            --secure-environment-variables \
+              "AZURE_UAMI_RESOURCE_ID=$AZURE_UAMI_RESOURCE_ID" \
+              "AZURE_BLOB_STORAGE_CONNECTION_STRING=$AZURE_BLOB_STORAGE_CONNECTION_STRING" \
+              "AZURE_BLOB_STORAGE_ACCOUNT_KEY=$AZURE_BLOB_STORAGE_ACCOUNT_KEY" \
+              "POSTGRES_USERNAME=$POSTGRES_USERNAME" \
+              "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
+              "DATABRICKS_HOST=$DATABRICKS_HOST" \
+              "DATABRICKS_TOKEN=$DATABRICKS_TOKEN" \
+            --no-wait
