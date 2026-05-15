@@ -6,7 +6,8 @@ from osgeo import ogr
 from pyproj import CRS
 from dependency_injector.wiring import Provide, inject
 from duckdb import DuckDBPyConnection
-from shapely import from_wkb
+import numpy as np
+import shapely
 from sqlalchemy import Engine, text
 
 from src import Config
@@ -98,47 +99,65 @@ def _seed_postgres_for_size(
         file_name="*.parquet",
     )
 
-    logger.info(f"Fetching buildings for size '{size.value}' from '{path}'")
-    building_df = duckdb_context.execute(
-        f"SELECT ST_AsWKB(geometry) AS geometry, * EXCLUDE geometry FROM read_parquet('{path}')"
-    ).fetchdf()
+    total_rows = duckdb_context.execute(
+        f"SELECT COUNT(*) FROM read_parquet('{path}')"
+    ).fetchone()[0]
 
-    building_df["geometry"] = building_df["geometry"].apply(
-        lambda g: bytes(g) if isinstance(g, (memoryview, bytearray)) else g
-    )
-    building_df["geometry"] = building_df["geometry"].apply(from_wkb)
-
-    building_gdf = gpd.GeoDataFrame(
-        building_df,
-        geometry="geometry",
-        crs=EPSGCode.WGS84.value,
-    )
-
-    if building_gdf.empty:
+    if total_rows == 0:
         logger.warning(
             f"No buildings found at blob storage path '{path}' for size '{size.value}'. Skipping table '{table_name}'."
         )
         return
 
-    total_rows = building_gdf.shape[0]
+    duckdb_vector_size = 2048
+    vectors_per_chunk = max(1, Config.BUILDINGS_BATCH_SIZE // duckdb_vector_size)
+
     logger.info(
-        f"Inserting {total_rows} rows into '{table_name}' in chunks of {Config.BUILDINGS_BATCH_SIZE}..."
+        f"Streaming {total_rows} rows from '{path}' into '{table_name}' in chunks of ~{vectors_per_chunk * duckdb_vector_size}..."
     )
 
+    streaming_result = duckdb_context.execute(
+        f"SELECT ST_AsWKB(geometry) AS geometry, * EXCLUDE geometry FROM read_parquet('{path}')"
+    )
+
+    inserted_rows = 0
+    is_first_chunk = True
+
     with postgres_db_context.connect() as conn:
-        for i in range(0, total_rows, Config.BUILDINGS_BATCH_SIZE):
-            chunk = building_gdf.iloc[i : i + Config.BUILDINGS_BATCH_SIZE]
-            chunk.to_postgis(
-                name=table_name,
-                con=conn,
-                if_exists="replace" if i == 0 else "append",
-                index=False,
+        while True:
+            chunk_df = streaming_result.fetch_df_chunk(vectors_per_chunk)
+            if chunk_df.empty:
+                break
+
+            geometry_array = chunk_df["geometry"].to_numpy()
+            geometry_array = np.array(
+                [bytes(g) if isinstance(g, (memoryview, bytearray)) else g for g in geometry_array],
+                dtype=object,
             )
-            logger.info(
-                f"Inserted rows {i + 1} to {min(i + Config.BUILDINGS_BATCH_SIZE, total_rows)} of {total_rows} into '{table_name}'"
+            chunk_df["geometry"] = shapely.from_wkb(geometry_array)
+
+            chunk_gdf = gpd.GeoDataFrame(
+                chunk_df,
+                geometry="geometry",
+                crs=EPSGCode.WGS84.value,
             )
 
-        logger.info(f"Creating GIST spatial index '{index_name}' on '{table_name}.geometry'...")
+            chunk_gdf.to_postgis(
+                name=table_name,
+                con=conn,
+                if_exists="replace" if is_first_chunk else "append",
+                index=False,
+            )
+
+            inserted_rows += len(chunk_gdf)
+            is_first_chunk = False
+            logger.info(
+                f"Inserted {inserted_rows} of {total_rows} rows into '{table_name}'"
+            )
+
+        logger.info(
+            f"Creating GIST spatial index '{index_name}' on '{table_name}.geometry'..."
+        )
         conn.execute(
             text(
                 f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} USING GIST (geometry)"
@@ -147,7 +166,9 @@ def _seed_postgres_for_size(
         conn.commit()
         logger.info(f"Spatial index '{index_name}' created.")
 
-    logger.info(f"Insertion into '{table_name}' completed")
+    logger.info(
+        f"Insertion into '{table_name}' completed: {inserted_rows} rows"
+    )
 
 
 @inject

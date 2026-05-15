@@ -114,6 +114,11 @@ class Config:
     # DATASET SYNTHESIS
     SYNTHESIS_JITTER_DEGREES: float = 1e-5
 
+    # TEST MODE
+    SETUP_COUNTY_LIMIT: int | None = (
+        int(os.getenv("SETUP_COUNTY_LIMIT")) if os.getenv("SETUP_COUNTY_LIMIT") else None
+    )
+
     # BENCHMARKING
     BENCHMARK_FILE: Path = ROOT_DIR / "benchmarks.yml"
     RUN_ID_LENGTH: int = 6
