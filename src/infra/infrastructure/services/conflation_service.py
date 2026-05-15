@@ -1,7 +1,8 @@
 ﻿import geopandas as gpd
+import numpy as np
 import pandas as pd
+import shapely
 from duckdb import DuckDBPyConnection
-from shapely import from_wkb
 
 from src.application.common import logger
 from src.application.contracts import IConflationService, IFilePathService, IBlobStorageService
@@ -261,8 +262,12 @@ class ConflationService(IConflationService):
 
         df = self.__db_context.execute(query).fetchdf()
 
-        df["geometry"] = df["geometry"].apply(lambda g: bytes(g) if isinstance(g, (bytearray, memoryview)) else g)
-        df["geometry"] = df["geometry"].apply(from_wkb)
+        geometry_array = df["geometry"].to_numpy()
+        geometry_array = np.array(
+            [bytes(g) if isinstance(g, (bytearray, memoryview)) else g for g in geometry_array],
+            dtype=object,
+        )
+        df["geometry"] = shapely.from_wkb(geometry_array)
         gdf = gpd.GeoDataFrame(df, geometry="geometry", crs=f"EPSG:{EPSGCode.WGS84.value}")
 
         merged_count = gdf.shape[0]
