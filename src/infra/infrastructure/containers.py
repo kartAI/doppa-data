@@ -3,7 +3,7 @@ from pystac import StacIO
 
 from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
-    CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
+    CountyService, VectorService, StacService, StacIOService, FKBService, ConflationService,
     TestDatasetService, DatasetSynthesisService, MonitoringStorageService, MVTService, TileApiService, TileService,
     AzureCostService, BenchmarkConfigurationService, AzureMetricService, AzurePricingService, BenchmarkService,
     DatabricksService
@@ -72,19 +72,9 @@ class Containers(containers.DeclarativeContainer):
         bytes_service=bytes_service
     )
 
-    zip_service = providers.Singleton(
-        ZipService,
-    )
-
-    fkb_file_service = providers.Singleton(
-        FKBFileService,
-    )
-
     fkb_service = providers.Singleton(
         FKBService,
         db_context=duckdb_context,
-        zip_service=zip_service,
-        fkb_file_service=fkb_file_service,
         bytes_service=bytes_service,
         blob_storage_service=blob_storage_service
     )
