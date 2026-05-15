@@ -1,7 +1,7 @@
 ﻿from abc import ABC, abstractmethod
 from typing import Literal
 
-from src.domain.enums import Theme, StorageContainer
+from src.domain.enums import Theme, StorageContainer, DatasetSize
 
 
 class IFilePathService(ABC):
@@ -18,26 +18,19 @@ class IFilePathService(ABC):
 
     @staticmethod
     @abstractmethod
-    def create_hive_blob_path(
-            file_name: str,
-            **kwargs: str | int
-    ) -> str:
+    def create_hive_blob_path(file_name: str, **kwargs: str | int) -> str:
         """
-       Create blob path with Hive partitioning format. The kwargs are added at the start of the path in the format 'key=value' joined with '/'.
-        :param file_name: Blob file name
-        :param kwargs: Kwargs that are appended at the start on the format 'key=value' joined with '/'
-        :return: Blob path in the format 'key=value/.../filename'
+        Create blob path with Hive partitioning format. The kwargs are added at the start of the path in the format 'key=value' joined with '/'.
+         :param file_name: Blob file name
+         :param kwargs: Kwargs that are appended at the start on the format 'key=value' joined with '/'
+         :return: Blob path in the format 'key=value/.../filename'
         """
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def create_dataset_blob_path(
-            release: str,
-            theme: Theme,
-            region: str,
-            file_name: str,
-            **kwargs
+        release: str, theme: Theme, region: str, file_name: str, **kwargs
     ) -> str:
         """
         Creates a storage account file path to a dataset blob. On the format `release/{release}/**kwargs/theme={theme}/region={region}/{file_name}`
@@ -66,7 +59,9 @@ class IFilePathService(ABC):
 
     @staticmethod
     @abstractmethod
-    def remove_blob_file_name_from_path(file_path: str, file_name: str, prefix: str | None = None) -> str:
+    def remove_blob_file_name_from_path(
+        file_path: str, file_name: str, prefix: str | None = None
+    ) -> str:
         """
         Removes the file name from a blob path, returning the directory path.
         :param prefix: Prefix to be removed from the path.
@@ -91,10 +86,10 @@ class IFilePathService(ABC):
     @staticmethod
     @abstractmethod
     def create_virtual_filesystem_path(
-            storage_scheme: Literal["az"],
-            container: StorageContainer,
-            file_name: str,
-            **kwargs: str | int
+        storage_scheme: Literal["az"],
+        container: StorageContainer,
+        file_name: str,
+        **kwargs: str | int
     ) -> str:
         """
         Creates a virtual filesystem path for accessing files in a storage account.
@@ -110,13 +105,14 @@ class IFilePathService(ABC):
     @staticmethod
     @abstractmethod
     def create_release_virtual_filesystem_path(
-            storage_scheme: Literal["az"],
-            container: StorageContainer,
-            release: str,
-            theme: Theme,
-            region: str,
-            file_name: str,
-            **kwargs: str
+        storage_scheme: Literal["az"],
+        container: StorageContainer,
+        release: str,
+        theme: Theme,
+        dataset_size: DatasetSize,
+        region: str,
+        file_name: str,
+        **kwargs: str
     ) -> str:
         """
         Creates a virtual filesystem path for accessing files in a storage account.
@@ -124,6 +120,7 @@ class IFilePathService(ABC):
         :param container: Name of storage container
         :param release: Release on the format 'yyyy-mm-dd.x'
         :param theme: Theme enum value
+        :param dataset_size: Dataset size enum value
         :param region: Region code, i.e '03' for Oslo
         :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet', or '*.parquet' for all files
         :param kwargs: Additional keyword arguments that will be added between release and theme
