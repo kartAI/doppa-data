@@ -24,7 +24,7 @@ def bbox_filtering_advanced_postgis(
 
     sql = text(
         """
-        WITH src AS (SELECT *, geometry AS geom_4326 FROM buildings),
+        WITH src AS (SELECT *, geometry AS geom_4326 FROM buildings_small),
              bbox AS (
                  -- Axis-aligned bbox in EPSG:4326 (lon/lat)
                  SELECT ST_MakeEnvelope(

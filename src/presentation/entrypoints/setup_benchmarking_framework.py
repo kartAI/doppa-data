@@ -177,12 +177,12 @@ def _create_pmtiles(
 
     duckdb_context.execute(f"""
         COPY (
-            SELECT 
+            SELECT
                 * EXCLUDE (geometry, bbox),
-                bbox.maxx, 
-                bbox.maxy, 
-                bbox.minx, 
-                bbox.miny,
+                ST_XMax(geometry) AS bbox_maxx,
+                ST_YMax(geometry) AS bbox_maxy,
+                ST_XMin(geometry) AS bbox_minx,
+                ST_YMin(geometry) AS bbox_miny,
                 geometry
             FROM read_parquet('{path}')
         )
@@ -259,12 +259,12 @@ def _create_mvt(
 
         duckdb_context.execute(f"""
             COPY (
-                SELECT 
+                SELECT
                     * EXCLUDE (geometry, bbox),
-                    bbox.maxx, 
-                    bbox.maxy, 
-                    bbox.minx, 
-                    bbox.miny,
+                    ST_XMax(geometry) AS bbox_maxx,
+                    ST_YMax(geometry) AS bbox_maxy,
+                    ST_XMin(geometry) AS bbox_minx,
+                    ST_YMin(geometry) AS bbox_miny,
                     geometry
                 FROM read_parquet('{path}')
             )

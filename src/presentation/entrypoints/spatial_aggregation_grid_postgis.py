@@ -20,7 +20,7 @@ def spatial_aggregation_grid_postgis(
         """
         WITH building_centroids AS (
             SELECT ST_Centroid(geometry) AS centroid
-            FROM buildings
+            FROM buildings_small
             WHERE ST_IsValid(geometry)
         )
         SELECT

@@ -21,7 +21,7 @@ def attribute_spatial_compound_filter_postgis(
     sql = text(
         """
         SELECT *
-        FROM buildings
+        FROM buildings_small
         WHERE source = :source
           AND ST_Intersects(
                 geometry,
