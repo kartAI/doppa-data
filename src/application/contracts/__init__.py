@@ -8,6 +8,7 @@ from .blob_storage_service_interface import IBlobStorageService
 from .bytes_service_interface import IBytesService
 from .conflation_service_interface import IConflationService
 from .county_service_interface import ICountyService
+from .dataset_synthesis_service_interface import IDatasetSynthesisService
 from .file_path_service_interface import IFilePathService
 from .fkb_service_interface import IFKBService
 from .fkb_file_service_interface import IFKBFileService

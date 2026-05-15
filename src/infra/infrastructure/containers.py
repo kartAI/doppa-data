@@ -4,8 +4,9 @@ from pystac import StacIO
 from src.infra.infrastructure.services import (
     BlobStorageService, OpenStreetMapService, OpenStreetMapFileService, FilePathService, ReleaseService, BytesService,
     CountyService, VectorService, StacService, StacIOService, FKBService, ZipService, FKBFileService, ConflationService,
-    TestDatasetService, MonitoringStorageService, MVTService, TileApiService, TileService, AzureCostService,
-    BenchmarkConfigurationService, AzureMetricService, AzurePricingService, BenchmarkService, DatabricksService
+    TestDatasetService, DatasetSynthesisService, MonitoringStorageService, MVTService, TileApiService, TileService,
+    AzureCostService, BenchmarkConfigurationService, AzureMetricService, AzurePricingService, BenchmarkService,
+    DatabricksService
 )
 from src.infra.persistence.context import create_duckdb_context, create_blob_storage_context, create_postgres_db_context
 
@@ -152,6 +153,14 @@ class Containers(containers.DeclarativeContainer):
         county_service=county_service,
         fkb_service=fkb_service,
         osm_service=open_street_map_service,
+    )
+
+    dataset_synthesis_service = providers.Singleton(
+        DatasetSynthesisService,
+        db_context=duckdb_context,
+        file_path_service=file_path_service,
+        blob_storage_service=blob_storage_service,
+        county_service=county_service,
     )
 
     databricks_service = providers.Singleton(
