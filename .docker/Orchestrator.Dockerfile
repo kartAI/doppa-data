@@ -3,7 +3,7 @@
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y curl ca-certificates gnupg && \
+    apt-get install -y --fix-missing curl ca-certificates gnupg && \
     curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
     rm -rf /var/lib/apt/lists/*
 
