@@ -3,6 +3,7 @@
 import geopandas as gpd
 from pystac import Catalog, Collection, Item
 
+from src import Config
 from src.application.common import logger
 from src.application.contracts import (
     IReleaseService, IStacService, IOpenStreetMapFileService, ICountyService, IOpenStreetMapService, IFKBService,
@@ -135,7 +136,14 @@ class TestDatasetService(ITestDatasetService):
         return current_release, root_catalog, release_catalog
 
     def __get_county_ids(self) -> list[str]:
-        return self.__county_service.get_county_ids()
+        county_ids = self.__county_service.get_county_ids()
+        if Config.SETUP_COUNTY_LIMIT is not None:
+            limited_ids = county_ids[: Config.SETUP_COUNTY_LIMIT]
+            logger.info(
+                f"SETUP_COUNTY_LIMIT={Config.SETUP_COUNTY_LIMIT} active: processing {len(limited_ids)} of {len(county_ids)} counties ({limited_ids})"
+            )
+            return limited_ids
+        return county_ids
 
     def __download_and_format_osm_dataset(self) -> list[gpd.GeoDataFrame]:
         return self.__osm_service.create_building_batches()
@@ -248,6 +256,7 @@ class TestDatasetService(ITestDatasetService):
             region=region,
             partitions=partitions,
             dataset_size=dataset_size,
+            row_group_size=Config.GEOPARQUET_ROW_GROUP_SIZE,
             **({"dataset": dataset.value} if dataset else {})
         )
 
