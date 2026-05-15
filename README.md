@@ -31,6 +31,10 @@ measurable and reproducible on identical datasets and hardware.
         - [Databricks](#databricks)
     - [GitHub Actions](#github-actions)
     - [Local development](#local-development)
+- [Dataset layout](#dataset-layout)
+    - [Sizes and synthesis](#sizes-and-synthesis)
+    - [Postgres tables](#postgres-tables)
+    - [Setup runtime and test mode](#setup-runtime-and-test-mode)
 
 ## Setup
 
@@ -321,4 +325,73 @@ below for more information about
 | `--script-id`     | `<query-type>-<service>`     | Identifies which query is being executed. `<query-type>` examples: `db-scan`, `bbox-filtering`. `<service>` examples: `blob-storage`, `postgis`.              |
 | `--benchmark-run` | `int`                        | Identifier that tells which iteration of the benchmarking is currently running. This is to run the benchmarks on multiple container instances.                |
 | `--run-id`        | `<current-date>-<random-id>` | Identifies a benchmark run. Shared across all queries in a single orchestrated run. Date format: `yyyy-mm-dd`; random ID: 6-character uppercase alphanumeric. |
+
+## Dataset layout
+
+Benchmark datasets are stored in the `data` blob container partitioned by release, size, theme, and region:
+
+```
+az://data/release/{release}/size={small|medium|large}/theme=buildings/region={region}/part_XXXXX.parquet
+```
+
+The `size=` segment is required for all conflated and synthesized building data. Raw OSM/FKB partitions (under
+the `raw` container) do not carry the `size=` segment.
+
+Files are written as GeoParquet 1.1.0 with:
+
+- `geometry_encoding="WKB"`
+- `schema_version="1.1.0"`
+- `write_covering_bbox=True` (adds a `bbox` struct column with `xmin`, `ymin`, `xmax`, `ymax`)
+- `row_group_size=100_000`
+- Rows sorted by `partition_key` (geohash precision 3 over the LAEA Europe centroid)
+
+### Sizes and synthesis
+
+| Size     | Target row count | Source                                                                                                  |
+|----------|------------------|---------------------------------------------------------------------------------------------------------|
+| `small`  | ~5M              | Conflation of OSM + FKB. Written directly by `TestDatasetService` during setup.                         |
+| `medium` | ~40M             | `DatasetSynthesisService`: 7 clones per source polygon (translate + rotate + jitter, drop invalid).     |
+| `large`  | ~100M            | `DatasetSynthesisService`: 19 clones per source polygon.                                                |
+
+Per-polygon clone counts are exposed on the enum (`DatasetSize.MEDIUM.clones_per_polygon == 7`). Synthetic clones
+carry the same schema as originals, with non-geometry attributes (e.g. `building_type`, `building_id`, `source`)
+left `NULL`. The `partition_key` is recomputed for clones from the new centroid.
+
+Attribute filters (e.g. `WHERE source = 'osm'` in the compound-filter benchmark) match only the ~5M original rows
+on `size=medium` / `size=large`. This is acceptable for scaling benchmarks.
+
+### Postgres tables
+
+`setup_benchmarking_framework` seeds three Postgres tables, one per size:
+
+- `buildings_small` (~5M rows)
+- `buildings_medium` (~40M rows)
+- `buildings_large` (~100M rows)
+
+Each has a matching GIST spatial index named `buildings_{size}_geometry_idx`. The seed streams rows from blob
+storage via DuckDB `fetch_df_chunk` to avoid materializing the full dataset in memory.
+
+### Setup runtime and test mode
+
+A full `setup_benchmarking_framework` run on real Azure resources is dominated by Postgres seeding of
+`buildings_large` (multi-hour wall on the B2ms tier). Approximate per-step runtimes for the full Norway dataset:
+
+| Step | Description                              | Approximate runtime |
+|------|------------------------------------------|---------------------|
+| 1    | `test_dataset_service.run_pipeline()`    | 25–55 min           |
+| 2    | Synthesize medium (~40M rows)            | 25–40 min           |
+| 3    | Synthesize large (~100M rows)            | 50–90 min           |
+| 4    | Postgres seed (small + medium + large)   | 3.5–7 hr            |
+| 5    | Shapefile copy                           | 3–5 min             |
+
+For faster iteration during development, set `SETUP_COUNTY_LIMIT=N` in `.env`. When set, `TestDatasetService`
+and `DatasetSynthesisService` slice their per-county loops to the first `N` Norwegian counties, and the Postgres
+seed naturally picks up only those counties' parquet partitions. A run with `SETUP_COUNTY_LIMIT=1` (Oslo only)
+completes end-to-end in ~10 minutes.
+
+```dotenv
+SETUP_COUNTY_LIMIT=1
+```
+
+Leave `SETUP_COUNTY_LIMIT` unset (or remove it) for the full Norway run.
 
