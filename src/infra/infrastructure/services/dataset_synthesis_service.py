@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import shapely
 from duckdb import DuckDBPyConnection
-from shapely.affinity import rotate, translate
 
 from src import Config
 from src.application.common import logger
@@ -48,6 +47,12 @@ class DatasetSynthesisService(IDatasetSynthesisService):
             )
 
         regions = self.__county_service.get_county_ids()
+        if Config.SETUP_COUNTY_LIMIT is not None:
+            limited_regions = regions[: Config.SETUP_COUNTY_LIMIT]
+            logger.info(
+                f"SETUP_COUNTY_LIMIT={Config.SETUP_COUNTY_LIMIT} active: synthesizing {len(limited_regions)} of {len(regions)} counties ({limited_regions})"
+            )
+            regions = limited_regions
 
         logger.info(
             f"Synthesizing '{target_size.value}' dataset for release '{release}' with {clones_per_polygon} clones per source polygon across {len(regions)} regions."
@@ -136,12 +141,14 @@ class DatasetSynthesisService(IDatasetSynthesisService):
         if dataframe.empty:
             return None
 
-        dataframe = dataframe.drop(columns=["bbox"], errors="ignore")
+        dataframe = dataframe.drop(columns=["bbox", "size", "theme"], errors="ignore")
 
-        dataframe["geometry"] = dataframe["geometry"].apply(
-            lambda geometry: bytes(geometry) if isinstance(geometry, (bytearray, memoryview)) else geometry
+        geometry_array = dataframe["geometry"].to_numpy()
+        geometry_array = np.array(
+            [bytes(g) if isinstance(g, (bytearray, memoryview)) else g for g in geometry_array],
+            dtype=object,
         )
-        dataframe["geometry"] = shapely.from_wkb(dataframe["geometry"].to_numpy())
+        dataframe["geometry"] = shapely.from_wkb(geometry_array)
 
         geodataframe = gpd.GeoDataFrame(
             dataframe, geometry="geometry", crs=f"EPSG:{EPSGCode.WGS84.value}"
@@ -188,19 +195,16 @@ class DatasetSynthesisService(IDatasetSynthesisService):
         repeated_centroid_x = np.repeat(source_centroid_x, clones_per_polygon)
         repeated_centroid_y = np.repeat(source_centroid_y, clones_per_polygon)
 
-        clone_geometries = np.empty(clone_count, dtype=object)
-        for clone_index in range(clone_count):
-            rotated_geometry = rotate(
-                repeated_geometries[clone_index],
-                rotation_radians[clone_index],
-                origin=(repeated_centroid_x[clone_index], repeated_centroid_y[clone_index]),
-                use_radians=True,
-            )
-            clone_geometries[clone_index] = translate(
-                rotated_geometry,
-                xoff=target_centroid_x[clone_index] + jitter_x[clone_index] - repeated_centroid_x[clone_index],
-                yoff=target_centroid_y[clone_index] + jitter_y[clone_index] - repeated_centroid_y[clone_index],
-            )
+        clone_geometries = self.__apply_affine_via_duckdb(
+            source_geometries=repeated_geometries,
+            source_centroid_x=repeated_centroid_x,
+            source_centroid_y=repeated_centroid_y,
+            target_centroid_x=target_centroid_x,
+            target_centroid_y=target_centroid_y,
+            rotation_radians=rotation_radians,
+            jitter_x=jitter_x,
+            jitter_y=jitter_y,
+        )
 
         valid_mask = shapely.is_valid(clone_geometries)
         dropped_count = int((~valid_mask).sum())
@@ -226,6 +230,62 @@ class DatasetSynthesisService(IDatasetSynthesisService):
         )
 
         return self.__vector_service.compute_partition_key(clones_geodataframe)
+
+    def __apply_affine_via_duckdb(
+        self,
+        source_geometries: np.ndarray,
+        source_centroid_x: np.ndarray,
+        source_centroid_y: np.ndarray,
+        target_centroid_x: np.ndarray,
+        target_centroid_y: np.ndarray,
+        rotation_radians: np.ndarray,
+        jitter_x: np.ndarray,
+        jitter_y: np.ndarray,
+    ) -> np.ndarray:
+        cos_rotation = np.cos(rotation_radians)
+        sin_rotation = np.sin(rotation_radians)
+
+        matrix_a = cos_rotation
+        matrix_b = -sin_rotation
+        matrix_d = sin_rotation
+        matrix_e = cos_rotation
+        translation_x = (target_centroid_x + jitter_x) - (matrix_a * source_centroid_x + matrix_b * source_centroid_y)
+        translation_y = (target_centroid_y + jitter_y) - (matrix_d * source_centroid_x + matrix_e * source_centroid_y)
+
+        affine_input = pd.DataFrame({
+            "source_wkb": shapely.to_wkb(source_geometries),
+            "matrix_a": matrix_a,
+            "matrix_b": matrix_b,
+            "matrix_d": matrix_d,
+            "matrix_e": matrix_e,
+            "translation_x": translation_x,
+            "translation_y": translation_y,
+        })
+
+        self.__db_context.register("dataset_synthesis_affine_input", affine_input)
+        try:
+            affine_result = self.__db_context.execute(
+                """
+                SELECT
+                    ST_AsWKB(
+                        ST_Affine(
+                            ST_GeomFromWKB(source_wkb),
+                            matrix_a, matrix_b, matrix_d, matrix_e,
+                            translation_x, translation_y
+                        )
+                    ) AS clone_wkb
+                FROM dataset_synthesis_affine_input
+                """
+            ).fetchdf()
+        finally:
+            self.__db_context.unregister("dataset_synthesis_affine_input")
+
+        clone_wkb_array = affine_result["clone_wkb"].to_numpy()
+        clone_wkb_array = np.array(
+            [bytes(g) if isinstance(g, (bytearray, memoryview)) else g for g in clone_wkb_array],
+            dtype=object,
+        )
+        return shapely.from_wkb(clone_wkb_array)
 
     @staticmethod
     def __combine_and_finalize(
