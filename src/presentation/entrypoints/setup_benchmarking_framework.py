@@ -20,7 +20,7 @@ from src.application.contracts import (
     ITestDatasetService,
     IBenchmarkService,
 )
-from src.domain.enums import StorageContainer, Theme, EPSGCode
+from src.domain.enums import StorageContainer, Theme, EPSGCode, DatasetSize
 from src.infra.infrastructure import Containers
 
 
@@ -67,6 +67,7 @@ def _postgres_buildings_seed(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
@@ -137,6 +138,7 @@ def _create_pmtiles(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
@@ -217,6 +219,7 @@ def _create_mvt(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
@@ -348,6 +351,7 @@ def _create_shapefile_copy(
         release=release or Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )

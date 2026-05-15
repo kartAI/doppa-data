@@ -5,7 +5,7 @@ from src import Config
 from src.application.common.monitor import monitor
 from src.application.contracts import IFilePathService
 from src.application.dtos import CostConfiguration
-from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox, DataSource
+from src.domain.enums import StorageContainer, Theme, BenchmarkIteration, BoundingBox, DataSource, DatasetSize
 from src.infra.infrastructure import Containers
 
 
@@ -24,6 +24,7 @@ def attribute_spatial_compound_filter_duckdb(
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
         container=StorageContainer.DATA,
         theme=Theme.BUILDINGS,
+        dataset_size=DatasetSize.SMALL,
         region="*",
         file_name="*.parquet",
     )
