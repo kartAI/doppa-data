@@ -75,6 +75,7 @@ jobs:
             --assign-identity "$AZURE_UAMI_RESOURCE_ID" \
             --registry-login-server ${{ vars.ACR_LOGIN_SERVER }} \
             --acr-identity "$AZURE_UAMI_RESOURCE_ID" \
+            --command-line "python benchmark_runner.py --script-id setup-framework --benchmark-run 1" \
             --environment-variables \
               AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }} \
               ACR_LOGIN_SERVER=${{ vars.ACR_LOGIN_SERVER }} \
