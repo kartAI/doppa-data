@@ -17,6 +17,11 @@ SEED: int = 42
 def point_in_polygon_lookup_postgis(
     db_context: Engine = Provide[Containers.postgres_context],
 ) -> None:
+    """
+    Benchmark: point-in-polygon lookups against the seeded ``buildings_small`` table
+    using PostGIS. Generates a mix of inside and outside Trondheim-area points up
+    front, then times per-point ``ST_Contains`` counts.
+    """
     points = _generate_points(db_context=db_context)
     _benchmark(points=points)
 

@@ -20,6 +20,12 @@ def point_in_polygon_lookup_duckdb(
     db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
     path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> None:
+    """
+    Benchmark: point-in-polygon lookups against the small buildings dataset using
+    DuckDB's spatial extension over Azure Blob Storage. Generates a mix of inside
+    and outside Trondheim-area points up front, then times per-point
+    ``ST_Contains`` counts.
+    """
     points = _generate_points(db_context=db_context, path_service=path_service)
     _benchmark(points=points)
 
