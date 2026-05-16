@@ -14,18 +14,21 @@ measurable and reproducible on identical datasets and hardware.
 
 <div align="center">
 
-[![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml) [![Setup Benchmarking Framework](https://github.com/kartAI/doppa-data/actions/workflows/setup-benchmarking-framework.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/setup-benchmarking-framework.yml) [![Run Benchmarks](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml/badge.svg?event=schedule)](https://github.com/kartAI/doppa-data/actions/workflows/run-benchmarks.yml)
+[![Push containers to Azure Container Registry](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/push-containers-to-acr.yml) [![Publish APIs](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml/badge.svg)](https://github.com/kartAI/doppa-data/actions/workflows/publish-api.yml)
 
 </div>
 
 ## Table of contents
 
+- [Research gaps addressed](#research-gaps-addressed)
 - [Benchmarking framework](#benchmarking-framework)
     - [Measurement loop](#measurement-loop)
     - [Engines under test](#engines-under-test)
     - [Databricks cluster lifecycle](#databricks-cluster-lifecycle)
     - [Pairing and randomization](#pairing-and-randomization)
-- [Research gaps addressed](#research-gaps-addressed)
+- [Dataset layout](#dataset-layout)
+    - [Sizes and synthesis](#sizes-and-synthesis)
+    - [Postgres tables](#postgres-tables)
 - [Setup](#setup)
     - [Azure Resources](#azure-resources)
         - [Resource naming](#resource-naming)
@@ -36,13 +39,47 @@ measurable and reproducible on identical datasets and hardware.
         - [PostgreSQL database](#postgresql-database)
         - [Web app for containers](#web-app-for-containers)
         - [Databricks](#databricks)
-    - [GitHub Actions](#github-actions)
     - [Local development](#local-development)
-- [Dataset layout](#dataset-layout)
-    - [Sizes and synthesis](#sizes-and-synthesis)
-    - [Postgres tables](#postgres-tables)
+    - [GitHub Actions](#github-actions)
     - [Setup runtime and test mode](#setup-runtime-and-test-mode)
+- [Running the framework](#running-the-framework)
 - [References](#references)
+
+## Research gaps addressed
+
+The framework is built around the three gaps identified in chapter 3 of the accompanying thesis.
+
+**Network transfer accounting.** Most spatial benchmarks treat network communication as a system-design concern (Tang
+et al. 2020) rather than a reported experimental metric. Cloud delivery cost, however, is partly driven by transferred
+bytes (Folkerts et al. 2013). doppa records `network_bytes_sent` and `network_bytes_received` per iteration as primary
+outputs alongside elapsed time. The Databricks notebook additionally reports executor input bytes and shuffle read /
+write bytes via the `SparkListener`. PostgreSQL ingress and egress are read from Azure Monitor. `AzureCostService`
+derives `network_cost` directly from these counters when it computes per-benchmark cost rows, so the link from
+format internals to client-observed cost is measured end to end.
+
+**Cloud-native vector formats vs. traditional formats on cloud storage.** Empirical comparisons in the literature
+(Holmes 2023; Flatgeobuf 2024) measure write times and file sizes on local disk and do not place cloud-native and
+traditional formats side by side on cloud storage. doppa benchmarks GeoParquet over Azure Blob Storage (via DuckDB)
+against PostGIS on Azure Database for PostgreSQL, and PMTiles against WMS-style vector tiles, across the full catalog
+of query patterns: full scans, bounding-box filters at three result-set sizes (neighborhood, municipality, county),
+spatial aggregation over a grid, attribute-and-spatial compound filters, ordered range queries, point-in-polygon
+lookups, and a national-scale spatial join. The local-Shapefile entrypoints sit on the side as a laptop-workflow
+reference, with the Shapefile downloaded ahead of the timed scope to emulate that workflow rather than to bench the
+format on cloud storage.
+
+**Single-node vs. distributed engines on the same vector workload.** Prior comparisons restrict themselves either to
+Spark-based systems (Pandey et al. 2018) or to single-node engines (Jackpine; Ray et al. 2011). doppa runs the same
+national-scale spatial join through DuckDB, PostGIS, and Apache Sedona on Databricks at three cluster sizes (2, 4, and
+8 workers), against the same `counties.parquet` boundary set and the same `BENCHMARK_DOPPA_DATA_RELEASE` building
+dataset. With the cluster-reuse measurement window in place, every engine reports elapsed time and cost over the same
+span — warmup outside the window, timed iterations on a warm engine — so the comparison is symmetric. Distributed-only
+metrics (shuffle bytes, stage durations, driver collection time) are recorded as additional columns rather than as
+replacements for the cross-engine ones.
+
+The methodological gap noted in the thesis — the absence of effect-size reporting and uncertainty quantification in
+spatial benchmarks — is handled in downstream analysis. The framework's contribution is to persist every iteration's
+raw sample so distributions, Wilcoxon rank-sum tests, bootstrapped confidence intervals, and Vargha–Delaney Â12 effect
+sizes can be computed without re-running the benchmark.
 
 ## Benchmarking framework
 
@@ -114,41 +151,50 @@ that compare directly (for example `db-scan-blob-storage` and `db-scan-postgis`)
 benchmark in the same wall-clock window controls for short-term cloud variability between the two engines being
 compared.
 
-## Research gaps addressed
+## Dataset layout
 
-The framework is built around the three gaps identified in chapter 3 of the accompanying thesis.
+Benchmark datasets are stored in the `data` blob container partitioned by release, size, theme, and region:
 
-**Network transfer accounting.** Most spatial benchmarks treat network communication as a system-design concern (Tang
-et al. 2020) rather than a reported experimental metric. Cloud delivery cost, however, is partly driven by transferred
-bytes (Folkerts et al. 2013). doppa records `network_bytes_sent` and `network_bytes_received` per iteration as primary
-outputs alongside elapsed time. The Databricks notebook additionally reports executor input bytes and shuffle read /
-write bytes via the `SparkListener`. PostgreSQL ingress and egress are read from Azure Monitor. `AzureCostService`
-derives `network_cost` directly from these counters when it computes per-benchmark cost rows, so the link from
-format internals to client-observed cost is measured end to end.
+```
+az://data/release/{release}/size={small|medium|large}/theme=buildings/region={region}/part_XXXXX.parquet
+```
 
-**Cloud-native vector formats vs. traditional formats on cloud storage.** Empirical comparisons in the literature
-(Holmes 2023; Flatgeobuf 2024) measure write times and file sizes on local disk and do not place cloud-native and
-traditional formats side by side on cloud storage. doppa benchmarks GeoParquet over Azure Blob Storage (via DuckDB)
-against PostGIS on Azure Database for PostgreSQL, and PMTiles against WMS-style vector tiles, across the full catalog
-of query patterns: full scans, bounding-box filters at three result-set sizes (neighborhood, municipality, county),
-spatial aggregation over a grid, attribute-and-spatial compound filters, ordered range queries, point-in-polygon
-lookups, and a national-scale spatial join. The local-Shapefile entrypoints sit on the side as a laptop-workflow
-reference, with the Shapefile downloaded ahead of the timed scope to emulate that workflow rather than to bench the
-format on cloud storage.
+The `size=` segment is required for all conflated and synthesized building data. Raw OSM/FKB partitions (under
+the `raw` container) do not carry the `size=` segment.
 
-**Single-node vs. distributed engines on the same vector workload.** Prior comparisons restrict themselves either to
-Spark-based systems (Pandey et al. 2018) or to single-node engines (Jackpine; Ray et al. 2011). doppa runs the same
-national-scale spatial join through DuckDB, PostGIS, and Apache Sedona on Databricks at three cluster sizes (2, 4, and
-8 workers), against the same `counties.parquet` boundary set and the same `BENCHMARK_DOPPA_DATA_RELEASE` building
-dataset. With the cluster-reuse measurement window in place, every engine reports elapsed time and cost over the same
-span — warmup outside the window, timed iterations on a warm engine — so the comparison is symmetric. Distributed-only
-metrics (shuffle bytes, stage durations, driver collection time) are recorded as additional columns rather than as
-replacements for the cross-engine ones.
+Files are written as GeoParquet 1.1.0 with:
 
-The methodological gap noted in the thesis — the absence of effect-size reporting and uncertainty quantification in
-spatial benchmarks — is handled in downstream analysis. The framework's contribution is to persist every iteration's
-raw sample so distributions, Wilcoxon rank-sum tests, bootstrapped confidence intervals, and Vargha–Delaney Â12 effect
-sizes can be computed without re-running the benchmark.
+- `geometry_encoding="WKB"`
+- `schema_version="1.1.0"`
+- `write_covering_bbox=True` (adds a `bbox` struct column with `xmin`, `ymin`, `xmax`, `ymax`)
+- `row_group_size=100_000`
+- Rows sorted by `partition_key` (geohash precision 3 over the LAEA Europe centroid)
+
+### Sizes and synthesis
+
+| Size     | Target row count | Source                                                                                                  |
+|----------|------------------|---------------------------------------------------------------------------------------------------------|
+| `small`  | ~5M              | Conflation of OSM + FKB. Written directly by `TestDatasetService` during setup.                         |
+| `medium` | ~40M             | `DatasetSynthesisService`: 7 clones per source polygon (translate + rotate + jitter, drop invalid).     |
+| `large`  | ~100M            | `DatasetSynthesisService`: 19 clones per source polygon.                                                |
+
+Per-polygon clone counts are exposed on the enum (`DatasetSize.MEDIUM.clones_per_polygon == 7`). Synthetic clones
+carry the same schema as originals, with non-geometry attributes (e.g. `building_type`, `building_id`, `source`)
+left `NULL`. The `partition_key` is recomputed for clones from the new centroid.
+
+Attribute filters (e.g. `WHERE source = 'osm'` in the compound-filter benchmark) match only the ~5M original rows
+on `size=medium` / `size=large`. This is acceptable for scaling benchmarks.
+
+### Postgres tables
+
+`setup_benchmarking_framework` seeds three Postgres tables, one per size:
+
+- `buildings_small` (~5M rows)
+- `buildings_medium` (~40M rows)
+- `buildings_large` (~100M rows)
+
+Each has a matching GIST spatial index named `buildings_{size}_geometry_idx`. The seed streams rows from blob
+storage via DuckDB `fetch_df_chunk` to avoid materializing the full dataset in memory.
 
 ## Setup
 
@@ -181,7 +227,7 @@ If you need to rename a resource, the following references must be updated toget
 | `.github/workflows/publish-api.yml` | `webapp_name: doppa-vmt`                                                       |
 
 `src/config.py` defaults can also be overridden via the corresponding environment variables
-(see [GitHub Actions](#github-actions) and [Local development](#local-development)) without
+(see [Local development](#local-development) and [GitHub Actions](#github-actions)) without
 editing the file. `benchmarks.yml` and the workflow file require direct edits.
 
 #### Resource group
@@ -383,32 +429,6 @@ az storage blob upload \
   --file <path-to-counties.parquet>
 ```
 
-### GitHub Actions
-
-In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
-
-- `AZURE_UAMI_RESOURCE_ID`
-- `AZURE_BLOB_STORAGE_CONNECTION_STRING`
-- `AZURE_BLOB_STORAGE_ACCOUNT_KEY`
-- `POSTGRES_USERNAME`
-- `POSTGRES_PASSWORD`
-- `DATABRICKS_HOST`
-- `DATABRICKS_TOKEN`
-
-and add the following **variables**:
-
-- `ACR_NAME`
-- `ACR_LOGIN_SERVER`
-- `AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER`
-- `AZURE_BLOB_STORAGE_METADATA_CONTAINER`
-- `AZURE_CLIENT_ID`
-- `AZURE_RESOURCE_GROUP`
-- `AZURE_SUBSCRIPTION_ID`
-- `AZURE_TENANT_ID`
-- `POSTGRES_SERVER_NAME`
-
-These values can be found under the Azure resources previously created. The workflows should now work!
-
 ### Local development
 
 > [!NOTE]
@@ -453,61 +473,31 @@ DATABRICKS_HOST=https://<workspace-id>.azuredatabricks.net
 DATABRICKS_TOKEN=<personal-access-token>
 ```
 
-To run the entire script simply run `python main.py` or `python -m main` and to run a single benchmark run
-`python benchmark_runner.py --script-id <script-id> --benchmark-run <int >= 1> --run-id <run-id>`. See the table
-below for more information about
-`--script-id` and `--run-id`.
+### GitHub Actions
 
-| Flag              | Format / Pattern             | Meaning                                                                                                                                                       |
-|-------------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--script-id`     | `<query-type>-<service>`     | Identifies which query is being executed. `<query-type>` examples: `db-scan`, `bbox-filtering`. `<service>` examples: `blob-storage`, `postgis`.              |
-| `--benchmark-run` | `int`                        | Identifier that tells which iteration of the benchmarking is currently running. This is to run the benchmarks on multiple container instances.                |
-| `--run-id`        | `<current-date>-<random-id>` | Identifies a benchmark run. Shared across all queries in a single orchestrated run. Date format: `yyyy-mm-dd`; random ID: 6-character uppercase alphanumeric. |
+In your repository navigate to *Secrets and variables* under *Settings*. Add the following **secrets**:
 
-## Dataset layout
+- `AZURE_UAMI_RESOURCE_ID`
+- `AZURE_BLOB_STORAGE_CONNECTION_STRING`
+- `AZURE_BLOB_STORAGE_ACCOUNT_KEY`
+- `POSTGRES_USERNAME`
+- `POSTGRES_PASSWORD`
+- `DATABRICKS_HOST`
+- `DATABRICKS_TOKEN`
 
-Benchmark datasets are stored in the `data` blob container partitioned by release, size, theme, and region:
+and add the following **variables**:
 
-```
-az://data/release/{release}/size={small|medium|large}/theme=buildings/region={region}/part_XXXXX.parquet
-```
+- `ACR_NAME`
+- `ACR_LOGIN_SERVER`
+- `AZURE_BLOB_STORAGE_BENCHMARK_CONTAINER`
+- `AZURE_BLOB_STORAGE_METADATA_CONTAINER`
+- `AZURE_CLIENT_ID`
+- `AZURE_RESOURCE_GROUP`
+- `AZURE_SUBSCRIPTION_ID`
+- `AZURE_TENANT_ID`
+- `POSTGRES_SERVER_NAME`
 
-The `size=` segment is required for all conflated and synthesized building data. Raw OSM/FKB partitions (under
-the `raw` container) do not carry the `size=` segment.
-
-Files are written as GeoParquet 1.1.0 with:
-
-- `geometry_encoding="WKB"`
-- `schema_version="1.1.0"`
-- `write_covering_bbox=True` (adds a `bbox` struct column with `xmin`, `ymin`, `xmax`, `ymax`)
-- `row_group_size=100_000`
-- Rows sorted by `partition_key` (geohash precision 3 over the LAEA Europe centroid)
-
-### Sizes and synthesis
-
-| Size     | Target row count | Source                                                                                                  |
-|----------|------------------|---------------------------------------------------------------------------------------------------------|
-| `small`  | ~5M              | Conflation of OSM + FKB. Written directly by `TestDatasetService` during setup.                         |
-| `medium` | ~40M             | `DatasetSynthesisService`: 7 clones per source polygon (translate + rotate + jitter, drop invalid).     |
-| `large`  | ~100M            | `DatasetSynthesisService`: 19 clones per source polygon.                                                |
-
-Per-polygon clone counts are exposed on the enum (`DatasetSize.MEDIUM.clones_per_polygon == 7`). Synthetic clones
-carry the same schema as originals, with non-geometry attributes (e.g. `building_type`, `building_id`, `source`)
-left `NULL`. The `partition_key` is recomputed for clones from the new centroid.
-
-Attribute filters (e.g. `WHERE source = 'osm'` in the compound-filter benchmark) match only the ~5M original rows
-on `size=medium` / `size=large`. This is acceptable for scaling benchmarks.
-
-### Postgres tables
-
-`setup_benchmarking_framework` seeds three Postgres tables, one per size:
-
-- `buildings_small` (~5M rows)
-- `buildings_medium` (~40M rows)
-- `buildings_large` (~100M rows)
-
-Each has a matching GIST spatial index named `buildings_{size}_geometry_idx`. The seed streams rows from blob
-storage via DuckDB `fetch_df_chunk` to avoid materializing the full dataset in memory.
+These values can be found under the Azure resources previously created. The workflows should now work!
 
 ### Setup runtime and test mode
 
@@ -533,6 +523,19 @@ SETUP_COUNTY_LIMIT=1
 
 Leave `SETUP_COUNTY_LIMIT` unset (or remove it) for the full Norway run.
 
+## Running the framework
+
+To run the entire script simply run `python main.py` or `python -m main` and to run a single benchmark run
+`python benchmark_runner.py --script-id <script-id> --benchmark-run <int >= 1> --run-id <run-id>`. See the table
+below for more information about
+`--script-id` and `--run-id`.
+
+| Flag              | Format / Pattern             | Meaning                                                                                                                                                       |
+|-------------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--script-id`     | `<query-type>-<service>`     | Identifies which query is being executed. `<query-type>` examples: `db-scan`, `bbox-filtering`. `<service>` examples: `blob-storage`, `postgis`.              |
+| `--benchmark-run` | `int`                        | Identifier that tells which iteration of the benchmarking is currently running. This is to run the benchmarks on multiple container instances.                |
+| `--run-id`        | `<current-date>-<random-id>` | Identifies a benchmark run. Shared across all queries in a single orchestrated run. Date format: `yyyy-mm-dd`; random ID: 6-character uppercase alphanumeric. |
+
 ## References
 
 Flatgeobuf. (2024). *FlatGeobuf performance benchmarks (geozero-bench)*. Retrieved from
@@ -554,4 +557,3 @@ IEEE 27th International Conference on Data Engineering (ICDE)*, 1139–1150.
 
 Tang, M., Yu, Y., Malluhi, Q. M., Ouzzani, M., & Aref, W. G. (2020). LocationSpark: In-memory distributed spatial query
 processing and optimization. *Frontiers in Big Data*, 3. <https://doi.org/10.3389/fdata.2020.00030>
-
