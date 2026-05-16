@@ -19,6 +19,11 @@ def attribute_spatial_compound_filter_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> list:
+    """
+    Benchmark: compound attribute + spatial filter on the small buildings dataset
+    using DuckDB's spatial extension over Azure Blob Storage. Selects OSM-sourced
+    buildings that intersect the neighborhood-scale bounding box.
+    """
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
