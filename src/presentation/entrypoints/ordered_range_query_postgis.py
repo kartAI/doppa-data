@@ -16,6 +16,11 @@ from src.infra.infrastructure import Containers
 def ordered_range_query_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
 ) -> list:
+    """
+    Benchmark: ordered range query over the seeded ``buildings_small`` table using
+    PostGIS. Filters buildings intersecting the Trondelag bbox, orders by
+    ``building_id`` and returns the first 1000 rows.
+    """
     min_lon, min_lat, max_lon, max_lat = BoundingBox.TRONDELAG_WGS84.value
 
     sql = text(
