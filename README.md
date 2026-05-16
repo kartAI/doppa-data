@@ -41,6 +41,7 @@ measurable and reproducible on identical datasets and hardware.
     - [Sizes and synthesis](#sizes-and-synthesis)
     - [Postgres tables](#postgres-tables)
     - [Setup runtime and test mode](#setup-runtime-and-test-mode)
+- [References](#references)
 
 ## Benchmarking framework
 
@@ -506,4 +507,26 @@ SETUP_COUNTY_LIMIT=1
 ```
 
 Leave `SETUP_COUNTY_LIMIT` unset (or remove it) for the full Norway run.
+
+## References
+
+Flatgeobuf. (2024). *FlatGeobuf performance benchmarks (geozero-bench)*. Retrieved from
+<https://flatgeobuf.org/>
+
+Folkerts, E., Alexandrov, A., Sachs, K., Iosup, A., Markl, V., & Tosun, C. (2013). Benchmarking in the cloud: What it
+should, can, and cannot be. In *Selected topics in performance evaluation and benchmarking (TPCTC 2012)* (Vol. 7755,
+pp. 173–188). Springer. <https://doi.org/10.1007/978-3-642-36727-4_12>
+
+Holmes, C. (2023, August). *Performance explorations of GeoParquet (and DuckDB)*. Cloud-Native Geospatial Foundation.
+<https://cloudnativegeo.org/blog/2023/08/performance-explorations-of-geoparquet-and-duckdb/>
+
+Pandey, V., Kipf, A., Neumann, T., & Kemper, A. (2018). How good are modern spatial analytics systems? *Proceedings of
+the VLDB Endowment*, 11(11), 1661–1673. <https://doi.org/10.14778/3236187.3236213>
+
+Ray, S., Simion, B., & Demke Brown, A. (2011). Jackpine: A benchmark to evaluate spatial database performance. *2011
+IEEE 27th International Conference on Data Engineering (ICDE)*, 1139–1150.
+<https://doi.org/10.1109/ICDE.2011.5767929>
+
+Tang, M., Yu, Y., Malluhi, Q. M., Ouzzani, M., & Aref, W. G. (2020). LocationSpark: In-memory distributed spatial query
+processing and optimization. *Frontiers in Big Data*, 3. <https://doi.org/10.3389/fdata.2020.00030>
 
