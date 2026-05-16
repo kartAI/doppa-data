@@ -35,6 +35,14 @@ def setup_benchmarking_framework(
         Containers.dataset_synthesis_service
     ],
 ) -> None:
+    """
+    Provisions the benchmarking framework's input data in five steps: (1) run the
+    test dataset pipeline to produce the small buildings dataset, (2) synthesize
+    the medium dataset from it, (3) synthesize the large dataset, (4) seed
+    PostgreSQL with each ``buildings_<size>`` table plus a GIST spatial index,
+    and (5) materialize and upload the shapefile copy of the small buildings
+    dataset to blob storage.
+    """
     logger.info("Starting benchmarking framework setup...")
 
     logger.info("Step 1/5: Running test dataset pipeline...")
