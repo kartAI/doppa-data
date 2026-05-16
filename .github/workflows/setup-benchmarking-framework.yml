@@ -68,8 +68,8 @@ jobs:
             --name container-setup-framework \
             --image ${{ vars.ACR_LOGIN_SERVER }}/setup-framework:latest \
             --location norwayeast \
-            --cpu 4 \
-            --memory 16 \
+            --cpu 8 \
+            --memory 32 \
             --os-type Linux \
             --restart-policy Never \
             --assign-identity "$AZURE_UAMI_RESOURCE_ID" \
