@@ -10,6 +10,11 @@ from src.infra.infrastructure import Containers
 
 
 def bbox_filtering_result_set_sizes_neighborhood_duckdb() -> None:
+    """
+    Benchmark: bounding-box filter at neighborhood scale on the small buildings
+    dataset using DuckDB's spatial extension over Azure Blob Storage. Filters by
+    bbox intersection and a minimum projected area in EPSG:25832.
+    """
     _benchmark()
 
 

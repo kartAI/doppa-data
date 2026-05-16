@@ -8,6 +8,11 @@ from src.infra.infrastructure import Containers
 
 
 def bbox_filtering_result_set_sizes_county_postgis() -> None:
+    """
+    Benchmark: bounding-box filter at county scale (Trondelag) on the small
+    buildings dataset using PostGIS. Filters ``buildings_small`` by bbox
+    intersection and a minimum projected area in EPSG:25832.
+    """
     _benchmark()
 
 

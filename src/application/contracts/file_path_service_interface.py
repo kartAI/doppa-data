@@ -1,4 +1,4 @@
-﻿from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Literal
 
 from src.domain.enums import Theme, StorageContainer, DatasetSize
@@ -10,9 +10,10 @@ class IFilePathService(ABC):
     def create_url_to_blob_resource(container: StorageContainer, blob_path: str) -> str:
         """
         Creates a URL to a blob resource in a storage account.
-        :param container: Container where the blob is stored
-        :param blob_path: Path to blob resource within the container
-        :return: A URL to the blob resource
+        :param container: Container where the blob is stored.
+        :param blob_path: Path to blob resource within the container.
+        :return: A URL to the blob resource.
+        :rtype: str
         """
         raise NotImplementedError
 
@@ -20,10 +21,12 @@ class IFilePathService(ABC):
     @abstractmethod
     def create_hive_blob_path(file_name: str, **kwargs: str | int) -> str:
         """
-        Create blob path with Hive partitioning format. The kwargs are added at the start of the path in the format 'key=value' joined with '/'.
-         :param file_name: Blob file name
-         :param kwargs: Kwargs that are appended at the start on the format 'key=value' joined with '/'
-         :return: Blob path in the format 'key=value/.../filename'
+        Create a blob path with Hive partitioning format. The kwargs are added at the start of the
+        path in the format 'key=value' joined with '/'.
+        :param file_name: Blob file name.
+        :param kwargs: Kwargs that are appended at the start on the format 'key=value' joined with '/'.
+        :return: Blob path in the format 'key=value/.../filename'.
+        :rtype: str
         """
         raise NotImplementedError
 
@@ -38,15 +41,18 @@ class IFilePathService(ABC):
         **kwargs,
     ) -> str:
         """
-        Creates a storage account file path to a dataset blob. On the format `release/{release}/size={dataset_size}/**kwargs/theme={theme}/region={region}/{file_name}`. The `size=` segment is omitted when `dataset_size` is None (e.g. raw OSM/FKB inputs which are not partitioned by size).
-
-        :param release: Release version in the format 'yyyy-mm-dd.x'
-        :param theme: Theme enum value
-        :param region: A region in Norway is defined as county. For example '03' for Oslo
-        :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet'
-        :param dataset_size: Optional DatasetSize enum value. When provided, inserts `size={value}/` between release and theme
-        :param kwargs: Additional keyword arguments that will be added between release/size and theme
-        :return: Storage path
+        Creates a storage account file path to a dataset blob. On the format
+        `release/{release}/size={dataset_size}/**kwargs/theme={theme}/region={region}/{file_name}`.
+        The `size=` segment is omitted when `dataset_size` is None (e.g. raw OSM/FKB inputs which are
+        not partitioned by size).
+        :param release: Release version in the format 'yyyy-mm-dd.x'.
+        :param theme: Theme enum value.
+        :param region: A region in Norway is defined as a county. For example '03' for Oslo.
+        :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet'.
+        :param dataset_size: Optional DatasetSize enum value. When provided, inserts `size={value}/`
+            between release and theme.
+        :param kwargs: Additional keyword arguments that will be added between release/size and theme.
+        :return: Storage path.
         :rtype: str
         """
         raise NotImplementedError
@@ -55,10 +61,9 @@ class IFilePathService(ABC):
     @abstractmethod
     def get_blob_file_name(file_path: str) -> str:
         """
-        Gets the ending of a blob path, starting from the file name.
-
-        :param file_path: File name to store. Must be in the format 'part_xxxxx.parquet'
-        :return: Storage path ending
+        Gets the ending of a blob path, starting from the file name, with the extension removed.
+        :param file_path: File path to extract the file name from.
+        :return: File name without extension.
         :rtype: str
         """
         raise NotImplementedError
@@ -69,11 +74,13 @@ class IFilePathService(ABC):
         file_path: str, file_name: str, prefix: str | None = None
     ) -> str:
         """
-        Removes the file name from a blob path, returning the directory path.
-        :param prefix: Prefix to be removed from the path.
+        Removes the file name from a blob path, returning the directory path. If `prefix` is provided
+        and present at the start of the resulting path, it is also stripped.
         :param file_path: File path including the file name.
         :param file_name: File name to be removed from the path.
-        :return: File path without the file name.
+        :param prefix: Optional prefix to be removed from the start of the path.
+        :return: File path without the file name (and prefix when provided).
+        :rtype: str
         """
         raise NotImplementedError
 
@@ -82,9 +89,8 @@ class IFilePathService(ABC):
     def create_blob_path(*args) -> str:
         """
         Creates a storage account file path by joining the provided arguments with '/'.
-
-        :param args: Parts of the path to be joined
-        :return: Storage path
+        :param args: Parts of the path to be joined.
+        :return: Storage path.
         :rtype: str
         """
         raise NotImplementedError
@@ -99,12 +105,13 @@ class IFilePathService(ABC):
     ) -> str:
         """
         Creates a virtual filesystem path for accessing files in a storage account.
-        :param storage_scheme: Storage scheme, e.g., "az" for Azure Blob Storage
-        :param container: Name of storage container
-        :param file_name: File name to store. Must end with '.parquet'
-        :param kwargs: Additional keyword arguments that will be added between 'container' and 'file_name'.
-        Will be added in the format 'key=value' and joined with '/'.
-        :return: Virtual filesystem path
+        :param storage_scheme: Storage scheme, e.g. "az" for Azure Blob Storage.
+        :param container: Name of storage container.
+        :param file_name: File name to store. Must end with '.parquet'.
+        :param kwargs: Additional keyword arguments that will be added between 'container' and
+            'file_name'. Will be added in the format 'key=value' and joined with '/'.
+        :return: Virtual filesystem path.
+        :rtype: str
         """
         raise NotImplementedError
 
@@ -121,15 +128,20 @@ class IFilePathService(ABC):
         **kwargs: str,
     ) -> str:
         """
-        Creates a virtual filesystem path for accessing files in a storage account. The `size=` segment is omitted when `dataset_size` is None (e.g. raw OSM/FKB inputs which are not partitioned by size).
-        :param storage_scheme: Storage scheme, e.g., "az" for Azure Blob Storage
-        :param container: Name of storage container
-        :param release: Release on the format 'yyyy-mm-dd.x'
-        :param theme: Theme enum value
-        :param region: Region code, i.e '03' for Oslo
-        :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet', or '*.parquet' for all files
-        :param dataset_size: Optional dataset size enum value. When provided, inserts `size={value}/` between release and theme
-        :param kwargs: Additional keyword arguments that will be added between release/size and theme
-        :return: Virtual filesystem path
+        Creates a virtual filesystem path for accessing files in a storage account. The `size=`
+        segment is omitted when `dataset_size` is None (e.g. raw OSM/FKB inputs which are not
+        partitioned by size).
+        :param storage_scheme: Storage scheme, e.g. "az" for Azure Blob Storage.
+        :param container: Name of storage container.
+        :param release: Release on the format 'yyyy-mm-dd.x'.
+        :param theme: Theme enum value.
+        :param region: Region code, e.g. '03' for Oslo.
+        :param file_name: File name to store. Must be in the format 'part_xxxxx.parquet', or
+            '*.parquet' for all files.
+        :param dataset_size: Optional dataset size enum value. When provided, inserts `size={value}/`
+            between release and theme.
+        :param kwargs: Additional keyword arguments that will be added between release/size and theme.
+        :return: Virtual filesystem path.
+        :rtype: str
         """
         raise NotImplementedError

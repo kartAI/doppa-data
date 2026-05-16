@@ -2,6 +2,14 @@
 
 
 def initialize_dependencies(run_id: str, benchmark_run: int) -> None:
+    """
+    Initializes the dependency-injection container and wires it into every module that resolves
+    services via `@inject`. Sets the runtime identifiers `run_id` and `benchmark_run` as DI
+    configuration so they can be injected into the monitoring utilities.
+    :param run_id: Identifier for the current benchmark run, propagated to all monitored entrypoints.
+    :param benchmark_run: Iteration counter for the run within the broader benchmark suite.
+    :return: None
+    """
     container = Containers()
 
     container.config.run_id.from_value(run_id)

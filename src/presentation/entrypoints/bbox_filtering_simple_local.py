@@ -10,6 +10,11 @@ from src.infra.infrastructure import Containers
 
 
 def bbox_filtering_simple_local() -> None:
+    """
+    Benchmark: simple Oslo-area bounding-box filter over the buildings shapefile,
+    executed locally via GeoPandas. Downloads the pre-baked shapefile copy from
+    blob storage before running the timed reprojection and area-filter pipeline.
+    """
     _download_data()
     _benchmark()
 

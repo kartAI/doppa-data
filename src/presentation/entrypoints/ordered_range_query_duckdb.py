@@ -19,6 +19,11 @@ def ordered_range_query_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> list:
+    """
+    Benchmark: ordered range query over the small buildings dataset using DuckDB's
+    spatial extension over Azure Blob Storage. Filters buildings intersecting the
+    Trondelag bbox, orders by ``building_id`` and returns the first 1000 rows.
+    """
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,

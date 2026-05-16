@@ -11,6 +11,11 @@ from src.infra.infrastructure import Containers
 def national_scale_spatial_join_databricks_2_nodes(
     databricks_service: IDatabricksService = Provide[Containers.databricks_service],
 ) -> None:
+    """
+    Benchmark: national-scale spatial join between Norwegian counties and the small
+    buildings dataset executed on Azure Databricks with a 2-worker cluster. Submits
+    the Databricks notebook job and waits for completion.
+    """
     _benchmark(databricks_service=databricks_service)
 
 

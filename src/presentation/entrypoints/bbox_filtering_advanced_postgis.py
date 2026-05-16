@@ -16,6 +16,12 @@ from src.infra.infrastructure import Containers
 def bbox_filtering_advanced_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
 ) -> list:
+    """
+    Benchmark: advanced bounding-box filter on the small buildings dataset using
+    PostGIS. Intersects an Oslo-area bbox against ``buildings_small``, reprojects
+    to EPSG:25833, filters by realistic building area, and aggregates count plus
+    area/perimeter statistics.
+    """
     # Same bbox as in the DuckDB example (Oslo-ish, WGS84 lon/lat)
     min_lon = 10.40
     max_lon = 10.95

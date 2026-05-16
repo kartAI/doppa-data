@@ -16,6 +16,11 @@ from src.infra.infrastructure import Containers
 def attribute_spatial_compound_filter_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
 ) -> list:
+    """
+    Benchmark: compound attribute + spatial filter on the small buildings dataset
+    using PostGIS. Selects OSM-sourced buildings that intersect the
+    neighborhood-scale bounding box from the seeded ``buildings_small`` table.
+    """
     min_lon, min_lat, max_lon, max_lat = BoundingBox.NEIGHBORHOOD_WGS84.value
 
     sql = text(

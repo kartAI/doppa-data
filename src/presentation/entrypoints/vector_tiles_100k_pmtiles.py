@@ -17,6 +17,11 @@ def vector_tiles_100k_pmtiles(
         tile_service: ITileService = Provide[Containers.tile_service],
         tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
 ) -> None:
+    """
+    Benchmark: 100k vector tile fetches from the buildings PMTiles archive on Azure
+    Blob Storage. Opens a PMTiles reader against the blob URL and loads the
+    candidate tile list before timing sequential per-tile reads.
+    """
     pmtiles_azure_url = file_path_service.create_url_to_blob_resource(
         container=StorageContainer.TILES,
         blob_path=Config.BUILDINGS_PMTILES_FILE.name

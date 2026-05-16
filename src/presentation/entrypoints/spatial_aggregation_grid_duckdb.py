@@ -19,6 +19,11 @@ def spatial_aggregation_grid_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> list:
+    """
+    Benchmark: spatial aggregation on the small buildings dataset using DuckDB's
+    spatial extension over Azure Blob Storage. Bins each building centroid into a
+    0.01 degree lat/lon grid cell and returns per-cell counts ordered by count.
+    """
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,

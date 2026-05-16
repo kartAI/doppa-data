@@ -11,6 +11,11 @@ TOTAL_REQUESTS: int = 100_000
 
 @inject
 def vector_tiles_100k_vmt(tile_service: ITileService = Provide[Containers.tile_service]) -> None:
+    """
+    Benchmark: 100k vector tile fetches from the on-demand MVT tile server backed by
+    PostGIS. Loads the candidate tile list before timing sequential per-tile HTTP
+    requests.
+    """
     tiles = tile_service.load_tiles(number_of_tiles=TOTAL_REQUESTS)
     _benchmark(tiles=tiles)
 

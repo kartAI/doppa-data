@@ -17,6 +17,11 @@ def national_scale_spatial_join_postgis(
     duckdb_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
     postgres_context: Engine = Provide[Containers.postgres_context],
 ) -> None:
+    """
+    Benchmark: national-scale spatial join between Norwegian counties and the small
+    buildings dataset using PostGIS. Seeds the ``counties`` table from blob storage
+    via DuckDB before running the timed per-county building count aggregation.
+    """
     _seed_counties(duckdb_context=duckdb_context, postgres_context=postgres_context)
     _benchmark()
 

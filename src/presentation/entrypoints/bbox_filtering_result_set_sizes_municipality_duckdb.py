@@ -10,6 +10,11 @@ from src.infra.infrastructure import Containers
 
 
 def bbox_filtering_result_set_sizes_municipality_duckdb() -> None:
+    """
+    Benchmark: bounding-box filter at municipality scale (Trondheim) on the small
+    buildings dataset using DuckDB's spatial extension over Azure Blob Storage.
+    Filters by bbox intersection and a minimum projected area in EPSG:25832.
+    """
     _benchmark()
 
 

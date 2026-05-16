@@ -19,6 +19,11 @@ def national_scale_spatial_join_duckdb(
     db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
     path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> list:
+    """
+    Benchmark: national-scale spatial join between Norwegian counties and the small
+    buildings dataset using DuckDB's spatial extension over Azure Blob Storage.
+    Returns the per-county building count ordered by descending count.
+    """
     buildings_path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,

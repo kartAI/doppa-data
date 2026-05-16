@@ -17,6 +17,15 @@ def monitor_cpu_and_ram(
         benchmark_iteration: BenchmarkIteration,
         interval: float = Config.DEFAULT_SAMPLE_TIMEOUT
 ):
+    """
+    Benchmarking decorator with continuous CPU/RAM sampling. Wraps a function in
+    warmup + timed iterations, runs a daemon sampler thread that records process and
+    per-core CPU + RSS at the given interval, and writes the per-iteration samples
+    plus run metadata to blob storage.
+    :param query_id: Identifier for the benchmarked query.
+    :param benchmark_iteration: Number of timed iterations to run.
+    :param interval: Sampling interval in seconds. Default is Config.DEFAULT_SAMPLE_TIMEOUT.
+    """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
