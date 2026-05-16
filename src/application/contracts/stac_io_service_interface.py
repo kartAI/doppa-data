@@ -1,4 +1,4 @@
-﻿from abc import ABC
+from abc import ABC
 
 from pystac.stac_io import DefaultStacIO
 
@@ -6,8 +6,10 @@ from pystac.stac_io import DefaultStacIO
 class IStacIOService(DefaultStacIO, ABC):
     def strip_path_stem(self, path: str) -> str:
         """
-        Removes the leading part of the path up to and including 'stac/'. Only intended for use with STAC HREFs with 'stac/' in them.
-        :param path: Input path
-        :return: Storage container compatible path
+        Removes the leading part of the path up to and including 'stac/'. Only intended for use with
+        STAC HREFs containing 'stac/'.
+        :param path: Input path.
+        :return: Storage container compatible path with the 'stac/' prefix removed.
+        :rtype: str
         """
         raise NotImplementedError
