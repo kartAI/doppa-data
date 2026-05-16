@@ -20,6 +20,12 @@ measurable and reproducible on identical datasets and hardware.
 
 ## Table of contents
 
+- [Benchmarking framework](#benchmarking-framework)
+    - [Measurement loop](#measurement-loop)
+    - [Engines under test](#engines-under-test)
+    - [Databricks cluster lifecycle](#databricks-cluster-lifecycle)
+    - [Pairing and randomization](#pairing-and-randomization)
+- [Research gaps addressed](#research-gaps-addressed)
 - [Setup](#setup)
     - [Azure Resources](#azure-resources)
         - [Resource group](#resource-group)
@@ -35,6 +41,112 @@ measurable and reproducible on identical datasets and hardware.
     - [Sizes and synthesis](#sizes-and-synthesis)
     - [Postgres tables](#postgres-tables)
     - [Setup runtime and test mode](#setup-runtime-and-test-mode)
+
+## Benchmarking framework
+
+The framework runs every benchmark under a uniform measurement protocol so that single-node and distributed engines can
+be compared on the same axes (elapsed time, network bytes, cost). Each benchmark lives as an independent container
+image, orchestrated by `main.py`, dispatched by `benchmark_runner.py`, and implemented in `src/presentation/entrypoints/`.
+
+### Measurement loop
+
+Every entrypoint is wrapped by the `@monitor` decorator in `src/application/common/monitor.py`. One execution proceeds
+as:
+
+1. **Warmup iterations** run `Config.BENCHMARK_WARMUP_ITERATIONS` times (default 5). Results are discarded. Warmup
+   primes the OS page cache, DuckDB and PostgreSQL connection state, and any JIT-compiled hot paths in the engine.
+2. **Timed iterations** run a per-query count taken from the `BenchmarkIteration` enum (for example 1000 for `DB_SCAN`,
+   7 for `NATIONAL_SCALE_SPATIAL_JOIN`). Each iteration records:
+    - wall-clock elapsed time (`time.perf_counter`),
+    - process CPU user and system seconds (`psutil.Process.cpu_times`),
+    - container network bytes sent and received (`psutil.net_io_counters`),
+    - result cardinality.
+3. **Cost analytics** are computed once per benchmark over the wall-clock window that covers the timed iterations only.
+   Warmup is excluded. Pricing constants live in `src/infra/infrastructure/services/azure_pricing_service.py`, pinned
+   to 2026 Norway East rates with source URLs and update notes.
+
+Per-iteration samples and per-benchmark cost rows are written as Parquet to the `benchmarks` blob container in a
+hive-partitioned layout, so downstream analysis can read full distributions rather than point averages.
+
+### Engines under test
+
+| Engine                  | Layer                            | Storage                                                                                |
+|-------------------------|----------------------------------|----------------------------------------------------------------------------------------|
+| DuckDB                  | Single-node, in-container        | GeoParquet over Azure Blob Storage (`read_parquet('az://...')`)                        |
+| PostGIS                 | Single-node, managed service     | Azure Database for PostgreSQL Flexible Server                                          |
+| GeoPandas + Shapefile   | Single-node, local-disk baseline | Shapefile pre-downloaded to the container before the timed scope                       |
+| Apache Sedona           | Distributed                      | Azure Databricks, 2 / 4 / 8 `Standard_D4s_v3` workers, reading GeoParquet via ABFS     |
+| PMTiles                 | Cloud-native vector tiles        | PMTiles archive in blob storage, accessed via HTTP range reads                         |
+| WMS-style vector tiles  | Traditional vector tiles         | `doppa-vmt` web app for containers, tiles assembled on demand                          |
+
+DuckDB and PostGIS each run inside an Azure Container Instance with 3 vCPU and 8 GB RAM, so CPU and memory baselines
+match between the single-node engines.
+
+### Databricks cluster lifecycle
+
+The Databricks national-scale spatial join uses a deliberately warm cluster, mirroring the warmup discipline applied to
+the single-node engines:
+
+1. `DatabricksService.create_cluster` provisions one cluster, installs the Sedona Maven coordinate and the
+   `apache-sedona` and `geopandas` PyPI packages via the libraries API, and waits for `RUNNING`. This happens before
+   `@monitor`'s timing window opens.
+2. The `@monitor` warmup and timed iterations all submit notebook runs against the same `existing_cluster_id`.
+   Subsequent iterations see warm executors, primed Catalyst plans, and cached broadcast variables.
+3. `DatabricksService.terminate_cluster` runs in a `finally` block after the timed iterations complete, so the cluster
+   is torn down even if the benchmark raises.
+
+Cluster provisioning and termination are deliberately outside the cost window. The thesis question is the cost of
+running queries on an optimally warm engine, not the cost of cold-starting one per query. Provisioning is a one-time
+setup cost in any production deployment, amortized over many queries rather than billed per query.
+
+The notebook (`src/presentation/databricks/national_scale_spatial_join.py`) registers a `SparkListener` that aggregates
+per-stage metrics — executor input bytes, shuffle read and write bytes, stage durations, executor run time — and returns
+them alongside the query result via `dbutils.notebook.exit`. These phase metrics are persisted on the per-iteration
+sample so the distributed runtime can be decomposed into read, shuffle, and driver collection time.
+
+### Pairing and randomization
+
+`main.py` shuffles the experiment list with `random.Random(benchmark_run)` before launching containers. Experiments
+that compare directly (for example `db-scan-blob-storage` and `db-scan-postgis`) declare each other under
+`related_script_ids` in `benchmarks.yml` and are launched concurrently via a `ThreadPoolExecutor`. Running a paired
+benchmark in the same wall-clock window controls for short-term cloud variability between the two engines being
+compared.
+
+## Research gaps addressed
+
+The framework is built around the three gaps identified in chapter 3 of the accompanying thesis.
+
+**Network transfer accounting.** Most spatial benchmarks treat network communication as a system-design concern (Tang
+et al. 2020) rather than a reported experimental metric. Cloud delivery cost, however, is partly driven by transferred
+bytes (Folkerts et al. 2013). doppa records `network_bytes_sent` and `network_bytes_received` per iteration as primary
+outputs alongside elapsed time. The Databricks notebook additionally reports executor input bytes and shuffle read /
+write bytes via the `SparkListener`. PostgreSQL ingress and egress are read from Azure Monitor. `AzureCostService`
+derives `network_cost` directly from these counters when it computes per-benchmark cost rows, so the link from
+format internals to client-observed cost is measured end to end.
+
+**Cloud-native vector formats vs. traditional formats on cloud storage.** Empirical comparisons in the literature
+(Holmes 2023; Flatgeobuf 2024) measure write times and file sizes on local disk and do not place cloud-native and
+traditional formats side by side on cloud storage. doppa benchmarks GeoParquet over Azure Blob Storage (via DuckDB)
+against PostGIS on Azure Database for PostgreSQL, and PMTiles against WMS-style vector tiles, across the full catalog
+of query patterns: full scans, bounding-box filters at three result-set sizes (neighborhood, municipality, county),
+spatial aggregation over a grid, attribute-and-spatial compound filters, ordered range queries, point-in-polygon
+lookups, and a national-scale spatial join. The local-Shapefile entrypoints sit on the side as a laptop-workflow
+reference, with the Shapefile downloaded ahead of the timed scope to emulate that workflow rather than to bench the
+format on cloud storage.
+
+**Single-node vs. distributed engines on the same vector workload.** Prior comparisons restrict themselves either to
+Spark-based systems (Pandey et al. 2018) or to single-node engines (Jackpine; Ray et al. 2011). doppa runs the same
+national-scale spatial join through DuckDB, PostGIS, and Apache Sedona on Databricks at three cluster sizes (2, 4, and
+8 workers), against the same `counties.parquet` boundary set and the same `BENCHMARK_DOPPA_DATA_RELEASE` building
+dataset. With the cluster-reuse measurement window in place, every engine reports elapsed time and cost over the same
+span — warmup outside the window, timed iterations on a warm engine — so the comparison is symmetric. Distributed-only
+metrics (shuffle bytes, stage durations, driver collection time) are recorded as additional columns rather than as
+replacements for the cross-engine ones.
+
+The methodological gap noted in the thesis — the absence of effect-size reporting and uncertainty quantification in
+spatial benchmarks — is handled in downstream analysis. The framework's contribution is to persist every iteration's
+raw sample so distributions, Wilcoxon rank-sum tests, bootstrapped confidence intervals, and Vargha–Delaney Â12 effect
+sizes can be computed without re-running the benchmark.
 
 ## Setup
 
