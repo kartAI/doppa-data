@@ -14,5 +14,9 @@ from src.infra.infrastructure import Containers
     cost_configuration=CostConfiguration(include_aci=True, include_postgres=True)
 )
 def vector_tiles_single_tile_vmt(tile_api_service: ITileApiService = Provide[Containers.tile_api_service]) -> None:
+    """
+    Benchmark: single vector tile fetch (z=13, x=4340, y=2382) from the on-demand
+    MVT tile server backed by PostGIS.
+    """
     z, x, y = 13, 4340, 2382
     _ = tile_api_service.fetch_vmt_tile(z=z, x=x, y=y)

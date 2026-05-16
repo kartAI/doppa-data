@@ -16,6 +16,11 @@ def vector_tiles_single_tile_pmtiles(
         file_path_service: IFilePathService = Provide[Containers.file_path_service],
         tile_api_service: ITileApiService = Provide[Containers.tile_api_service]
 ) -> None:
+    """
+    Benchmark: single vector tile fetch (z=13, x=4340, y=2382) from the buildings
+    PMTiles archive on Azure Blob Storage. Opens a PMTiles reader against the blob
+    URL before timing the single tile read.
+    """
     pmtiles_azure_url = file_path_service.create_url_to_blob_resource(
         container=StorageContainer.TILES,
         blob_path=Config.BUILDINGS_PMTILES_FILE.name
