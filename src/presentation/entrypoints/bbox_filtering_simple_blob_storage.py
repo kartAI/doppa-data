@@ -19,6 +19,11 @@ def bbox_filtering_simple_blob_storage(
         db_context: duckdb.DuckDBPyConnection = Provide[Containers.duckdb_context],
         file_path_service: IFilePathService = Provide[Containers.file_path_service]
 ) -> list:
+    """
+    Benchmark: simple Oslo-area bounding-box filter on the small buildings dataset
+    using DuckDB's spatial extension over Azure Blob Storage. Selects rows
+    intersecting the bbox with a minimum projected area in EPSG:25832.
+    """
     min_lon = 10.40
     max_lon = 10.95
     min_lat = 59.70

@@ -10,6 +10,11 @@ from src.infra.infrastructure import Containers
 
 
 def bbox_filtering_result_set_sizes_neighborhood_local() -> None:
+    """
+    Benchmark: bounding-box filter at neighborhood scale over the buildings
+    shapefile, executed locally via GeoPandas. Downloads the pre-baked shapefile
+    copy from blob storage before running the timed area-filter pipeline.
+    """
     _download_data()
     _benchmark()
 

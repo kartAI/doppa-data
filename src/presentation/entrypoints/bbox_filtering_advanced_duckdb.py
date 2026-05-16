@@ -19,6 +19,12 @@ def bbox_filtering_advanced_duckdb(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service],
 ) -> list:
+    """
+    Benchmark: advanced bounding-box filter on the small buildings dataset using
+    DuckDB's spatial extension over Azure Blob Storage. Intersects an Oslo-area
+    bbox, reprojects to EPSG:25833, filters by realistic building area, and
+    aggregates count plus area/perimeter statistics.
+    """
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
