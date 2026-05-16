@@ -16,6 +16,11 @@ from src.infra.infrastructure import Containers
 def spatial_aggregation_grid_postgis(
         db_context: Engine = Provide[Containers.postgres_context],
 ) -> list:
+    """
+    Benchmark: spatial aggregation on the seeded ``buildings_small`` table using
+    PostGIS. Bins each building centroid into a 0.01 degree lat/lon grid cell and
+    returns per-cell counts ordered by count.
+    """
     sql = text(
         """
         WITH building_centroids AS (
