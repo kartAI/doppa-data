@@ -28,6 +28,7 @@ measurable and reproducible on identical datasets and hardware.
 - [Research gaps addressed](#research-gaps-addressed)
 - [Setup](#setup)
     - [Azure Resources](#azure-resources)
+        - [Resource naming](#resource-naming)
         - [Resource group](#resource-group)
         - [Blob storage](#blob-storage)
         - [User-Assigned Managed Identity (UAMI)](#user-assigned-managed-identity-uami)
@@ -158,7 +159,30 @@ created manually. This section will give a brief walkthrough on the resources th
 so.
 
 > [!NOTE]
-> To ensure fair benchmarks set up all resources in Norway East
+> Set up all resources in **Norway East** *except Azure Databricks*. Norway East often lacks
+> sufficient `Standard_D4s_v3` quota for the multi-node clusters, so the Databricks workspace
+> must live in **Sweden Central** (see [Databricks](#databricks)). Cross-region egress between
+> blob storage (Norway East) and Databricks compute (Sweden Central) adds minor latency but
+> does not affect benchmark validity.
+
+#### Resource naming
+
+The resource names used throughout this section (`doppa`, `doppabs`, `doppaacr`, `doppa-uami`,
+`doppa-db`, `doppa-vmt`, `doppa-databricks`) are baked into source and configuration. Keep them
+as-is for the simplest setup; this is also what the thesis deployment uses, so reproducing the
+published results requires these exact names.
+
+If you need to rename a resource, the following references must be updated together:
+
+| Location                            | What is hardcoded                                                              |
+|-------------------------------------|--------------------------------------------------------------------------------|
+| `src/config.py`                     | Default values for resource group, blob URL/account, VMT URL, STAC container   |
+| `benchmarks.yml`                    | ACR image references (`doppaacr.azurecr.io/<image>:latest`) for every benchmark |
+| `.github/workflows/publish-api.yml` | `webapp_name: doppa-vmt`                                                       |
+
+`src/config.py` defaults can also be overridden via the corresponding environment variables
+(see [GitHub Actions](#github-actions) and [Local development](#local-development)) without
+editing the file. `benchmarks.yml` and the workflow file require direct edits.
 
 #### Resource group
 
@@ -399,10 +423,11 @@ cd doppa-data
 
 Create a virtual environment and install the dependencies in the [requirements](./requirements.txt)-file.
 
-```powershell
-python -m venv venv                 # Create virtual environment
-./venv/Scripts/activate             # Activate venv
-pip install -r requirements.txt     # Install dependencies
+```bash
+python -m venv venv                          # Create virtual environment
+source venv/bin/activate                     # Activate venv (Linux/macOS)
+# .\venv\Scripts\Activate.ps1                # Activate venv (Windows PowerShell)
+pip install -r requirements.txt              # Install dependencies
 ```
 
 Add the following `.env` file to the project root directory. Swap out the values enclosed by `<>` with the actual
