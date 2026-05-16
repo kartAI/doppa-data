@@ -1,4 +1,4 @@
-﻿from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod
 
 import geopandas as gpd
 from azure.storage.blob import ContainerClient
@@ -10,17 +10,18 @@ class IBlobStorageService(ABC):
     @abstractmethod
     def ensure_container(self, container_name: StorageContainer) -> None:
         """
-        Ensure that the specified storage container exists; create it if it does not.
+        Ensure that the specified storage container exists; create it with `PublicAccess.CONTAINER`
+        if it does not.
         :param container_name: Container enum to ensure existence for.
-        :return:
+        :return: None
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_container(self, container_name: StorageContainer) -> ContainerClient:
         """
-        Return an Azure Blob ContainerClient for the given storage container enum.
-
+        Return an Azure Blob ContainerClient for the given storage container enum. The container is
+        created via `ensure_container` if it does not yet exist.
         :param container_name: Enum identifying the target container.
         :type container_name: StorageContainer
         :return: ContainerClient for the specified container.
@@ -31,41 +32,46 @@ class IBlobStorageService(ABC):
     @abstractmethod
     def upload_file(self, container_name: StorageContainer, blob_name: str, data: bytes) -> str | None:
         """
-        Upload binary data to a blob and return its URL. Does not upload empty file
-
+        Upload binary data to a blob and return its URL. Does not upload empty file.
         :param container_name: Enum identifying the target container.
         :type container_name: StorageContainer
         :param blob_name: Name/path for the uploaded blob.
         :type blob_name: str
         :param data: Binary content to upload.
         :type data: bytes
-        :return: URL of the uploaded blob or None if the file was empty
-        :rtype: str
+        :return: URL of the uploaded blob or None if the file was empty.
+        :rtype: str | None
         """
         raise NotImplementedError
 
     @abstractmethod
     def delete_file(self) -> bool:
+        """
+        Deletes a blob from a storage container.
+        :return: True if the blob was deleted, False otherwise.
+        :rtype: bool
+        :raises NotImplementedError: Not implemented yet.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def download_file(self, container_name: StorageContainer, blob_name: str) -> bytes | None:
         """
-        Download bytes of file from Azure Blob Storage
+        Download bytes of a file from Azure Blob Storage.
         :param container_name: Container enum to download from.
         :param blob_name: Blob name to download.
-        :return: Bytes of the downloaded file.
-        :rtype: bytes
+        :return: Bytes of the downloaded file, or None when the blob does not exist.
+        :rtype: bytes | None
         """
         raise NotImplementedError
 
     @abstractmethod
     def is_blob_in_storage_container(self, container_name: StorageContainer, blob_name: str) -> bool:
         """
-        Check if a file exists in the specified container.
+        Check if a blob exists in the specified container.
         :param container_name: Container enum to check in.
         :param blob_name: Blob name to check for.
-        :return: True if the file exists, False otherwise.
+        :return: True if the blob exists, False otherwise.
         :rtype: bool
         """
         raise NotImplementedError
@@ -83,15 +89,21 @@ class IBlobStorageService(ABC):
             **kwargs: str
     ) -> list[str]:
         """
-        Upload multiple GeoDataFrame partitions as blobs to storage as Parquet files
+        Upload multiple GeoDataFrame partitions as blobs to storage as GeoParquet files. Each partition
+        is written under a Hive-compatible path keyed by release, theme, region, optional size, and any
+        additional `kwargs`. Empty partitions are skipped.
         :param container: Storage container enum to upload to.
-        :param release: Release version on the format 'yyyy-mm-dd.x'
+        :param release: Release version on the format 'yyyy-mm-dd.x'.
         :param theme: Theme enum representing the data theme.
         :param region: County ID, e.g. '03' for Oslo.
         :param partitions: List of GeoDataFrame partitions to upload.
-        :param dataset_size: Optional dataset size. When provided, inserts `size={value}/` between release and theme. Omit for raw OSM/FKB writes.
-        :param row_group_size: Optional GeoParquet row group size. When provided, forwarded to `GeoDataFrame.to_parquet` to control internal row group chunking.
+        :param dataset_size: Optional dataset size. When provided, inserts `size={value}/` between
+            release and theme. Omit for raw OSM/FKB writes.
+        :param row_group_size: Optional GeoParquet row group size. When provided, forwarded to
+            `GeoDataFrame.to_parquet` to control internal row group chunking.
+        :param kwargs: Additional Hive partition keys appended between release/size and theme.
         :return: List of URLs of the uploaded blobs.
+        :rtype: list[str]
         """
         raise NotImplementedError
 
@@ -108,8 +120,10 @@ class IBlobStorageService(ABC):
 
     def get_blob_summary(self, container: StorageContainer, path: str) -> tuple[int, int]:
         """
-        Get a summary of blobs under the specified base path in the given container, including total count and total size in bytes.
+        Get a summary of blobs under the specified base path in the given container, including total
+        count and total size in bytes. The file-name segment is stripped from `path` before listing.
         :param container: Container enum to summarize blobs from.
         :param path: Base path to summarize blobs from.
         :return: Tuple containing total count of blobs and total size in bytes.
+        :rtype: tuple[int, int]
         """
