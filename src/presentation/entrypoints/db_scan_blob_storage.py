@@ -19,6 +19,10 @@ def db_scan_blob_storage(
         db_context: DuckDBPyConnection = Provide[Containers.duckdb_context],
         path_service: IFilePathService = Provide[Containers.file_path_service]
 ) -> list:
+    """
+    Benchmark: full table scan (``COUNT(*)``) on the small buildings dataset using
+    DuckDB over Azure Blob Storage via the ``read_parquet`` virtual filesystem.
+    """
     path = path_service.create_release_virtual_filesystem_path(
         storage_scheme="az",
         release=Config.BENCHMARK_DOPPA_DATA_RELEASE,
