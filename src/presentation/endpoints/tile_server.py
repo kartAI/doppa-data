@@ -16,6 +16,7 @@ async def _db_call(z: int, x: int, y: int, mvt_service: IMVTService = Provide[Co
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    """FastAPI lifespan context that initializes the DI container before serving requests."""
     initialize_dependencies(run_id="not-needed", benchmark_run=1)
     yield
 
@@ -32,6 +33,16 @@ app.add_middleware(
 
 @app.get("/tiles/{z}/{x}/{y}")
 async def get_tiles(z: int, x: int, y: int):
+    """
+    HTTP GET ``/tiles/{z}/{x}/{y}``. Returns the buildings MVT tile as
+    ``application/x-protobuf`` bytes. Responds 400 for zoom levels outside [0, 22]
+    and 404 when no features intersect the tile. Caching headers are disabled.
+    :param z: Tile zoom level (0-22).
+    :param x: Tile X coordinate.
+    :param y: Tile Y coordinate.
+    :return: FastAPI Response carrying the MVT tile bytes.
+    :rtype: Response
+    """
     if z < 0 or z > 22:
         raise HTTPException(status_code=400, detail="Invalid zoom")
 
