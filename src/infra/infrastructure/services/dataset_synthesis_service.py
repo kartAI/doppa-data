@@ -143,6 +143,9 @@ class DatasetSynthesisService(IDatasetSynthesisService):
 
         dataframe = dataframe.drop(columns=["bbox", "size", "theme"], errors="ignore")
 
+        if "region" in dataframe.columns:
+            dataframe["region"] = dataframe["region"].astype(str)
+
         geometry_array = dataframe["geometry"].to_numpy()
         geometry_array = np.array(
             [bytes(g) if isinstance(g, (bytearray, memoryview)) else g for g in geometry_array],
