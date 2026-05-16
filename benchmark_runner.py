@@ -39,6 +39,13 @@ from src.presentation.entrypoints import (
 
 
 def benchmark_runner() -> None:
+    """
+    In-container entrypoint executed by each Azure Container Instance. Parses the
+    ``--script-id``, ``--benchmark-run`` and ``--run-id`` CLI arguments, initializes
+    the dependency injection container, and dispatches to the matching benchmark
+    function in ``src/presentation/entrypoints/``. Raises ``ValueError`` if the
+    script ID is unknown.
+    """
     script_id, benchmark_run, run_id = _get_args()
     initialize_dependencies(run_id=run_id, benchmark_run=benchmark_run)
 

@@ -16,6 +16,13 @@ from src.domain.enums import StorageContainer
 
 
 def main() -> None:
+    """
+    Orchestrates the full benchmark suite from outside Azure Container Instances.
+    Authenticates to Azure, reads the experiments from ``benchmarks.yml``, generates
+    a run ID, validates ``related_script_ids`` cross-references, then for each
+    benchmark run launches every experiment as a one-shot ACI, streams its logs
+    until success or failure, and cleans up container groups before and after.
+    """
     _run_cmd(["az", "login", "--identity"])
 
     with open(Config.BENCHMARK_FILE) as f:
